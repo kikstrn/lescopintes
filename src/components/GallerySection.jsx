@@ -399,12 +399,15 @@ function GallerySection() {
               aria-label="Fermer la galerie"
               initial={{
                 opacity: 0,
+                scale: 0.96,
               }}
               animate={{
                 opacity: 1,
+                scale: 1,
               }}
               exit={{
                 opacity: 0,
+                scale: 0.97,
               }}
               onClick={() => setSelectedPhotoId(null)}
             />

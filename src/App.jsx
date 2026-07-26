@@ -17,6 +17,7 @@ import {
   Trophy,
 } from "lucide-react";
 
+
 import Sidebar from "./components/Sidebar";
 import MobileNavigation from "./components/MobileNavigation";
 import HeroBanner from "./components/HeroBanner";
@@ -34,10 +35,19 @@ import GagesSection from "./components/GagesSection";
 import RankingSection from "./components/RankingSection";
 import StatisticsSection from "./components/StatisticsSection";
 
+import { useProfiles } from "./hooks/useProfiles";
+import EventsSection from "./components/EventsSection";
+import EventFormModal from "./components/EventFormModal";
+import { useEvents } from "./hooks/useEvents";
+import TennisSection from "./components/TennisSection";
+import { useTennisMatches } from "./hooks/useTennisMatches";
+
+import { useEffect } from "react";
+import { testSupabaseConnection } from "./lib/testSupabase";
+import { useAuth } from "./context/AuthContext";
+
 import {
   activityData,
-  events,
-  members,
   recentActivities,
   weeklyChallenge,
 } from "./data/demoData";
@@ -98,12 +108,130 @@ const navigation = [
 const implementedPages = [
   "home",
   "ranking",
+  "events",
   "statistics",
+  "tennis",
   "gallery",
   "gages",
 ];
 
 function App() {
+
+  const {
+    profiles: members,
+    loading: profilesLoading,
+    error: profilesError,
+  } = useProfiles();
+
+  const {
+    profile,
+    user,
+    isAdmin,
+    logout,
+  } = useAuth();
+
+  const [eventModalOpen, setEventModalOpen] =
+    useState(false);
+
+  const [eventBeingEdited, setEventBeingEdited] =
+    useState(null);
+
+  const {
+    events,
+    loading: eventsLoading,
+    saving: eventsSaving,
+    error: eventsError,
+    addEvent,
+    editEvent,
+    removeEvent,
+    changeAttendance,
+  } = useEvents();
+
+  const {
+    matches: tennisMatches,
+    loading: tennisLoading,
+    saving: tennisSaving,
+    error: tennisError,
+    addMatch,
+  } = useTennisMatches();
+
+  const handleSaveTennisMatch =
+    async (matchData) => {
+      await addMatch(matchData);
+      setScoreModalOpen(false);
+    };
+
+  const openCreateEventModal = () => {
+    setEventBeingEdited(null);
+    setEventModalOpen(true);
+  };
+
+  const openEditEventModal = (event) => {
+    setEventBeingEdited(event);
+    setEventModalOpen(true);
+  };
+
+  const closeEventModal = () => {
+    if (eventsSaving) {
+      return;
+    }
+
+    setEventModalOpen(false);
+    setEventBeingEdited(null);
+  };
+
+  const handleEventSubmit = async (eventData) => {
+    if (eventBeingEdited) {
+      await editEvent(
+        eventBeingEdited.id,
+        eventData,
+      );
+    } else {
+      if (!user?.id) {
+        throw new Error(
+          "Utilisateur connecté introuvable.",
+        );
+      }
+
+      await addEvent({
+        ...eventData,
+        createdBy: user.id,
+      });
+    }
+
+    setEventModalOpen(false);
+    setEventBeingEdited(null);
+  };
+
+  const handleAttendance = async ({
+    eventId,
+    attendanceStatus,
+  }) => {
+    if (!user?.id) {
+      throw new Error(
+        "Utilisateur connecté introuvable.",
+      );
+    }
+
+    await changeAttendance({
+      eventId,
+      profileId: user.id,
+      attendanceStatus,
+    });
+  };
+
+  const connectedNickname =
+    profile?.nickname ??
+    user?.email?.split("@")[0] ??
+    "Membre";
+
+  const connectedInitials =
+    profile?.initials ??
+    connectedNickname.slice(0, 2).toUpperCase();
+
+  const connectedRole =
+    isAdmin ? "Administrateur" : "Membre";
+
   const [activePage, setActivePage] = useState("home");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scoreModalOpen, setScoreModalOpen] = useState(false);
@@ -112,25 +240,28 @@ function App() {
     return [...members].sort((memberA, memberB) => {
       return memberB.points - memberA.points;
     });
-  }, []);
+  }, [members]);
 
   const totalBikeKm = useMemo(() => {
     return members.reduce((total, member) => {
-      return total + member.bikeKm;
+      return total + Number(member.bikeKm ?? 0);
     }, 0);
-  }, []);
+  }, [members]);
 
   const totalMatches = useMemo(() => {
-    const matchesPlayed = members.reduce((total, member) => {
-      return total + member.wins + member.losses;
-    }, 0);
+    const totalParticipations = members.reduce(
+      (total, member) => {
+        return (
+          total +
+          Number(member.wins ?? 0) +
+          Number(member.losses ?? 0)
+        );
+      },
+      0,
+    );
 
-    /*
-     * Un même match est comptabilisé pour les deux joueurs.
-     * On divise donc le total par deux.
-     */
-    return Math.round(matchesPlayed / 2);
-  }, []);
+    return Math.round(totalParticipations / 2);
+  }, [members]);
 
   const currentNavigationItem = navigation.find((item) => {
     return item.id === activePage;
@@ -193,6 +324,8 @@ function App() {
         items={navigation}
         activePage={activePage}
         onNavigate={navigateTo}
+        onLogout={logout}
+        profile={profile}
       />
 
       <div className="app-content">
@@ -235,12 +368,12 @@ function App() {
               onClick={() => navigateTo("members")}
             >
               <span className="profile-button__avatar">
-                KK
+                {connectedInitials}
               </span>
 
               <span className="profile-button__text">
-                <strong>Kiks</strong>
-                <small>Administrateur</small>
+                <strong>{connectedNickname}</strong>
+                <small>{connectedRole}</small>
               </span>
 
               <ChevronRight size={18} />
@@ -269,10 +402,31 @@ function App() {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
+
+              {profilesLoading && (
+                <section className="data-status glass-panel">
+                  <span className="data-status__spinner" />
+
+                  <div>
+                    <strong>Chargement des membres</strong>
+                    <p>Récupération des données Supabase…</p>
+                  </div>
+                </section>
+              )}
+
+              {profilesError && (
+                <section className="data-status data-status--error glass-panel">
+                  <div>
+                    <strong>Impossible de charger les membres</strong>
+                    <p>{profilesError}</p>
+                  </div>
+                </section>
+              )}
+
               {activePage === "home" && (
                 <>
                   <HeroBanner
-                    onCreateEvent={() => navigateTo("events")}
+                    onCreateEvent={openCreateEventModal}
                     onAddScore={() => setScoreModalOpen(true)}
                   />
 
@@ -335,13 +489,20 @@ function App() {
                         </div>
 
                         <div className="events-grid">
-                          {events.map((event, index) => (
-                            <EventCard
-                              key={event.id}
-                              event={event}
-                              index={index}
-                            />
-                          ))}
+                          {events
+                            .filter(
+                              (event) =>
+                                new Date(event.startsAt).getTime() >=
+                                Date.now(),
+                            )
+                            .slice(0, 3)
+                            .map((event, index) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                index={index}
+                              />
+                            ))}
                         </div>
                       </section>
 
@@ -414,6 +575,33 @@ function App() {
                 </>
               )}
 
+              {activePage === "events" && (
+                <EventsSection
+                  events={events}
+                  loading={eventsLoading}
+                  saving={eventsSaving}
+                  error={eventsError}
+                  currentProfile={profile}
+                  isAdmin={isAdmin}
+                  onCreate={openCreateEventModal}
+                  onEdit={openEditEventModal}
+                  onDelete={removeEvent}
+                  onAttendance={handleAttendance}
+                />
+              )}
+
+              {activePage === "tennis" && (
+                <TennisSection
+                  matches={tennisMatches}
+                  members={members}
+                  loading={tennisLoading}
+                  error={tennisError}
+                  onAddMatch={() =>
+                    setScoreModalOpen(true)
+                  }
+                />
+              )}
+
               {activePage === "ranking" && (
                 <RankingSection members={members} />
               )}
@@ -448,7 +636,21 @@ function App() {
       <ScoreModal
         open={scoreModalOpen}
         members={members}
-        onClose={() => setScoreModalOpen(false)}
+        saving={tennisSaving}
+        onSave={handleSaveTennisMatch}
+        onClose={() => {
+          if (!tennisSaving) {
+            setScoreModalOpen(false);
+          }
+        }}
+      />
+
+      <EventFormModal
+        open={eventModalOpen}
+        event={eventBeingEdited}
+        saving={eventsSaving}
+        onClose={closeEventModal}
+        onSubmit={handleEventSubmit}
       />
     </div>
   );

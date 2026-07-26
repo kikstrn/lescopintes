@@ -1,7 +1,13 @@
 import { motion } from "framer-motion";
 import { LogOut, Settings } from "lucide-react";
 
-function Sidebar({ items, activePage, onNavigate }) {
+function Sidebar({   
+  items,
+  activePage,
+  onNavigate,
+  onLogout,
+  profile
+ }) {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -59,11 +65,18 @@ function Sidebar({ items, activePage, onNavigate }) {
 
       <div className="sidebar__bottom">
         <div className="sidebar__member-card">
-          <div className="sidebar__member-avatar">KK</div>
+          <div className="sidebar__member-avatar">
+            {profile?.initials ?? "CP"}
+          </div>
 
           <div className="sidebar__member-info">
-            <strong>Kiks</strong>
-            <small>Administrateur</small>
+            <strong>{profile?.nickname ?? "Membre"}</strong>
+
+            <small>
+              {profile?.role === "admin"
+                ? "Administrateur"
+                : "Membre"}
+            </small>
           </div>
 
           <button
@@ -75,7 +88,11 @@ function Sidebar({ items, activePage, onNavigate }) {
           </button>
         </div>
 
-        <button type="button" className="sidebar__logout">
+        <button
+          type="button"
+          className="sidebar__logout"
+          onClick={onLogout}
+        >
           <LogOut size={18} />
           <span>Déconnexion</span>
         </button>

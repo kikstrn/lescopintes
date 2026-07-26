@@ -1,26 +1,65 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
   Check,
   ChevronDown,
+  LoaderCircle,
   Minus,
   Plus,
   RotateCcw,
   Trophy,
+  UserRound,
+  UsersRound,
   X,
+  Trash2,
+  CalendarDays,
 } from "lucide-react";
 
-const initialSets = [
-  { playerOne: 6, playerTwo: 3 },
-  { playerOne: 6, playerTwo: 4 },
-];
+function createDefaultSets() {
+  return [
+    {
+      teamOne: 0,
+      teamTwo: 0,
+    },
+    {
+      teamOne: 0,
+      teamTwo: 0,
+    },
+  ];
+}
 
-function ScoreControl({ value, onDecrease, onIncrease }) {
+function getTodayValue() {
+  const now = new Date();
+
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+function getInitialPlayers(members) {
+  return {
+    playerOneId: members[0]?.id ?? "",
+    playerTwoId: members[1]?.id ?? "",
+    playerThreeId: members[2]?.id ?? "",
+    playerFourId: members[3]?.id ?? "",
+  };
+}
+
+function ScoreControl({
+  value,
+  disabled,
+  onDecrease,
+  onIncrease,
+}) {
   return (
     <div className="score-control">
       <button
         type="button"
         aria-label="Retirer un jeu"
+        disabled={disabled}
         onClick={onDecrease}
       >
         <Minus size={18} />
@@ -31,15 +70,10 @@ function ScoreControl({ value, onDecrease, onIncrease }) {
         initial={{
           opacity: 0,
           scale: 0.75,
-          y: 6,
         }}
         animate={{
           opacity: 1,
           scale: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.18,
         }}
       >
         {value}
@@ -48,6 +82,7 @@ function ScoreControl({ value, onDecrease, onIncrease }) {
       <button
         type="button"
         aria-label="Ajouter un jeu"
+        disabled={disabled}
         onClick={onIncrease}
       >
         <Plus size={18} />
@@ -56,46 +91,156 @@ function ScoreControl({ value, onDecrease, onIncrease }) {
   );
 }
 
-function ScoreModal({ open, members, onClose }) {
-  const [playerOneId, setPlayerOneId] = useState(members[0]?.id ?? "");
-  const [playerTwoId, setPlayerTwoId] = useState(members[1]?.id ?? "");
-  const [sets, setSets] = useState(initialSets);
-  const [saved, setSaved] = useState(false);
-
-  const playerOne = useMemo(
-    () => members.find((member) => member.id === Number(playerOneId)),
-    [members, playerOneId],
+function PlayerSelect({
+  label,
+  value,
+  members,
+  excludedIds,
+  disabled,
+  onChange,
+}) {
+  const selectedMember = members.find(
+    (member) => member.id === value,
   );
 
-  const playerTwo = useMemo(
-    () => members.find((member) => member.id === Number(playerTwoId)),
-    [members, playerTwoId],
-  );
+  return (
+    <label className="score-player">
+      <span>{label}</span>
 
-  const winner = useMemo(() => {
-    let playerOneSets = 0;
-    let playerTwoSets = 0;
+      <div className="score-player__select">
+        <span className="score-player__avatar">
+          {selectedMember?.initials ?? "CP"}
+        </span>
+
+        <select
+          value={value}
+          disabled={disabled}
+          onChange={(event) => onChange(event.target.value)}
+        >
+          <option value="">Choisir</option>
+
+          {members.map((member) => (
+            <option
+              key={member.id}
+              value={member.id}
+              disabled={
+                excludedIds.includes(member.id) &&
+                member.id !== value
+              }
+            >
+              {member.nickname}
+            </option>
+          ))}
+        </select>
+
+        <ChevronDown size={17} />
+      </div>
+    </label>
+  );
+}
+
+function ScoreModal({
+  open,
+  members = [],
+  saving = false,
+  onClose,
+  onSave,
+}) {
+  const [matchType, setMatchType] = useState("single");
+
+  const [playerOneId, setPlayerOneId] = useState("");
+  const [playerTwoId, setPlayerTwoId] = useState("");
+  const [playerThreeId, setPlayerThreeId] = useState("");
+  const [playerFourId, setPlayerFourId] = useState("");
+
+  const [sets, setSets] = useState(() => createDefaultSets());
+  const [playedDate, setPlayedDate] = useState(getTodayValue());
+  const [notes, setNotes] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const resetForm = () => {
+    const initialPlayers = getInitialPlayers(members);
+
+    setMatchType("single");
+    setPlayerOneId(initialPlayers.playerOneId);
+    setPlayerTwoId(initialPlayers.playerTwoId);
+    setPlayerThreeId(initialPlayers.playerThreeId);
+    setPlayerFourId(initialPlayers.playerFourId);
+
+    /*
+     * Un nouveau tableau est créé à chaque fois.
+     * React détecte donc correctement la réinitialisation.
+     */
+    setSets(createDefaultSets());
+    setPlayedDate(getTodayValue());
+    setNotes("");
+    setErrorMessage("");
+  };
+
+  useEffect(() => {
+    if (open) {
+      resetForm();
+    }
+  }, [open, members]);
+
+  const allSelectedIds = [
+    playerOneId,
+    playerTwoId,
+    playerThreeId,
+    playerFourId,
+  ].filter(Boolean);
+
+  const getMember = (memberId) =>
+    members.find((member) => member.id === memberId);
+
+  const playerOne = getMember(playerOneId);
+  const playerTwo = getMember(playerTwoId);
+  const playerThree = getMember(playerThreeId);
+  const playerFour = getMember(playerFourId);
+
+  const teamOneName =
+    matchType === "double"
+      ? `${playerOne?.nickname ?? "Joueur 1"} / ${playerTwo?.nickname ?? "Joueur 2"
+      }`
+      : playerOne?.nickname ?? "Joueur 1";
+
+  const teamTwoName =
+    matchType === "double"
+      ? `${playerThree?.nickname ?? "Joueur 3"} / ${playerFour?.nickname ?? "Joueur 4"
+      }`
+      : playerTwo?.nickname ?? "Joueur 2";
+
+  const result = useMemo(() => {
+    let teamOneSets = 0;
+    let teamTwoSets = 0;
+    let hasTiedSet = false;
 
     sets.forEach((set) => {
-      if (set.playerOne > set.playerTwo) {
-        playerOneSets += 1;
-      }
-
-      if (set.playerTwo > set.playerOne) {
-        playerTwoSets += 1;
+      if (set.teamOne > set.teamTwo) {
+        teamOneSets += 1;
+      } else if (set.teamTwo > set.teamOne) {
+        teamTwoSets += 1;
+      } else {
+        hasTiedSet = true;
       }
     });
 
-    if (playerOneSets === playerTwoSets) {
-      return null;
-    }
+    const winnerTeam =
+      teamOneSets === teamTwoSets
+        ? null
+        : teamOneSets > teamTwoSets
+          ? 1
+          : 2;
 
-    return playerOneSets > playerTwoSets ? playerOne : playerTwo;
-  }, [sets, playerOne, playerTwo]);
+    return {
+      teamOneSets,
+      teamTwoSets,
+      winnerTeam,
+      hasTiedSet,
+    };
+  }, [sets]);
 
-  const updateSet = (setIndex, player, change) => {
-    setSaved(false);
-
+  const updateSet = (setIndex, team, change) => {
     setSets((currentSets) =>
       currentSets.map((set, index) => {
         if (index !== setIndex) {
@@ -104,10 +249,15 @@ function ScoreModal({ open, members, onClose }) {
 
         return {
           ...set,
-          [player]: Math.max(0, Math.min(20, set[player] + change)),
+          [team]: Math.max(
+            0,
+            Math.min(20, set[team] + change),
+          ),
         };
       }),
     );
+
+    setErrorMessage("");
   };
 
   const addSet = () => {
@@ -115,40 +265,98 @@ function ScoreModal({ open, members, onClose }) {
       return;
     }
 
-    setSaved(false);
-
     setSets((currentSets) => [
       ...currentSets,
       {
-        playerOne: 0,
-        playerTwo: 0,
+        teamOne: 0,
+        teamTwo: 0,
       },
     ]);
   };
 
-  const removeSet = (index) => {
-    if (sets.length <= 1) {
+  const removeSet = (setIndex) => {
+    if (sets.length <= 2) {
       return;
     }
 
-    setSaved(false);
     setSets((currentSets) =>
-      currentSets.filter((_, setIndex) => setIndex !== index),
+      currentSets.filter((_, index) => index !== setIndex),
     );
   };
 
-  const resetScore = () => {
-    setSaved(false);
-    setSets(initialSets);
+  const handleMatchTypeChange = (newType) => {
+    setMatchType(newType);
+    setSets(createDefaultSets());
+    setErrorMessage("");
   };
 
-  const saveScore = () => {
-    setSaved(true);
+  const handleSubmit = async () => {
+    setErrorMessage("");
 
-    window.setTimeout(() => {
-      setSaved(false);
-      onClose();
-    }, 1100);
+    const requiredPlayers =
+      matchType === "double"
+        ? [
+          playerOneId,
+          playerTwoId,
+          playerThreeId,
+          playerFourId,
+        ]
+        : [playerOneId, playerTwoId];
+
+    if (requiredPlayers.some((playerId) => !playerId)) {
+      setErrorMessage(
+        matchType === "double"
+          ? "Sélectionne les quatre joueurs."
+          : "Sélectionne les deux joueurs.",
+      );
+      return;
+    }
+
+    if (new Set(requiredPlayers).size !== requiredPlayers.length) {
+      setErrorMessage(
+        "Un même joueur ne peut pas être sélectionné plusieurs fois.",
+      );
+      return;
+    }
+
+    if (result.hasTiedSet) {
+      setErrorMessage(
+        "Aucun set ne peut se terminer sur une égalité.",
+      );
+      return;
+    }
+
+    if (!result.winnerTeam) {
+      setErrorMessage("Le match doit avoir un vainqueur.");
+      return;
+    }
+
+    if (!playedDate) {
+      setErrorMessage("Renseigne la date du match.");
+      return;
+    }
+
+    try {
+      await onSave({
+        matchType,
+        playerOneId,
+        playerTwoId,
+        playerThreeId:
+          matchType === "double" ? playerThreeId : null,
+        playerFourId:
+          matchType === "double" ? playerFourId : null,
+        sets,
+        playedAt: new Date(
+          `${playedDate}T12:00:00`,
+        ).toISOString(),
+        notes,
+      });
+    } catch (error) {
+      setErrorMessage(
+        error?.message ??
+        "Impossible d’enregistrer le match.",
+      );
+    }
   };
 
   return (
@@ -172,23 +380,15 @@ function ScoreModal({ open, members, onClose }) {
             aria-labelledby="score-modal-title"
             initial={{
               opacity: 0,
-              scale: 0.94,
-              y: 30,
+              scale: 0.96,
             }}
             animate={{
               opacity: 1,
               scale: 1,
-              y: 0,
             }}
             exit={{
               opacity: 0,
-              scale: 0.95,
-              y: 20,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 310,
-              damping: 28,
+              scale: 0.97,
             }}
           >
             <div className="score-modal__glow" />
@@ -201,7 +401,7 @@ function ScoreModal({ open, members, onClose }) {
 
                 <div>
                   <span className="section-heading__eyebrow">
-                    Module tennis
+                    Tennis
                   </span>
 
                   <h2 id="score-modal-title">
@@ -214,6 +414,7 @@ function ScoreModal({ open, members, onClose }) {
                 type="button"
                 className="icon-button"
                 aria-label="Fermer"
+                disabled={saving}
                 onClick={onClose}
               >
                 <X size={21} />
@@ -221,162 +422,340 @@ function ScoreModal({ open, members, onClose }) {
             </header>
 
             <div className="score-modal__body">
-              <div className="score-modal__players">
-                <label className="score-player">
-                  <span>Joueur 1</span>
+              <section className="score-modal__step score-modal__step--match-type">
+                <div className="score-modal__step-heading">
+                  <strong>
+                    <span>1.</span>
+                    Type de match
+                  </strong>
 
-                  <div className="score-player__select">
-                    <span className="score-player__avatar">
-                      {playerOne?.initials}
-                    </span>
-
-                    <select
-                      value={playerOneId}
-                      onChange={(event) => {
-                        setSaved(false);
-                        setPlayerOneId(event.target.value);
-                      }}
-                    >
-                      {members.map((member) => (
-                        <option
-                          key={member.id}
-                          value={member.id}
-                          disabled={member.id === Number(playerTwoId)}
-                        >
-                          {member.nickname}
-                        </option>
-                      ))}
-                    </select>
-
-                    <ChevronDown size={17} />
-                  </div>
-                </label>
-
-                <div className="score-modal__versus">
-                  <span>VS</span>
+                  <p>Choisis le format de la rencontre</p>
                 </div>
 
-                <label className="score-player">
-                  <span>Joueur 2</span>
-
-                  <div className="score-player__select">
-                    <span className="score-player__avatar">
-                      {playerTwo?.initials}
+                <div className="score-modal__match-types">
+                  <button
+                    type="button"
+                    className={
+                      matchType === "single"
+                        ? "score-modal__match-type score-modal__match-type--active"
+                        : "score-modal__match-type"
+                    }
+                    disabled={saving}
+                    onClick={() => handleMatchTypeChange("single")}
+                  >
+                    <span className="score-modal__match-type-icon">
+                      <UserRound size={26} />
                     </span>
 
-                    <select
-                      value={playerTwoId}
-                      onChange={(event) => {
-                        setSaved(false);
-                        setPlayerTwoId(event.target.value);
-                      }}
-                    >
-                      {members.map((member) => (
-                        <option
-                          key={member.id}
-                          value={member.id}
-                          disabled={member.id === Number(playerOneId)}
-                        >
-                          {member.nickname}
-                        </option>
-                      ))}
-                    </select>
+                    <span className="score-modal__match-type-content">
+                      <strong>SIMPLE</strong>
+                      <small>Un contre un</small>
+                    </span>
 
-                    <ChevronDown size={17} />
-                  </div>
-                </label>
-              </div>
-
-              <div className="score-modal__scoreboard">
-                <div className="score-modal__scoreboard-header">
-                  <span>Sets</span>
-                  <strong>{playerOne?.nickname}</strong>
-                  <strong>{playerTwo?.nickname}</strong>
-                  <span />
-                </div>
-
-                <AnimatePresence initial={false}>
-                  {sets.map((set, index) => (
-                    <motion.div
-                      key={`set-${index}`}
-                      className="score-modal__set"
-                      initial={{
-                        opacity: 0,
-                        height: 0,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        height: "auto",
-                      }}
-                      exit={{
-                        opacity: 0,
-                        height: 0,
-                      }}
-                    >
-                      <span className="score-modal__set-label">
-                        Set {index + 1}
+                    {matchType === "single" && (
+                      <span className="score-modal__match-type-check">
+                        <Check size={18} />
                       </span>
+                    )}
+                  </button>
 
-                      <ScoreControl
-                        value={set.playerOne}
-                        onDecrease={() =>
-                          updateSet(index, "playerOne", -1)
-                        }
-                        onIncrease={() =>
-                          updateSet(index, "playerOne", 1)
-                        }
+                  <button
+                    type="button"
+                    className={
+                      matchType === "double"
+                        ? "score-modal__match-type score-modal__match-type--active"
+                        : "score-modal__match-type"
+                    }
+                    disabled={saving}
+                    onClick={() => handleMatchTypeChange("double")}
+                  >
+                    <span className="score-modal__match-type-icon">
+                      <UsersRound size={27} />
+                    </span>
+
+                    <span className="score-modal__match-type-content">
+                      <strong>DOUBLE</strong>
+                      <small>Deux contre deux</small>
+                    </span>
+
+                    {matchType === "double" && (
+                      <span className="score-modal__match-type-check">
+                        <Check size={18} />
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </section>
+
+              <section className="score-modal__step">
+                <div className="score-modal__step-heading">
+                  <strong>
+                    <span>2.</span>
+                    Date du match
+                  </strong>
+                </div>
+
+                <label className="score-modal__date-control">
+                  <CalendarDays size={19} />
+
+                  <input
+                    type="date"
+                    value={playedDate}
+                    disabled={saving}
+                    onChange={(event) => {
+                      setPlayedDate(event.target.value);
+                      setErrorMessage("");
+                    }}
+                  />
+                </label>
+              </section>
+
+              <section className="score-modal__teams-step">
+                {matchType === "single" ? (
+                  <>
+                    <section className="score-modal__team-panel">
+                      <div className="score-modal__team-heading">
+                        <strong>
+                          <span>3.</span>
+                          Joueur 1
+                        </strong>
+                      </div>
+
+                      <PlayerSelect
+                        label="Joueur"
+                        value={playerOneId}
+                        members={members}
+                        excludedIds={allSelectedIds}
+                        disabled={saving}
+                        onChange={setPlayerOneId}
+                      />
+                    </section>
+
+                    <div className="score-modal__versus-display">
+                      <span />
+                      <strong>VS</strong>
+                      <span />
+                    </div>
+
+                    <section className="score-modal__team-panel">
+                      <div className="score-modal__team-heading">
+                        <strong>
+                          <span>4.</span>
+                          Joueur 2
+                        </strong>
+                      </div>
+
+                      <PlayerSelect
+                        label="Joueur"
+                        value={playerTwoId}
+                        members={members}
+                        excludedIds={allSelectedIds}
+                        disabled={saving}
+                        onChange={setPlayerTwoId}
+                      />
+                    </section>
+                  </>
+                ) : (
+                  <>
+                    <section className="score-modal__team-panel">
+                      <div className="score-modal__team-heading">
+                        <strong>
+                          <span>3.</span>
+                          Équipe 1
+                        </strong>
+                      </div>
+
+                      <PlayerSelect
+                        label="Joueur 1"
+                        value={playerOneId}
+                        members={members}
+                        excludedIds={allSelectedIds}
+                        disabled={saving}
+                        onChange={setPlayerOneId}
                       />
 
-                      <ScoreControl
-                        value={set.playerTwo}
-                        onDecrease={() =>
-                          updateSet(index, "playerTwo", -1)
-                        }
-                        onIncrease={() =>
-                          updateSet(index, "playerTwo", 1)
-                        }
+                      <PlayerSelect
+                        label="Joueur 2"
+                        value={playerTwoId}
+                        members={members}
+                        excludedIds={allSelectedIds}
+                        disabled={saving}
+                        onChange={setPlayerTwoId}
+                      />
+                    </section>
+
+                    <div className="score-modal__versus-display">
+                      <span />
+                      <strong>VS</strong>
+                      <span />
+                    </div>
+
+                    <section className="score-modal__team-panel">
+                      <div className="score-modal__team-heading">
+                        <strong>
+                          <span>4.</span>
+                          Équipe 2
+                        </strong>
+                      </div>
+
+                      <PlayerSelect
+                        label="Joueur 3"
+                        value={playerThreeId}
+                        members={members}
+                        excludedIds={allSelectedIds}
+                        disabled={saving}
+                        onChange={setPlayerThreeId}
                       />
 
-                      <button
-                        type="button"
-                        className="score-modal__remove-set"
-                        aria-label={`Supprimer le set ${index + 1}`}
-                        disabled={sets.length <= 1}
-                        onClick={() => removeSet(index)}
+                      <PlayerSelect
+                        label="Joueur 4"
+                        value={playerFourId}
+                        members={members}
+                        excludedIds={allSelectedIds}
+                        disabled={saving}
+                        onChange={setPlayerFourId}
+                      />
+                    </section>
+                  </>
+                )}
+              </section>
+
+              <section className="score-modal__step score-modal__step--sets">
+                <div className="score-modal__step-heading score-modal__step-heading--inline">
+                  <strong>
+                    <span>5.</span>
+                    Sets
+                  </strong>
+
+                  <small>Best of 3 ou 5</small>
+                </div>
+
+
+                <div className="score-modal__scoreboard">
+                  <div className="score-modal__scoreboard-header">
+                    <span>Sets</span>
+                    <strong>{teamOneName}</strong>
+                    <strong>{teamTwoName}</strong>
+                    <span />
+                  </div>
+
+                  <AnimatePresence initial={false}>
+                    {sets.map((set, index) => (
+                      <motion.div
+                        key={`set-${index}`}
+                        className="score-modal__set"
+                        initial={{
+                          opacity: 0,
+                          height: 0,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          height: "auto",
+                        }}
+                        exit={{
+                          opacity: 0,
+                          height: 0,
+                        }}
                       >
-                        <X size={17} />
-                      </button>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
+                        <span className="score-modal__set-label">
+                          Set {index + 1}
+                        </span>
 
-              <button
-                type="button"
-                className="score-modal__add-set"
-                disabled={sets.length >= 5}
-                onClick={addSet}
-              >
-                <Plus size={17} />
-                Ajouter un set
-              </button>
+                        <ScoreControl
+                          value={set.teamOne}
+                          disabled={saving}
+                          onDecrease={() =>
+                            updateSet(index, "teamOne", -1)
+                          }
+                          onIncrease={() =>
+                            updateSet(index, "teamOne", 1)
+                          }
+                        />
 
-              <div className="score-modal__result">
-                <span>Vainqueur actuel</span>
+                        <ScoreControl
+                          value={set.teamTwo}
+                          disabled={saving}
+                          onDecrease={() =>
+                            updateSet(index, "teamTwo", -1)
+                          }
+                          onIncrease={() =>
+                            updateSet(index, "teamTwo", 1)
+                          }
+                        />
 
-                <strong>
-                  {winner
-                    ? `${winner.nickname} mène le match`
-                    : "Match à égalité"}
-                </strong>
-              </div>
+                        <button
+                          type="button"
+                          className="score-modal__remove-set"
+                          aria-label={`Supprimer le set ${index + 1}`}
+                          disabled={sets.length <= 2 || saving}
+                          onClick={() => removeSet(index)}
+                        >
+                          <Trash2 size={17} />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+
+                <button
+                  type="button"
+                  className="score-modal__add-set"
+                  disabled={sets.length >= 5 || saving}
+                  onClick={addSet}
+                >
+                  <Plus size={17} />
+                  Ajouter un set
+                </button>
+              </section>
+
+              <section className="score-modal__step">
+                <div className="score-modal__step-heading score-modal__step-heading--inline">
+                  <strong>
+                    <span>6.</span>
+                    Commentaire
+                  </strong>
+
+                  <small>Optionnel</small>
+                </div>
+
+                <label className="score-modal__notes">
+
+                  <textarea
+                    value={notes}
+                    rows={3}
+                    maxLength={500}
+                    disabled={saving}
+                    placeholder="Ex. Match très serré…"
+                    onChange={(event) =>
+                      setNotes(event.target.value)
+                    }
+                  />
+
+                  <span className="score-modal__notes-count">
+                    {notes.length} / 500
+                  </span>
+                </label>
+              </section>
+
+              {errorMessage && (
+                <motion.div
+                  className="score-modal__error"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  role="alert"
+                >
+                  <AlertCircle size={18} />
+                  <span>{errorMessage}</span>
+                </motion.div>
+              )}
             </div>
 
             <footer className="score-modal__footer">
               <button
                 type="button"
                 className="secondary-button"
-                onClick={resetScore}
+                disabled={saving}
+                onClick={resetForm}
               >
                 <RotateCcw size={17} />
                 Réinitialiser
@@ -384,23 +763,25 @@ function ScoreModal({ open, members, onClose }) {
 
               <motion.button
                 type="button"
-                className={`primary-button ${
-                  saved ? "primary-button--success" : ""
-                }`}
+                className="primary-button"
                 whileTap={{
                   scale: 0.97,
                 }}
-                onClick={saveScore}
+                disabled={saving}
+                onClick={handleSubmit}
               >
-                {saved ? (
+                {saving ? (
                   <>
-                    <Check size={18} />
-                    Score enregistré
+                    <LoaderCircle
+                      className="score-modal__spinner"
+                      size={18}
+                    />
+                    Enregistrement…
                   </>
                 ) : (
                   <>
-                    <Trophy size={18} />
-                    Enregistrer le score
+                    <Check size={18} />
+                    Enregistrer le match
                   </>
                 )}
               </motion.button>
