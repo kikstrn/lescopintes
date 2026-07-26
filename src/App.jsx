@@ -15,6 +15,10 @@ import {
   Plus,
   Scale,
   Trophy,
+  Clock3,
+  MapPin,
+  Mountain,
+  Route,
 } from "lucide-react";
 
 
@@ -41,6 +45,9 @@ import EventFormModal from "./components/EventFormModal";
 import { useEvents } from "./hooks/useEvents";
 import TennisSection from "./components/TennisSection";
 import { useTennisMatches } from "./hooks/useTennisMatches";
+import CyclingSection from "./components/CyclingSection";
+import BikeRideFormModal from "./components/BikeRideFormModal";
+import { useBikeRides } from "./hooks/useBikeRides";
 
 import { useEffect } from "react";
 import { testSupabaseConnection } from "./lib/testSupabase";
@@ -110,10 +117,55 @@ const implementedPages = [
   "ranking",
   "events",
   "statistics",
+  "bike",
   "tennis",
   "gallery",
   "gages",
 ];
+
+function formatBikeRideDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date(value));
+}
+
+function formatBikeRideTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("fr-FR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function formatBikeRideDuration(minutes) {
+  if (!minutes) {
+    return null;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  if (hours === 0) {
+    return `${remainingMinutes} min`;
+  }
+
+  if (remainingMinutes === 0) {
+    return `${hours} h`;
+  }
+
+  return `${hours} h ${String(
+    remainingMinutes,
+  ).padStart(2, "0")}`;
+}
 
 function App() {
 
@@ -136,6 +188,12 @@ function App() {
   const [eventBeingEdited, setEventBeingEdited] =
     useState(null);
 
+  const [bikeModalOpen, setBikeModalOpen] =
+    useState(false);
+
+  const [bikeRideBeingEdited, setBikeRideBeingEdited] =
+    useState(null);
+
   const {
     events,
     loading: eventsLoading,
@@ -154,6 +212,43 @@ function App() {
     error: tennisError,
     addMatch,
   } = useTennisMatches();
+
+  const {
+    rides: bikeRides,
+    loading: bikeLoading,
+    saving: bikeSaving,
+    error: bikeError,
+    addRide,
+    editRide,
+    removeRide,
+    joinRide,
+    leaveRide,
+  } = useBikeRides();
+
+  const nextPlannedBikeRide = useMemo(() => {
+    const now = Date.now();
+
+    return (
+      bikeRides
+        .filter((ride) => {
+          const rideTime = new Date(
+            ride.rideDate,
+          ).getTime();
+
+          return (
+            ride.status === "planned" &&
+            rideTime >= now
+          );
+        })
+        .sort((rideA, rideB) => {
+          return (
+            new Date(rideA.rideDate).getTime() -
+            new Date(rideB.rideDate).getTime()
+          );
+        })[0] ?? null
+    );
+  }, [bikeRides]);
+
 
   const handleSaveTennisMatch =
     async (matchData) => {
@@ -178,6 +273,78 @@ function App() {
 
     setEventModalOpen(false);
     setEventBeingEdited(null);
+  };
+
+  const openCreateBikeRideModal = () => {
+    setBikeRideBeingEdited(null);
+    setBikeModalOpen(true);
+  };
+
+  const openEditBikeRideModal = (ride) => {
+    setBikeRideBeingEdited(ride);
+    setBikeModalOpen(true);
+  };
+
+  const closeBikeRideModal = () => {
+    if (bikeSaving) {
+      return;
+    }
+
+    setBikeModalOpen(false);
+    setBikeRideBeingEdited(null);
+  };
+
+  const handleBikeRideSubmit = async (rideData) => {
+    if (bikeRideBeingEdited) {
+      await editRide(
+        bikeRideBeingEdited.id,
+        rideData,
+      );
+    } else {
+      if (!user?.id) {
+        throw new Error(
+          "Utilisateur connecté introuvable.",
+        );
+      }
+
+      await addRide({
+        ...rideData,
+        createdBy: user.id,
+      });
+    }
+
+    setBikeModalOpen(false);
+    setBikeRideBeingEdited(null);
+  };
+
+  const handleJoinBikeRide = async (rideId) => {
+    if (!user?.id) {
+      throw new Error(
+        "Utilisateur connecté introuvable.",
+      );
+    }
+
+    await joinRide({
+      rideId,
+      profileId: user.id,
+    });
+  };
+
+  const handleLeaveBikeRide = async (rideId) => {
+    if (!user?.id) {
+      throw new Error(
+        "Utilisateur connecté introuvable.",
+      );
+    }
+
+    await leaveRide({
+      rideId,
+      profileId: user.id,
+    });
+  };
+
+  const handleDeleteBikeRide = async (rideId) => {
+    await removeRide(rideId);
   };
 
   const handleEventSubmit = async (eventData) => {
@@ -435,7 +602,7 @@ function App() {
                       icon={Trophy}
                       label="Matchs joués"
                       value={totalMatches}
-                      detail="+12 % ce mois-ci"
+                      detail="+30 % ce mois-ci"
                       accent="green"
                     />
 
@@ -506,7 +673,186 @@ function App() {
                         </div>
                       </section>
 
-                      <section className="section-block">
+                      <section className="next-bike-ride glass-panel">
+                        <header className="next-bike-ride__header">
+                          <div>
+                            <span className="section-heading__eyebrow">
+                              Cyclisme
+                            </span>
+
+                            <h2>Prochaine sortie vélo</h2>
+                          </div>
+
+                          <button
+                            type="button"
+                            className="text-button"
+                            onClick={() => navigateTo("bike")}
+                          >
+                            Voir les sorties
+                            <ChevronRight size={17} />
+                          </button>
+                        </header>
+
+                        {bikeLoading ? (
+                          <div className="next-bike-ride__state">
+                            <span className="data-status__spinner" />
+
+                            <p>Chargement de la prochaine sortie…</p>
+                          </div>
+                        ) : nextPlannedBikeRide ? (
+                          <motion.article
+                            key={nextPlannedBikeRide.id}
+                            className="next-bike-ride__content"
+                            initial={{
+                              opacity: 0,
+                              y: 12,
+                            }}
+                            animate={{
+                              opacity: 1,
+                              y: 0,
+                            }}
+                          >
+                            <div className="next-bike-ride__icon">
+                              <Bike size={29} />
+                            </div>
+
+                            <div className="next-bike-ride__main">
+                              <span className="next-bike-ride__badge">
+                                Sortie prévue
+                              </span>
+
+                              <h3>{nextPlannedBikeRide.title}</h3>
+
+                              {nextPlannedBikeRide.description && (
+                                <p>
+                                  {nextPlannedBikeRide.description}
+                                </p>
+                              )}
+
+                              <div className="next-bike-ride__meta">
+                                <span>
+                                  <CalendarDays size={16} />
+
+                                  {formatBikeRideDate(
+                                    nextPlannedBikeRide.rideDate,
+                                  )}
+                                </span>
+
+                                <span>
+                                  <Clock3 size={16} />
+
+                                  {formatBikeRideTime(
+                                    nextPlannedBikeRide.rideDate,
+                                  )}
+                                </span>
+
+                                {nextPlannedBikeRide.location && (
+                                  <span>
+                                    <MapPin size={16} />
+
+                                    {nextPlannedBikeRide.location}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="next-bike-ride__metrics">
+                                <div>
+                                  <Route size={17} />
+
+                                  <span>
+                                    <small>Distance</small>
+
+                                    <strong>
+                                      {nextPlannedBikeRide.distanceKm || 0} km
+                                    </strong>
+                                  </span>
+                                </div>
+
+                                <div>
+                                  <Mountain size={17} />
+
+                                  <span>
+                                    <small>Dénivelé</small>
+
+                                    <strong>
+                                      {nextPlannedBikeRide.elevationM || 0} m
+                                    </strong>
+                                  </span>
+                                </div>
+
+                                {nextPlannedBikeRide.durationMinutes && (
+                                  <div>
+                                    <Clock3 size={17} />
+
+                                    <span>
+                                      <small>Durée</small>
+
+                                      <strong>
+                                        {formatBikeRideDuration(
+                                          nextPlannedBikeRide.durationMinutes,
+                                        )}
+                                      </strong>
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="next-bike-ride__side">
+                              <div className="next-bike-ride__participants">
+                                <small>Participants</small>
+
+                                <div>
+                                  {nextPlannedBikeRide.participantProfiles
+                                    .slice(0, 5)
+                                    .map((participant) => (
+                                      <span
+                                        key={participant.id}
+                                        title={participant.nickname}
+                                      >
+                                        {participant.initials}
+                                      </span>
+                                    ))}
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                className="primary-button"
+                                onClick={() => navigateTo("bike")}
+                              >
+                                Voir la sortie
+                              </button>
+                            </div>
+                          </motion.article>
+                        ) : (
+                          <div className="next-bike-ride__empty">
+                            <span>
+                              <Bike size={29} />
+                            </span>
+
+                            <div>
+                              <strong>Aucune sortie prévue</strong>
+
+                              <p>
+                                Ajoute une sortie avec le statut « Prévue » pour
+                                l’afficher ici.
+                              </p>
+                            </div>
+
+                            <button
+                              type="button"
+                              className="primary-button"
+                              onClick={openCreateBikeRideModal}
+                            >
+                              <Plus size={17} />
+                              Planifier une sortie
+                            </button>
+                          </div>
+                        )}
+                      </section>
+
+                                            <section className="section-block">
                         <div className="section-heading">
                           <div>
                             <span className="section-heading__eyebrow">
@@ -532,31 +878,6 @@ function App() {
                         </div>
 
                         <ActivityChart data={activityData} />
-                      </section>
-
-                      <section className="section-block">
-                        <div className="section-heading">
-                          <div>
-                            <span className="section-heading__eyebrow">
-                              Cyclisme
-                            </span>
-
-                            <h2>
-                              Prochaine sortie vélo
-                            </h2>
-                          </div>
-
-                          <button
-                            type="button"
-                            className="primary-button primary-button--compact"
-                            onClick={() => navigateTo("bike")}
-                          >
-                            Voir le parcours
-                            <ChevronRight size={17} />
-                          </button>
-                        </div>
-
-                        <BikeMap />
                       </section>
                     </div>
 
@@ -599,6 +920,23 @@ function App() {
                   onAddMatch={() =>
                     setScoreModalOpen(true)
                   }
+                />
+              )}
+
+              {activePage === "bike" && (
+                <CyclingSection
+                  rides={bikeRides}
+                  members={members}
+                  loading={bikeLoading}
+                  saving={bikeSaving}
+                  error={bikeError}
+                  currentProfile={profile}
+                  isAdmin={isAdmin}
+                  onCreate={openCreateBikeRideModal}
+                  onEdit={openEditBikeRideModal}
+                  onDelete={handleDeleteBikeRide}
+                  onJoin={handleJoinBikeRide}
+                  onLeave={handleLeaveBikeRide}
                 />
               )}
 
@@ -651,6 +989,16 @@ function App() {
         saving={eventsSaving}
         onClose={closeEventModal}
         onSubmit={handleEventSubmit}
+      />
+
+      <BikeRideFormModal
+        open={bikeModalOpen}
+        ride={bikeRideBeingEdited}
+        members={members}
+        currentProfileId={user?.id}
+        saving={bikeSaving}
+        onClose={closeBikeRideModal}
+        onSubmit={handleBikeRideSubmit}
       />
     </div>
   );
