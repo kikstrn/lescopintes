@@ -20,6 +20,7 @@ import {
   MapPin,
   Mountain,
   Route,
+  LogOut,
 } from "lucide-react";
 
 
@@ -120,6 +121,11 @@ const navigation = [
     label: "Membres",
     icon: CircleUserRound,
   },
+  {
+    id: "logout",
+    label: "Déconnexion",
+    icon: LogOut,
+  },
 ];
 
 const implementedPages = [
@@ -218,6 +224,9 @@ function App() {
     useState(false);
 
   const [changePasswordModalOpen, setChangePasswordModalOpen] =
+    useState(false);
+
+  const [mobileSidebarOpen, setMobileSidebarOpen] =
     useState(false);
 
   const {
@@ -734,6 +743,10 @@ function App() {
         onNavigate={navigateTo}
         onLogout={logout}
         profile={profile}
+        isOpen={mobileSidebarOpen}
+        onClose={() =>
+          setMobileSidebarOpen(false)
+        }
       />
 
       <div className="app-content">
@@ -1250,8 +1263,12 @@ function App() {
         items={navigation}
         activePage={activePage}
         onNavigate={navigateTo}
+        onLogout={logout}
+        profile={profile}
         menuOpen={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
+        onClose={() =>
+          setMobileMenuOpen(false)
+        }
       />
 
       <ScoreModal
