@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { supabase } from "./lib/supabase";
 import {
   Bell,
   Bike,
@@ -38,7 +39,6 @@ import GagesSection from "./components/GagesSection";
 import RankingSection from "./components/RankingSection";
 import StatisticsSection from "./components/StatisticsSection";
 
-import { useProfiles } from "./hooks/useProfiles";
 import EventsSection from "./components/EventsSection";
 import EventFormModal from "./components/EventFormModal";
 import { useEvents } from "./hooks/useEvents";
@@ -50,6 +50,12 @@ import { useBikeRides } from "./hooks/useBikeRides";
 import GallerySection from "./components/gallery/GallerySection";
 import GalleryViewer from "./components/gallery/GalleryViewer";
 import UploadPhotosModal from "./components/gallery/UploadPhotosModal";
+import ProfileSection from "./components/profile/ProfileSection";
+import EditProfileModal from "./components/profile/EditProfileModal";
+import ChangePasswordModal from "./components/profile/ChangePasswordModal";
+
+import { useProfile } from "./hooks/useProfile";
+import { useProfiles } from "./hooks/useProfiles";
 
 import { useGallery } from "./hooks/useGallery";
 
@@ -125,6 +131,7 @@ const implementedPages = [
   "tennis",
   "gallery",
   "gages",
+  "profile",
 ];
 
 function formatBikeRideDate(value) {
@@ -207,6 +214,12 @@ function App() {
   const [galleryViewerIndex, setGalleryViewerIndex] =
     useState(0);
 
+  const [editProfileModalOpen, setEditProfileModalOpen] =
+    useState(false);
+
+  const [changePasswordModalOpen, setChangePasswordModalOpen] =
+    useState(false);
+
   const {
     events,
     loading: eventsLoading,
@@ -253,6 +266,95 @@ function App() {
     editComment,
     removeComment,
   } = useGallery(user?.id);
+
+  const {
+    profile: personalProfile,
+    statistics: profileStatistics,
+    loading: profileLoading,
+    saving: profileSaving,
+    uploadingAvatar,
+    changingPassword,
+    error: profileError,
+    refreshProfile,
+    refreshStatistics,
+    saveProfile,
+    saveAvatar,
+    removeAvatar,
+    savePassword,
+  } = useProfile(user?.id);
+
+  const galleryComments = useMemo(() => {
+    return galleryPhotos.flatMap((photo) =>
+      (photo.comments ?? []).map((comment) => ({
+        ...comment,
+        photoId: photo.id,
+        photoCaption: photo.caption,
+        photoSignedUrl: photo.signedUrl,
+      })),
+    );
+  }, [galleryPhotos]);
+
+  const openEditProfileModal = () => {
+    setEditProfileModalOpen(true);
+  };
+
+  const closeEditProfileModal = () => {
+    if (profileSaving) {
+      return;
+    }
+
+    setEditProfileModalOpen(false);
+  };
+
+  const openChangePasswordModal = () => {
+    setChangePasswordModalOpen(true);
+  };
+
+  const closeChangePasswordModal = () => {
+    if (changingPassword) {
+      return;
+    }
+
+    setChangePasswordModalOpen(false);
+  };
+
+  const handleProfileSubmit = async (profileData) => {
+    await saveProfile(profileData);
+
+    setEditProfileModalOpen(false);
+
+    /*
+     * Si ton useAuth possède une fonction de rafraîchissement
+     * du profil global, appelle-la ici également.
+     */
+    await refreshProfile({
+      showLoading: false,
+    });
+  };
+
+  const handleAvatarUpload = async (file) => {
+    await saveAvatar(file);
+
+    await refreshProfile({
+      showLoading: false,
+    });
+  };
+
+  const handleAvatarDelete = async () => {
+    await removeAvatar();
+
+    await refreshProfile({
+      showLoading: false,
+    });
+  };
+
+  const handlePasswordSubmit = async (newPassword) => {
+    await savePassword(newPassword);
+  };
+
+  const handleProfileLogout = async () => {
+    await signOut();
+  };
 
   const handleGalleryCommentAdd = async ({
     photoId,
@@ -671,7 +773,7 @@ function App() {
               type="button"
               className="profile-button"
               aria-label="Ouvrir le profil de Kiks"
-              onClick={() => navigateTo("members")}
+              onClick={() => navigateTo("profile")}
             >
               <span className="profile-button__avatar">
                 {connectedInitials}
@@ -1108,6 +1210,31 @@ function App() {
                 />
               )}
 
+              {activePage === "profile" && (
+                <ProfileSection
+                  profile={personalProfile}
+                  statistics={profileStatistics}
+                  tennisMatches={tennisMatches}
+                  bikeRides={bikeRides}
+                  galleryPhotos={galleryPhotos}
+                  galleryComments={galleryComments}
+                  loading={profileLoading}
+                  activityLoading={
+                    tennisLoading ||
+                    bikeLoading ||
+                    galleryLoading
+                  }
+                  saving={profileSaving}
+                  uploadingAvatar={uploadingAvatar}
+                  error={profileError}
+                  onEditProfile={openEditProfileModal}
+                  onChangePassword={openChangePasswordModal}
+                  onUploadAvatar={handleAvatarUpload}
+                  onDeleteAvatar={handleAvatarDelete}
+                  onNavigate={navigateTo}
+                />
+              )}
+
               {activePage === "gages" && (
                 <GagesSection members={members} />
               )}
@@ -1188,6 +1315,21 @@ function App() {
         onAddComment={handleGalleryCommentAdd}
         onEditComment={handleGalleryCommentEdit}
         onDeleteComment={handleGalleryCommentDelete}
+      />
+
+      <EditProfileModal
+        open={editProfileModalOpen}
+        profile={personalProfile}
+        saving={profileSaving}
+        onClose={closeEditProfileModal}
+        onSubmit={handleProfileSubmit}
+      />
+
+      <ChangePasswordModal
+        open={changePasswordModalOpen}
+        changingPassword={changingPassword}
+        onClose={closeChangePasswordModal}
+        onSubmit={handlePasswordSubmit}
       />
     </div>
   );

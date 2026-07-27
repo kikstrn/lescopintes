@@ -171,17 +171,6 @@ export async function getGalleryAlbums() {
         error: sessionError,
     } = await supabase.auth.getSession();
 
-    console.log(
-        "Session galerie :",
-        sessionData?.session,
-        sessionError,
-    );
-
-    console.log(
-        "Supabase URL galerie :",
-        import.meta.env.VITE_SUPABASE_URL,
-    );
-
     const { data, error } = await supabase
         .from("gallery_albums")
         .select(`
@@ -197,11 +186,6 @@ export async function getGalleryAlbums() {
         .order("name", {
             ascending: true,
         });
-
-    console.log("Albums Supabase :", {
-        data,
-        error,
-    });
 
     if (error) {
         throw error;
