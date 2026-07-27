@@ -54,6 +54,10 @@ import UploadPhotosModal from "./components/gallery/UploadPhotosModal";
 import ProfileSection from "./components/profile/ProfileSection";
 import EditProfileModal from "./components/profile/EditProfileModal";
 import ChangePasswordModal from "./components/profile/ChangePasswordModal";
+import MembersSection from "./components/members/MembersSection";
+import MemberProfileModal from "./components/members/MemberProfileModal";
+
+import { getProfileStatistics } from "./services/profileService";
 
 import { useProfile } from "./hooks/useProfile";
 import { useProfiles } from "./hooks/useProfiles";
@@ -138,6 +142,7 @@ const implementedPages = [
   "gallery",
   "gages",
   "profile",
+  "members",
 ];
 
 function formatBikeRideDate(value) {
@@ -229,6 +234,31 @@ function App() {
   const [mobileSidebarOpen, setMobileSidebarOpen] =
     useState(false);
 
+  const [
+    selectedMember,
+    setSelectedMember,
+  ] = useState(null);
+
+  const [
+    memberModalOpen,
+    setMemberModalOpen,
+  ] = useState(false);
+
+  const [
+    selectedMemberStatistics,
+    setSelectedMemberStatistics,
+  ] = useState(null);
+
+  const [
+    memberStatisticsLoading,
+    setMemberStatisticsLoading,
+  ] = useState(false);
+
+  const [
+    memberStatisticsError,
+    setMemberStatisticsError,
+  ] = useState(null);
+
   const {
     events,
     loading: eventsLoading,
@@ -291,6 +321,49 @@ function App() {
     removeAvatar,
     savePassword,
   } = useProfile(user?.id);
+
+  const openMemberProfile = async (member) => {
+    if (!member?.id) {
+      return;
+    }
+
+    setSelectedMember(member);
+    setSelectedMemberStatistics(null);
+    setMemberStatisticsError(null);
+    setMemberModalOpen(true);
+    setMemberStatisticsLoading(true);
+
+    try {
+      const statistics =
+        await getProfileStatistics(member.id);
+
+      setSelectedMemberStatistics(
+        statistics,
+      );
+    } catch (error) {
+      console.error(
+        "Impossible de charger les statistiques du membre :",
+        error,
+      );
+
+      setMemberStatisticsError(
+        error?.message ??
+        "Impossible de charger les statistiques.",
+      );
+    } finally {
+      setMemberStatisticsLoading(false);
+    }
+  };
+
+  const closeMemberProfile = () => {
+    setMemberModalOpen(false);
+    setMemberStatisticsError(null);
+
+    window.setTimeout(() => {
+      setSelectedMember(null);
+      setSelectedMemberStatistics(null);
+    }, 220);
+  };
 
   const galleryComments = useMemo(() => {
     return galleryPhotos.flatMap((photo) =>
@@ -1252,6 +1325,16 @@ function App() {
                 <GagesSection members={members} />
               )}
 
+              {activePage === "members" && (
+                <MembersSection
+                  members={members}
+                  loading={profilesLoading}
+                  error={profilesError}
+                  currentProfileId={user?.id}
+                  onOpenMember={openMemberProfile}
+                />
+              )}
+
               {!implementedPages.includes(activePage) &&
                 renderPlaceholderPage()}
             </motion.div>
@@ -1299,6 +1382,15 @@ function App() {
         saving={bikeSaving}
         onClose={closeBikeRideModal}
         onSubmit={handleBikeRideSubmit}
+      />
+
+      <MemberProfileModal
+        open={memberModalOpen}
+        member={selectedMember}
+        statistics={selectedMemberStatistics}
+        loading={memberStatisticsLoading}
+        error={memberStatisticsError}
+        onClose={closeMemberProfile}
       />
 
       <UploadPhotosModal
