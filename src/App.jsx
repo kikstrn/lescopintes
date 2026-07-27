@@ -34,7 +34,6 @@ import ActivityFeed from "./components/ActivityFeed";
 import WeeklyChallenge from "./components/WeeklyChallenge";
 import ScoreModal from "./components/ScoreModal";
 
-import GallerySection from "./components/GallerySection";
 import GagesSection from "./components/GagesSection";
 import RankingSection from "./components/RankingSection";
 import StatisticsSection from "./components/StatisticsSection";
@@ -48,6 +47,11 @@ import { useTennisMatches } from "./hooks/useTennisMatches";
 import CyclingSection from "./components/CyclingSection";
 import BikeRideFormModal from "./components/BikeRideFormModal";
 import { useBikeRides } from "./hooks/useBikeRides";
+import GallerySection from "./components/gallery/GallerySection";
+import GalleryViewer from "./components/gallery/GalleryViewer";
+import UploadPhotosModal from "./components/gallery/UploadPhotosModal";
+
+import { useGallery } from "./hooks/useGallery";
 
 import { useEffect } from "react";
 import { testSupabaseConnection } from "./lib/testSupabase";
@@ -194,6 +198,15 @@ function App() {
   const [bikeRideBeingEdited, setBikeRideBeingEdited] =
     useState(null);
 
+  const [galleryUploadOpen, setGalleryUploadOpen] =
+    useState(false);
+
+  const [galleryViewerOpen, setGalleryViewerOpen] =
+    useState(false);
+
+  const [galleryViewerIndex, setGalleryViewerIndex] =
+    useState(0);
+
   const {
     events,
     loading: eventsLoading,
@@ -225,6 +238,80 @@ function App() {
     leaveRide,
   } = useBikeRides();
 
+  const {
+    albums: galleryAlbums,
+    photos: galleryPhotos,
+    loading: galleryLoading,
+    saving: gallerySaving,
+    uploading: galleryUploading,
+    uploadProgress: galleryUploadProgress,
+    error: galleryError,
+    uploadPhotos,
+    removePhoto,
+    toggleLike,
+    addComment,
+    editComment,
+    removeComment,
+  } = useGallery(user?.id);
+
+  const handleGalleryCommentAdd = async ({
+    photoId,
+    content,
+  }) => {
+    if (!user?.id) {
+      throw new Error(
+        "Utilisateur connecté introuvable.",
+      );
+    }
+
+    return addComment({
+      photoId,
+      profileId: user.id,
+      content,
+    });
+  };
+
+  const handleGalleryCommentEdit = async ({
+    photoId,
+    commentId,
+    content,
+  }) => {
+    return editComment({
+      photoId,
+      commentId,
+      content,
+    });
+  };
+
+  const handleGalleryCommentDelete = async ({
+    photoId,
+    commentId,
+  }) => {
+    return removeComment({
+      photoId,
+      commentId,
+    });
+  };
+
+  const showPreviousGalleryPhoto = () => {
+    setGalleryViewerIndex(
+      (currentIndex) =>
+        currentIndex <= 0
+          ? galleryPhotos.length - 1
+          : currentIndex - 1,
+    );
+  };
+
+  const showNextGalleryPhoto = () => {
+    setGalleryViewerIndex(
+      (currentIndex) =>
+        currentIndex >=
+          galleryPhotos.length - 1
+          ? 0
+          : currentIndex + 1,
+    );
+  };
+
   const nextPlannedBikeRide = useMemo(() => {
     const now = Date.now();
 
@@ -248,6 +335,58 @@ function App() {
         })[0] ?? null
     );
   }, [bikeRides]);
+
+  const openGalleryUploadModal = () => {
+    setGalleryUploadOpen(true);
+  };
+
+  const closeGalleryUploadModal = () => {
+    if (galleryUploading) {
+      return;
+    }
+
+    setGalleryUploadOpen(false);
+  };
+
+  const handleGalleryUpload = async (uploadData) => {
+    await uploadPhotos(uploadData);
+    setGalleryUploadOpen(false);
+  };
+
+  const openGalleryPhoto = (photo) => {
+    const photoIndex = galleryPhotos.findIndex(
+      (galleryPhoto) => galleryPhoto.id === photo.id,
+    );
+
+    if (photoIndex < 0) {
+      return;
+    }
+
+    setGalleryViewerIndex(photoIndex);
+    setGalleryViewerOpen(true);
+  };
+
+  const closeGalleryViewer = () => {
+    setGalleryViewerOpen(false);
+  };
+
+  const handleGalleryLike = async ({
+    photoId,
+    profileId,
+  }) => {
+    await toggleLike({
+      photoId,
+      profileId,
+    });
+  };
+
+  const handleGalleryPhotoDelete = async (photo) => {
+    await removePhoto(photo);
+
+    if (galleryViewerOpen) {
+      setGalleryViewerOpen(false);
+    }
+  };
 
 
   const handleSaveTennisMatch =
@@ -852,7 +991,7 @@ function App() {
                         )}
                       </section>
 
-                                            <section className="section-block">
+                      <section className="section-block">
                         <div className="section-heading">
                           <div>
                             <span className="section-heading__eyebrow">
@@ -949,7 +1088,24 @@ function App() {
               )}
 
               {activePage === "gallery" && (
-                <GallerySection />
+                <GallerySection
+                  albums={galleryAlbums}
+                  photos={galleryPhotos}
+                  loading={galleryLoading}
+                  error={galleryError}
+                  currentProfile={
+                    profile ?? {
+                      id: user?.id,
+                      nickname: "Membre",
+                      initials: "CP",
+                    }
+                  }
+                  isAdmin={isAdmin}
+                  onOpenUpload={openGalleryUploadModal}
+                  onOpenPhoto={openGalleryPhoto}
+                  onLikePhoto={handleGalleryLike}
+                  onDeletePhoto={handleGalleryPhotoDelete}
+                />
               )}
 
               {activePage === "gages" && (
@@ -999,6 +1155,39 @@ function App() {
         saving={bikeSaving}
         onClose={closeBikeRideModal}
         onSubmit={handleBikeRideSubmit}
+      />
+
+      <UploadPhotosModal
+        open={galleryUploadOpen}
+        albums={galleryAlbums}
+        members={members}
+        currentProfileId={user?.id}
+        uploading={galleryUploading}
+        uploadProgress={galleryUploadProgress}
+        onClose={closeGalleryUploadModal}
+        onUpload={handleGalleryUpload}
+      />
+
+      <GalleryViewer
+        photos={galleryPhotos}
+        currentIndex={galleryViewerIndex}
+        isOpen={galleryViewerOpen}
+        currentProfile={
+          profile ?? {
+            id: user?.id,
+            nickname: "Membre",
+            initials: "CP",
+          }
+        }
+        isAdmin={isAdmin}
+        saving={gallerySaving}
+        onClose={closeGalleryViewer}
+        onPrevious={showPreviousGalleryPhoto}
+        onNext={showNextGalleryPhoto}
+        onLike={handleGalleryLike}
+        onAddComment={handleGalleryCommentAdd}
+        onEditComment={handleGalleryCommentEdit}
+        onDeleteComment={handleGalleryCommentDelete}
       />
     </div>
   );
