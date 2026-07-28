@@ -33,7 +33,7 @@ import Podium from "./components/Podium";
 import ActivityChart from "./components/ActivityChart";
 import BikeMap from "./components/BikeMap";
 import ActivityFeed from "./components/ActivityFeed";
-import WeeklyChallenge from "./components/WeeklyChallenge";
+// import WeeklyChallenge from "./components/WeeklyChallenge";
 import ScoreModal from "./components/ScoreModal";
 import RankingSection from "./components/RankingSection";
 import StatisticsSection from "./components/StatisticsSection";
@@ -68,11 +68,6 @@ import { useGallery } from "./hooks/useGallery";
 import { useEffect } from "react";
 import { testSupabaseConnection } from "./lib/testSupabase";
 import { useAuth } from "./context/AuthContext";
-import {
-  activityData,
-  recentActivities,
-  weeklyChallenge,
-} from "./data/demoData";
 
 const navigation = [
   {
@@ -188,6 +183,151 @@ function formatBikeRideDuration(minutes) {
   return `${hours} h ${String(
     remainingMinutes,
   ).padStart(2, "0")}`;
+}
+
+const HOME_MONTH_LABELS = [
+  "Jan",
+  "Fév",
+  "Mars",
+  "Avr",
+  "Mai",
+  "Juin",
+  "Juil",
+  "Août",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Déc",
+];
+
+function getSafeDate(value) {
+  if (!value) {
+    return null;
+  }
+
+  const date = new Date(value);
+
+  return Number.isNaN(date.getTime())
+    ? null
+    : date;
+}
+
+function getItemDate(item) {
+  return (
+    item?.startsAt ??
+    item?.starts_at ??
+    item?.rideDate ??
+    item?.ride_date ??
+    item?.playedAt ??
+    item?.played_at ??
+    item?.matchDate ??
+    item?.match_date ??
+    item?.createdAt ??
+    item?.created_at ??
+    null
+  );
+}
+
+function getBikeDistance(ride) {
+  return Number(
+    ride?.distanceKm ??
+    ride?.distance_km ??
+    ride?.distance ??
+    0,
+  );
+}
+
+function getMemberPoints(member) {
+  return Number(
+    member?.calculatedPoints ??
+    member?.totalPoints ??
+    member?.points ??
+    0,
+  );
+}
+
+function getMemberWins(member) {
+  return Number(
+    member?.tennisWins ??
+    member?.wins ??
+    0,
+  );
+}
+
+function getMemberLosses(member) {
+  return Number(
+    member?.tennisLosses ??
+    member?.losses ??
+    0,
+  );
+}
+
+function getMemberBikeKm(member) {
+  return Number(
+    member?.bikeDistance ??
+    member?.bikeKm ??
+    0,
+  );
+}
+
+function getMemberName(member) {
+  return (
+    member?.nickname ??
+    member?.firstName ??
+    member?.first_name ??
+    "Membre"
+  );
+}
+
+function formatRelativeActivityDate(value) {
+  const date = getSafeDate(value);
+
+  if (!date) {
+    return "Date inconnue";
+  }
+
+  const difference =
+    Date.now() - date.getTime();
+
+  const minutes = Math.floor(
+    difference / 60000,
+  );
+
+  if (minutes < 1) {
+    return "À l’instant";
+  }
+
+  if (minutes < 60) {
+    return `Il y a ${minutes} min`;
+  }
+
+  const hours = Math.floor(
+    minutes / 60,
+  );
+
+  if (hours < 24) {
+    return `Il y a ${hours} h`;
+  }
+
+  const days = Math.floor(
+    hours / 24,
+  );
+
+  if (days === 1) {
+    return "Hier";
+  }
+
+  if (days < 7) {
+    return `Il y a ${days} jours`;
+  }
+
+  return new Intl.DateTimeFormat(
+    "fr-FR",
+    {
+      day: "numeric",
+      month: "short",
+    },
+  ).format(date);
 }
 
 function App() {
@@ -1019,31 +1159,377 @@ function App() {
   const [scoreModalOpen, setScoreModalOpen] = useState(false);
 
   const sortedMembers = useMemo(() => {
-    return [...members].sort((memberA, memberB) => {
-      return memberB.points - memberA.points;
-    });
-  }, [members]);
+    return [...members].sort(
+      (memberA, memberB) => {
+        const pointsDifference =
+          getMemberPoints(memberB) -
+          getMemberPoints(memberA);
 
-  const totalBikeKm = useMemo(() => {
-    return members.reduce((total, member) => {
-      return total + Number(member.bikeKm ?? 0);
-    }, 0);
-  }, [members]);
+        if (pointsDifference !== 0) {
+          return pointsDifference;
+        }
 
-  const totalMatches = useMemo(() => {
-    const totalParticipations = members.reduce(
-      (total, member) => {
         return (
-          total +
-          Number(member.wins ?? 0) +
-          Number(member.losses ?? 0)
+          getMemberWins(memberB) -
+          getMemberWins(memberA)
         );
       },
+    );
+  }, [members]);
+
+  const completedTennisMatches =
+    useMemo(() => {
+      return tennisMatches.filter(
+        (match) =>
+          match.status === "completed" ||
+          match.status === "finished" ||
+          match.winnerTeam != null ||
+          match.winner_team != null,
+      );
+    }, [tennisMatches]);
+
+  const totalMatches =
+    completedTennisMatches.length;
+
+  const totalBikeKm = useMemo(() => {
+    if (bikeRides.length > 0) {
+      return bikeRides.reduce(
+        (total, ride) =>
+          total + getBikeDistance(ride),
+        0,
+      );
+    }
+
+    return members.reduce(
+      (total, member) =>
+        total +
+        getMemberBikeKm(member),
       0,
     );
+  }, [
+    bikeRides,
+    members,
+  ]);
 
-    return Math.round(totalParticipations / 2);
-  }, [members]);
+  const upcomingEvents = useMemo(() => {
+    const now = Date.now();
+
+    return events
+      .filter((event) => {
+        const date = getSafeDate(
+          event.startsAt ??
+          event.starts_at,
+        );
+
+        return (
+          date &&
+          date.getTime() >= now &&
+          event.status !== "cancelled"
+        );
+      })
+      .sort((eventA, eventB) => {
+        return (
+          getSafeDate(
+            eventA.startsAt ??
+            eventA.starts_at,
+          )?.getTime() -
+          getSafeDate(
+            eventB.startsAt ??
+            eventB.starts_at,
+          )?.getTime()
+        );
+      });
+  }, [events]);
+
+  const connectedRanking = useMemo(() => {
+    if (!user?.id) {
+      return null;
+    }
+
+    const index =
+      sortedMembers.findIndex(
+        (member) =>
+          String(member.id) ===
+          String(user.id),
+      );
+
+    return index >= 0
+      ? index + 1
+      : null;
+  }, [
+    sortedMembers,
+    user?.id,
+  ]);
+
+  const connectedMember = useMemo(() => {
+    return (
+      members.find(
+        (member) =>
+          String(member.id) ===
+          String(user?.id),
+      ) ??
+      profile ??
+      null
+    );
+  }, [
+    members,
+    profile,
+    user?.id,
+  ]);
+
+  const connectedPoints =
+    getMemberPoints(connectedMember);
+
+  const leader =
+    sortedMembers[0] ?? null;
+
+  const homeActivityData = useMemo(() => {
+    const now = new Date();
+
+    const months = Array.from(
+      { length: 6 },
+      (_, index) => {
+        const date = new Date(
+          now.getFullYear(),
+          now.getMonth() -
+          (5 - index),
+          1,
+        );
+
+        return {
+          year: date.getFullYear(),
+          monthIndex: date.getMonth(),
+          month:
+            HOME_MONTH_LABELS[
+            date.getMonth()
+            ],
+          tennis: 0,
+          velo: 0,
+        };
+      },
+    );
+
+    completedTennisMatches.forEach(
+      (match) => {
+        const date = getSafeDate(
+          getItemDate(match),
+        );
+
+        if (!date) {
+          return;
+        }
+
+        const target = months.find(
+          (month) =>
+            month.year ===
+            date.getFullYear() &&
+            month.monthIndex ===
+            date.getMonth(),
+        );
+
+        if (target) {
+          target.tennis += 1;
+        }
+      },
+    );
+
+    bikeRides.forEach((ride) => {
+      const date = getSafeDate(
+        getItemDate(ride),
+      );
+
+      if (!date) {
+        return;
+      }
+
+      const target = months.find(
+        (month) =>
+          month.year ===
+          date.getFullYear() &&
+          month.monthIndex ===
+          date.getMonth(),
+      );
+
+      if (target) {
+        target.velo +=
+          getBikeDistance(ride);
+      }
+    });
+
+    return months.map((month) => ({
+      month: month.month,
+      tennis: month.tennis,
+      velo:
+        Math.round(
+          month.velo * 10,
+        ) / 10,
+    }));
+  }, [
+    completedTennisMatches,
+    bikeRides,
+  ]);
+
+  const homeChartSummary = useMemo(() => {
+    const totalTennis =
+      homeActivityData.reduce(
+        (total, month) =>
+          total + month.tennis,
+        0,
+      );
+
+    const totalBike =
+      homeActivityData.reduce(
+        (total, month) =>
+          total + month.velo,
+        0,
+      );
+
+    return {
+      title: `${totalTennis} match${totalTennis > 1 ? "s" : ""
+        } · ${Math.round(
+          totalBike,
+        ).toLocaleString("fr-FR")} km`,
+
+      description:
+        "Activité enregistrée pendant les six derniers mois.",
+    };
+  }, [homeActivityData]);
+
+  const homeRecentActivities =
+    useMemo(() => {
+      const matchActivities =
+        tennisMatches.map((match) => ({
+          id: `tennis-${match.id}`,
+          icon: "tennis",
+          title:
+            match.title ??
+            "Match de tennis enregistré",
+          description:
+            match.scoreSummary ??
+            match.score_summary ??
+            match.result ??
+            "Un nouveau résultat a été ajouté.",
+          date: getItemDate(match),
+          page: "tennis",
+        }));
+
+      const bikeActivities =
+        bikeRides.map((ride) => ({
+          id: `bike-${ride.id}`,
+          icon: "bike",
+          title:
+            ride.title ??
+            "Sortie vélo",
+          description: `${getBikeDistance(
+            ride,
+          ).toLocaleString(
+            "fr-FR",
+            {
+              maximumFractionDigits: 1,
+            },
+          )} km${ride.location
+              ? ` · ${ride.location}`
+              : ""
+            }`,
+          date: getItemDate(ride),
+          page: "bike",
+        }));
+
+      const eventActivities =
+        events.map((event) => ({
+          id: `event-${event.id}`,
+          icon: "party",
+          title:
+            event.title ??
+            "Nouvel événement",
+          description:
+            event.description ??
+            "Un événement a été ajouté.",
+          date: getItemDate(event),
+          page: "events",
+        }));
+
+      const gageActivities =
+        gages.map((gage) => ({
+          id: `gage-${gage.id}`,
+          icon: "gage",
+          title:
+            gage.title ??
+            "Nouveau gage",
+          description:
+            gage.status === "validated"
+              ? "Le gage a été validé."
+              : gage.status ===
+                "completed"
+                ? "Le gage a été réalisé."
+                : "Un gage a été attribué.",
+          date: getItemDate(gage),
+          page: "gages",
+        }));
+
+      const tribunalActivities =
+        tribunalCases.map(
+          (tribunalCase) => ({
+            id: `tribunal-${tribunalCase.id}`,
+            icon: "tribunal",
+            title:
+              tribunalCase.title ??
+              "Nouvelle affaire",
+            description:
+              tribunalCase.status ===
+                "judged"
+                ? "Le verdict a été rendu."
+                : tribunalCase.status ===
+                  "voting"
+                  ? "Le vote est ouvert."
+                  : "Une affaire a été créée.",
+            date:
+              getItemDate(
+                tribunalCase,
+              ),
+            page: "tribunal",
+          }),
+        );
+
+      return [
+        ...matchActivities,
+        ...bikeActivities,
+        ...eventActivities,
+        ...gageActivities,
+        ...tribunalActivities,
+      ]
+        .filter((activity) =>
+          Boolean(
+            getSafeDate(
+              activity.date,
+            ),
+          ),
+        )
+        .sort((activityA, activityB) => {
+          return (
+            getSafeDate(
+              activityB.date,
+            ).getTime() -
+            getSafeDate(
+              activityA.date,
+            ).getTime()
+          );
+        })
+        .slice(0, 6)
+        .map((activity) => ({
+          ...activity,
+          time:
+            formatRelativeActivityDate(
+              activity.date,
+            ),
+        }));
+    }, [
+      tennisMatches,
+      bikeRides,
+      events,
+      gages,
+      tribunalCases,
+    ]);
 
   const currentNavigationItem = navigation.find((item) => {
     return item.id === activePage;
@@ -1253,8 +1739,23 @@ function App() {
               {activePage === "home" && (
                 <>
                   <HeroBanner
+                    nickname={connectedNickname}
+                    memberCount={members.length}
+                    eventCount={events.length}
+                    matchCount={totalMatches}
+                    leaderName={
+                      leader
+                        ? getMemberName(leader)
+                        : null
+                    }
+                    currentChallenge={null}
                     onCreateEvent={openCreateEventModal}
-                    onAddScore={() => setScoreModalOpen(true)}
+                    onAddScore={() =>
+                      setScoreModalOpen(true)
+                    }
+                    onOpenMembers={() =>
+                      navigateTo("members")
+                    }
                   />
 
                   <section className="stats-grid">
@@ -1262,31 +1763,53 @@ function App() {
                       icon={Trophy}
                       label="Matchs joués"
                       value={totalMatches}
-                      detail="+30 % ce mois-ci"
+                      detail={`${getMemberWins(
+                        connectedMember,
+                      )} victoire${getMemberWins(
+                        connectedMember,
+                      ) > 1
+                          ? "s"
+                          : ""
+                        } pour toi`}
                       accent="green"
                     />
 
                     <StatCard
                       icon={Bike}
                       label="Kilomètres vélo"
-                      value={totalBikeKm.toLocaleString("fr-FR")}
-                      detail="+486 km ce mois-ci"
+                      value={Math.round(
+                        totalBikeKm,
+                      ).toLocaleString("fr-FR")}
+                      detail={`${bikeRides.length} sortie${bikeRides.length > 1
+                          ? "s"
+                          : ""
+                        } enregistrée${bikeRides.length > 1
+                          ? "s"
+                          : ""
+                        }`}
                       accent="blue"
                     />
 
                     <StatCard
                       icon={CalendarDays}
                       label="Événements"
-                      value="26"
-                      detail="4 événements à venir"
+                      value={events.length}
+                      detail={`${upcomingEvents.length} à venir`}
                       accent="amber"
                     />
 
                     <StatCard
-                      icon={Trophy}
-                      label="Points de Kiks"
-                      value="248"
-                      detail="1er du classement"
+                      icon={Medal}
+                      label={`Points de ${connectedNickname}`}
+                      value={connectedPoints}
+                      detail={
+                        connectedRanking
+                          ? `${connectedRanking}${connectedRanking === 1
+                            ? "er"
+                            : "e"
+                          } sur ${members.length}`
+                          : "Non classé"
+                      }
                       accent="purple"
                     />
                   </section>
@@ -1316,12 +1839,7 @@ function App() {
                         </div>
 
                         <div className="events-grid">
-                          {events
-                            .filter(
-                              (event) =>
-                                new Date(event.startsAt).getTime() >=
-                                Date.now(),
-                            )
+                          {upcomingEvents
                             .slice(0, 3)
                             .map((event, index) => (
                               <EventCard
@@ -1330,6 +1848,22 @@ function App() {
                                 index={index}
                               />
                             ))}
+                          {upcomingEvents.length === 0 && (
+                            <div className="home-empty-state glass-panel">
+                              <CalendarDays size={24} />
+
+                              <div>
+                                <strong>
+                                  Aucun événement à venir
+                                </strong>
+
+                                <p>
+                                  Crée un événement pour
+                                  l’afficher sur l’accueil.
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </section>
 
@@ -1537,19 +2071,50 @@ function App() {
                           </div>
                         </div>
 
-                        <ActivityChart data={activityData} />
+                        <ActivityChart
+                          data={homeActivityData}
+                          summary={homeChartSummary}
+                        />
                       </section>
                     </div>
 
                     <aside className="dashboard-column dashboard-column--side">
                       <Podium members={sortedMembers} />
 
-                      <WeeklyChallenge
+                      {/* <WeeklyChallenge
                         challenge={weeklyChallenge}
-                      />
+                      /> */}
+                      <section className="weekly-challenge weekly-challenge--empty glass-panel">
+                        <div className="weekly-challenge__header">
+                          <div className="weekly-challenge__icon">
+                            <Dices size={22} />
+                          </div>
+
+                          <div className="weekly-challenge__title-group">
+                            <span className="section-heading__eyebrow">
+                              Défi de la semaine
+                            </span>
+
+                            <h2>
+                              Aucun challenge actif
+                            </h2>
+                          </div>
+                        </div>
+
+                        <p className="weekly-challenge__description">
+                          Les challenges hebdomadaires
+                          seront bientôt gérés depuis une
+                          page dédiée.
+                        </p>
+                      </section>
 
                       <ActivityFeed
-                        activities={recentActivities}
+                        activities={homeRecentActivities}
+                        onOpenActivity={(activity) =>
+                          navigateTo(
+                            activity.page ?? "home",
+                          )
+                        }
                       />
                     </aside>
                   </section>

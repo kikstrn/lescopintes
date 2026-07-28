@@ -3,7 +3,9 @@ import {
   Bike,
   ChevronRight,
   Clock3,
+  Dices,
   PartyPopper,
+  Scale,
   Trophy,
 } from "lucide-react";
 
@@ -12,9 +14,14 @@ const activityIcons = {
   bike: Bike,
   party: PartyPopper,
   trophy: Trophy,
+  gage: Dices,
+  tribunal: Scale,
 };
 
-function ActivityFeed({ activities }) {
+function ActivityFeed({
+  activities = [],
+  onOpenActivity,
+}) {
   return (
     <motion.section
       className="activity-feed glass-panel"
@@ -34,64 +41,96 @@ function ActivityFeed({ activities }) {
     >
       <div className="activity-feed__header">
         <div>
-          <span className="section-heading__eyebrow">Communauté</span>
-          <h2>Activité récente</h2>
+          <span className="section-heading__eyebrow">
+            Communauté
+          </span>
+
+          <h2>
+            Activité récente
+          </h2>
         </div>
-
-        <button type="button" className="activity-feed__all-button">
-          Tout voir
-          <ChevronRight size={16} />
-        </button>
       </div>
 
-      <div className="activity-feed__list">
-        {activities.map((activity, index) => {
-          const Icon = activityIcons[activity.icon] ?? Trophy;
+      {activities.length === 0 ? (
+        <div className="activity-feed__empty">
+          <Clock3 size={24} />
 
-          return (
-            <motion.article
-              key={activity.id}
-              className="activity-feed__item"
-              initial={{
-                opacity: 0,
-                x: 14,
-              }}
-              animate={{
-                opacity: 1,
-                x: 0,
-              }}
-              transition={{
-                delay: 0.25 + index * 0.06,
-                duration: 0.35,
-              }}
-            >
-              <div
-                className={`activity-feed__icon activity-feed__icon--${activity.icon}`}
-              >
-                <Icon size={18} />
-              </div>
+          <strong>
+            Aucune activité récente
+          </strong>
 
-              <div className="activity-feed__content">
-                <strong>{activity.title}</strong>
-                <p>{activity.description}</p>
+          <p>
+            Les prochaines actions du
+            groupe apparaîtront ici.
+          </p>
+        </div>
+      ) : (
+        <div className="activity-feed__list">
+          {activities.map(
+            (activity, index) => {
+              const Icon =
+                activityIcons[
+                  activity.icon
+                ] ?? Trophy;
 
-                <span className="activity-feed__time">
-                  <Clock3 size={13} />
-                  {activity.time}
-                </span>
-              </div>
+              return (
+                <motion.article
+                  key={activity.id}
+                  className="activity-feed__item"
+                  initial={{
+                    opacity: 0,
+                    x: 14,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    x: 0,
+                  }}
+                  transition={{
+                    delay:
+                      0.25 +
+                      index * 0.06,
+                    duration: 0.35,
+                  }}
+                >
+                  <div
+                    className={`activity-feed__icon activity-feed__icon--${activity.icon}`}
+                  >
+                    <Icon size={18} />
+                  </div>
 
-              <button
-                type="button"
-                className="activity-feed__item-action"
-                aria-label={`Voir ${activity.title}`}
-              >
-                <ChevronRight size={17} />
-              </button>
-            </motion.article>
-          );
-        })}
-      </div>
+                  <div className="activity-feed__content">
+                    <strong>
+                      {activity.title}
+                    </strong>
+
+                    <p>
+                      {activity.description}
+                    </p>
+
+                    <span className="activity-feed__time">
+                      <Clock3 size={13} />
+                      {activity.time}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="activity-feed__item-action"
+                    aria-label={`Voir ${activity.title}`}
+                    onClick={() =>
+                      onOpenActivity?.(
+                        activity,
+                      )
+                    }
+                  >
+                    <ChevronRight size={17} />
+                  </button>
+                </motion.article>
+              );
+            },
+          )}
+        </div>
+      )}
     </motion.section>
   );
 }

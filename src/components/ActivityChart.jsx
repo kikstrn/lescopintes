@@ -41,7 +41,7 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-function ActivityChart({ data }) {
+function ActivityChart({ data = [], summary }) {
   return (
     <motion.div
       className="activity-chart glass-panel"
@@ -58,16 +58,23 @@ function ActivityChart({ data }) {
         ease: [0.22, 1, 0.36, 1],
       }}
     >
-      <div className="activity-chart__summary">
-        <div>
-          <span>Activité globale</span>
-          <strong>+18,4 %</strong>
-        </div>
+<div className="activity-chart__summary">
+  <div>
+    <span>
+      Six derniers mois
+    </span>
 
-        <p>
-          Progression par rapport aux six mois précédents.
-        </p>
-      </div>
+    <strong>
+      {summary?.title ??
+        "Aucune activité"}
+    </strong>
+  </div>
+
+  <p>
+    {summary?.description ??
+      "Les données apparaîtront après les premières activités."}
+  </p>
+</div>
 
       <div className="activity-chart__container">
         <ResponsiveContainer width="100%" height="100%">

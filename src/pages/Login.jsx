@@ -202,7 +202,7 @@ function Login() {
                 <input
                   type="email"
                   value={email}
-                  placeholder="kiks@copintes.fr"
+                  placeholder="email@copintes.fr"
                   autoComplete="email"
                   disabled={submitting}
                   onChange={(event) => {
