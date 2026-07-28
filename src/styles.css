@@ -17522,3 +17522,1233 @@ body:has(.gallery-viewer) {
     width: 100%;
   }
 }
+
+/* =========================================================
+   GAGES — PAGE
+   ========================================================= */
+
+.gages-section {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.gages-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  overflow: hidden;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 25px;
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(194, 139, 255, 0.15),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(30, 35, 44, 0.96),
+      rgba(9, 25, 18, 0.97)
+    );
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.gages-header::after {
+  position: absolute;
+  right: -90px;
+  bottom: -110px;
+  width: 270px;
+  height: 270px;
+  border-radius: 50%;
+  background: rgba(94, 228, 155, 0.08);
+  filter: blur(65px);
+  content: "";
+  pointer-events: none;
+}
+
+.gages-header__content {
+  position: relative;
+  z-index: 1;
+  max-width: 650px;
+}
+
+.gages-header__content h1 {
+  margin: 7px 0 0;
+  color: #f6fff9;
+  font-size: clamp(1.8rem, 4vw, 3.1rem);
+  font-weight: 850;
+  letter-spacing: -0.045em;
+}
+
+.gages-header__content p {
+  max-width: 610px;
+  margin: 11px 0 0;
+  color: rgba(220, 235, 225, 0.58);
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
+
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(194, 139, 255, 0.16);
+  border-radius: 999px;
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.08);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gages-header__stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.gages-header__stats > div {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 17px;
+  color: #c88fff;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.gages-header__stats > div:nth-child(2) {
+  color: #f4bd5c;
+}
+
+.gages-header__stats > div:nth-child(3) {
+  color: #69e7a4;
+}
+
+.gages-header__stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gages-header__stats strong {
+  color: #f6fff9;
+  font-size: 1.2rem;
+}
+
+.gages-header__stats small {
+  color: rgba(220, 235, 225, 0.48);
+  font-size: 0.61rem;
+}
+
+/* =========================================================
+   GAGES — OUTILS
+   ========================================================= */
+
+.gages-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.gages-search {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 420px;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: rgba(220, 235, 225, 0.48);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.gages-search:focus-within {
+  border-color: rgba(194, 139, 255, 0.42);
+  background: rgba(194, 139, 255, 0.04);
+  box-shadow: 0 0 0 4px rgba(194, 139, 255, 0.06);
+}
+
+.gages-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #f5fff8;
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.gages-search input::placeholder {
+  color: rgba(220, 235, 225, 0.38);
+}
+
+.gages-filters {
+  display: flex;
+  gap: 7px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.gages-filter {
+  min-height: 39px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 10px;
+  color: rgba(220, 235, 225, 0.52);
+  background: transparent;
+  font: inherit;
+  font-size: 0.67rem;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.gages-filter:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.gages-filter--active {
+  color: #130b19;
+  background: #c88fff;
+}
+
+/* =========================================================
+   GAGES — GRILLE ET CARTES
+   ========================================================= */
+
+.gages-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.gage-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 21px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(24, 38, 31, 0.94),
+      rgba(10, 26, 19, 0.96)
+    );
+  box-shadow:
+    0 16px 38px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.gage-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(194, 139, 255, 0.2);
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.27),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.gage-card__button {
+  width: 100%;
+  display: block;
+  padding: 19px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.gage-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gage-card__status {
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.gage-card__status--pending {
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.gage-card__status--in_progress {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.09);
+}
+
+.gage-card__status--completed {
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.09);
+}
+
+.gage-card__status--validated {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.09);
+}
+
+.gage-card__status--cancelled {
+  color: rgba(220, 235, 225, 0.55);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.gage-card__chevron {
+  color: rgba(220, 235, 225, 0.3);
+  transition: transform 180ms ease;
+}
+
+.gage-card:hover .gage-card__chevron {
+  transform: translateX(3px);
+  color: #c88fff;
+}
+
+.gage-card__icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-top: 18px;
+  border: 1px solid rgba(194, 139, 255, 0.16);
+  border-radius: 16px;
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.08);
+}
+
+.gage-card__content {
+  margin-top: 14px;
+}
+
+.gage-card__eyebrow {
+  margin: 0;
+  color: rgba(220, 235, 225, 0.38);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gage-card__content h3 {
+  margin: 7px 0 0;
+  color: #f5fff8;
+  font-size: 0.95rem;
+  font-weight: 820;
+  line-height: 1.3;
+}
+
+.gage-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 44px;
+  margin: 10px 0 0;
+  color: rgba(220, 235, 225, 0.54);
+  font-size: 0.68rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.gage-card__people {
+  display: grid;
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.gage-card__people > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.gage-card__people > div > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.08);
+}
+
+.gage-card__people > div:nth-child(2) > span {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.08);
+}
+
+.gage-card__people > div > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gage-card__people small {
+  color: rgba(220, 235, 225, 0.38);
+  font-size: 0.52rem;
+}
+
+.gage-card__people strong {
+  overflow: hidden;
+  color: #f5fff8;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gage-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.gage-card__footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(220, 235, 225, 0.42);
+  font-size: 0.57rem;
+}
+
+/* =========================================================
+   GAGES — ÉTATS
+   ========================================================= */
+
+.gages-state,
+.gages-empty {
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20, 39, 30, 0.92),
+      rgba(10, 25, 18, 0.94)
+    );
+  color: rgba(220, 235, 225, 0.62);
+  text-align: center;
+}
+
+.gages-empty {
+  flex-direction: column;
+}
+
+.gages-empty > svg {
+  color: #c88fff;
+}
+
+.gages-empty h2 {
+  margin: 2px 0 0;
+  color: #f5fff8;
+}
+
+.gages-empty p {
+  max-width: 500px;
+  margin: 0;
+  color: rgba(220, 235, 225, 0.53);
+}
+
+.gages-state--error {
+  color: #ff929a;
+  border-color: rgba(255, 126, 137, 0.14);
+}
+
+/* =========================================================
+   GAGE — MODALES
+   ========================================================= */
+
+.gage-form-modal__overlay,
+.gage-details-modal__overlay {
+  position: fixed;
+  z-index: 9700;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(2, 8, 5, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.gage-form-modal,
+.gage-details-modal {
+  position: fixed;
+  z-index: 9710;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100vw - 28px), 760px);
+  max-height: calc(100dvh - 28px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  translate: -50% -50%;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 26px;
+  background:
+    radial-gradient(
+      circle at 5% 0%,
+      rgba(194, 139, 255, 0.08),
+      transparent 30%
+    ),
+    #091a12;
+  box-shadow:
+    0 42px 120px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.gage-form-modal__header,
+.gage-details-modal__header {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 21px 23px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 26, 18, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.gage-form-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gage-form-modal__title > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 13px;
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.09);
+}
+
+.gage-form-modal__title small {
+  color: rgba(220, 235, 225, 0.45);
+  font-size: 0.61rem;
+}
+
+.gage-form-modal__title h2,
+.gage-details-modal__header h2 {
+  margin: 4px 0 0;
+  color: #f5fff8;
+  font-size: 1rem;
+}
+
+.gage-details-modal__header h2 {
+  margin-top: 10px;
+  font-size: 1.35rem;
+  letter-spacing: -0.025em;
+}
+
+.gage-details-modal__header p {
+  margin: 5px 0 0;
+  color: rgba(220, 235, 225, 0.43);
+  font-size: 0.62rem;
+}
+
+.gage-form-modal__close,
+.gage-details-modal__close {
+  width: 41px;
+  height: 41px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(235, 245, 238, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+/* =========================================================
+   GAGE — FORMULAIRE
+   ========================================================= */
+
+.gage-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.gage-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  padding: 22px 23px;
+}
+
+.gage-form__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid rgba(194, 139, 255, 0.13);
+  border-radius: 15px;
+  background: rgba(194, 139, 255, 0.045);
+}
+
+.gage-form__notice > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 13px;
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.09);
+}
+
+.gage-form__notice strong {
+  color: #f5fff8;
+  font-size: 0.75rem;
+}
+
+.gage-form__notice p {
+  margin: 5px 0 0;
+  color: rgba(220, 235, 225, 0.55);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
+.gage-form__field {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gage-form__field > span {
+  color: rgba(220, 235, 225, 0.62);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.gage-form__control,
+.gage-form__select-control {
+  min-height: 53px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  color: rgba(220, 235, 225, 0.48);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.gage-form__select-control {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.gage-form__control:focus-within,
+.gage-form__select-control:focus-within {
+  border-color: rgba(194, 139, 255, 0.45);
+  background: rgba(194, 139, 255, 0.04);
+  box-shadow: 0 0 0 4px rgba(194, 139, 255, 0.065);
+}
+
+.gage-form__control input,
+.gage-form__select-control select {
+  width: 100%;
+  min-width: 0;
+  height: 51px;
+  border: 0;
+  outline: 0;
+  color: #f5fff8;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.gage-form__select-control select {
+  cursor: pointer;
+  appearance: none;
+}
+
+.gage-form__select-control option {
+  color: #f5fff8;
+  background: #0b2117;
+}
+
+.gage-form__control small {
+  color: rgba(220, 235, 225, 0.35);
+  font-size: 0.56rem;
+}
+
+.gage-form__field > textarea {
+  width: 100%;
+  min-height: 135px;
+  padding: 13px 14px 29px;
+  resize: vertical;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  outline: 0;
+  color: #f5fff8;
+  background: rgba(255, 255, 255, 0.03);
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+.gage-form__field > textarea:focus {
+  border-color: rgba(194, 139, 255, 0.45);
+  box-shadow: 0 0 0 4px rgba(194, 139, 255, 0.065);
+}
+
+.gage-form__counter {
+  position: absolute;
+  right: 12px;
+  bottom: 9px;
+  color: rgba(220, 235, 225, 0.35);
+  font-size: 0.56rem;
+}
+
+.gage-form__member-preview {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid rgba(194, 139, 255, 0.11);
+  border-radius: 14px;
+  background: rgba(194, 139, 255, 0.04);
+}
+
+.gage-form__member-avatar {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  color: #130b19;
+  background: #c88fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.gage-form__member-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gage-form__member-preview > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gage-form__member-preview small {
+  color: rgba(220, 235, 225, 0.4);
+  font-size: 0.53rem;
+}
+
+.gage-form__member-preview strong {
+  color: #f5fff8;
+  font-size: 0.72rem;
+}
+
+.gage-form__member-preview p {
+  margin: 0;
+  color: rgba(220, 235, 225, 0.48);
+  font-size: 0.58rem;
+}
+
+.gage-form__error,
+.gage-details-modal__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(255, 126, 137, 0.16);
+  border-radius: 12px;
+  color: #ff929a;
+  background: rgba(255, 126, 137, 0.065);
+  font-size: 0.69rem;
+}
+
+.gage-form-modal__footer,
+.gage-details-modal__footer {
+  position: sticky;
+  z-index: 5;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding: 15px 23px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 26, 18, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+/* =========================================================
+   GAGE — DÉTAILS
+   ========================================================= */
+
+.gage-details-modal__status {
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.59rem;
+  font-weight: 800;
+}
+
+.gage-details-modal__status--pending {
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.gage-details-modal__status--in_progress {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.09);
+}
+
+.gage-details-modal__status--completed {
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.09);
+}
+
+.gage-details-modal__status--validated {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.09);
+}
+
+.gage-details-modal__status--cancelled {
+  color: rgba(220, 235, 225, 0.55);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.gage-details-modal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 23px;
+}
+
+.gage-details-modal__people {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.gage-details-modal__people article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.gage-details-modal__avatar,
+.gage-details-modal__person-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  color: #130b19;
+  background: #c88fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.gage-details-modal__person-icon {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.08);
+}
+
+.gage-details-modal__people article:nth-child(3)
+.gage-details-modal__person-icon {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.08);
+}
+
+.gage-details-modal__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gage-details-modal__people article > div:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gage-details-modal__people small {
+  color: rgba(220, 235, 225, 0.4);
+  font-size: 0.53rem;
+}
+
+.gage-details-modal__people strong {
+  overflow: hidden;
+  color: #f5fff8;
+  font-size: 0.67rem;
+  text-overflow: ellipsis;
+}
+
+.gage-details-modal__description,
+.gage-details-modal__proof {
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.gage-details-modal__section-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #c88fff;
+}
+
+.gage-details-modal__section-title h3 {
+  margin: 0;
+  color: #f5fff8;
+  font-size: 0.8rem;
+}
+
+.gage-details-modal__description > p {
+  margin: 11px 0 0;
+  color: rgba(220, 235, 225, 0.61);
+  font-size: 0.7rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.gage-details-modal__proof-empty {
+  min-height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 13px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  color: rgba(220, 235, 225, 0.48);
+  background: rgba(255, 255, 255, 0.018);
+  text-align: center;
+}
+
+.gage-details-modal__proof-empty svg {
+  color: #c88fff;
+}
+
+.gage-details-modal__proof-empty strong {
+  color: #f5fff8;
+  font-size: 0.75rem;
+}
+
+.gage-details-modal__proof-empty p {
+  max-width: 430px;
+  margin: 0;
+  font-size: 0.63rem;
+  line-height: 1.5;
+}
+
+.gage-details-modal__proof-card {
+  overflow: hidden;
+  margin-top: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.gage-details-modal__proof-preview {
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #05100b;
+}
+
+.gage-details-modal__proof-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.gage-details-modal__proof-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px;
+}
+
+.gage-details-modal__proof-info > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gage-details-modal__proof-info strong {
+  overflow: hidden;
+  color: #f5fff8;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gage-details-modal__proof-info small {
+  color: rgba(220, 235, 225, 0.42);
+  font-size: 0.55rem;
+}
+
+.gage-details-modal__delete-proof {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid rgba(255, 126, 137, 0.16);
+  border-radius: 10px;
+  color: #ff929a;
+  background: rgba(255, 126, 137, 0.06);
+  font: inherit;
+  font-size: 0.62rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.gage-details-modal__upload {
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 11px;
+  border: 1px solid rgba(194, 139, 255, 0.18);
+  border-radius: 12px;
+  color: #c88fff;
+  background: rgba(194, 139, 255, 0.07);
+  font-size: 0.68rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.gage-details-modal__upload input {
+  display: none;
+}
+
+.gage-details-modal__validation,
+.gage-details-modal__cancelled {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px;
+  border: 1px solid rgba(94, 228, 155, 0.13);
+  border-radius: 15px;
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.05);
+}
+
+.gage-details-modal__cancelled {
+  color: #ff929a;
+  border-color: rgba(255, 126, 137, 0.13);
+  background: rgba(255, 126, 137, 0.05);
+}
+
+.gage-details-modal__validation strong,
+.gage-details-modal__cancelled strong {
+  color: #f5fff8;
+  font-size: 0.75rem;
+}
+
+.gage-details-modal__validation p,
+.gage-details-modal__cancelled p {
+  margin: 4px 0 0;
+  color: rgba(220, 235, 225, 0.55);
+  font-size: 0.65rem;
+}
+
+.gage-cancel-button {
+  color: #ff929a;
+  border-color: rgba(255, 126, 137, 0.15);
+}
+
+/* =========================================================
+   GAGES — RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1180px) {
+  .gages-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .gages-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gages-header__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 850px) {
+  .gages-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gages-search {
+    max-width: none;
+  }
+
+  .gages-filters {
+    overflow-x: auto;
+  }
+
+  .gages-toolbar > .primary-button {
+    width: 100%;
+  }
+
+  .gage-details-modal__people {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px) {
+  .gages-header {
+    padding: 21px;
+    border-radius: 21px;
+  }
+
+  .gages-header__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .gages-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gage-form-modal,
+  .gage-details-modal {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 7px);
+    translate: none;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .gage-form-modal__header,
+  .gage-details-modal__header {
+    padding: 17px;
+  }
+
+  .gage-form__body,
+  .gage-details-modal__content {
+    padding: 18px 17px;
+  }
+
+  .gage-form-modal__footer,
+  .gage-details-modal__footer {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding:
+      14px
+      17px
+      max(16px, env(safe-area-inset-bottom));
+  }
+
+  .gage-form-modal__footer button,
+  .gage-details-modal__footer button {
+    width: 100%;
+  }
+
+  .gage-card__footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gage-details-modal__proof-info {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .gage-details-modal__delete-proof {
+    justify-content: center;
+  }
+}

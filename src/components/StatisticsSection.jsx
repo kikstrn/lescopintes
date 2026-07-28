@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
@@ -28,103 +28,6 @@ import {
   YAxis,
 } from "recharts";
 
-const monthlyActivity = [
-  {
-    month: "Fév",
-    tennis: 4,
-    bike: 140,
-    events: 3,
-  },
-  {
-    month: "Mars",
-    tennis: 7,
-    bike: 230,
-    events: 4,
-  },
-  {
-    month: "Avr",
-    tennis: 6,
-    bike: 315,
-    events: 4,
-  },
-  {
-    month: "Mai",
-    tennis: 9,
-    bike: 460,
-    events: 6,
-  },
-  {
-    month: "Juin",
-    tennis: 11,
-    bike: 620,
-    events: 7,
-  },
-  {
-    month: "Juil",
-    tennis: 13,
-    bike: 745,
-    events: 8,
-  },
-];
-
-const activityDistribution = [
-  {
-    name: "Tennis",
-    value: 42,
-    color: "#5ee49b",
-  },
-  {
-    name: "Cyclisme",
-    value: 34,
-    color: "#63b8ff",
-  },
-  {
-    name: "Apéros",
-    value: 16,
-    color: "#ffbb58",
-  },
-  {
-    name: "Autres",
-    value: 8,
-    color: "#b38cff",
-  },
-];
-
-const records = [
-  {
-    id: 1,
-    icon: Trophy,
-    label: "Plus de victoires",
-    member: "Kiks",
-    value: "18 victoires",
-    accent: "green",
-  },
-  {
-    id: 2,
-    icon: Bike,
-    label: "Plus de kilomètres",
-    member: "Raf",
-    value: "1 242 km",
-    accent: "blue",
-  },
-  {
-    id: 3,
-    icon: CalendarCheck,
-    label: "Plus présent",
-    member: "Kiks",
-    value: "26 événements",
-    accent: "amber",
-  },
-  {
-    id: 4,
-    icon: Target,
-    label: "Meilleur taux",
-    member: "Kiks",
-    value: "75 % de victoires",
-    accent: "purple",
-  },
-];
-
 const periodOptions = [
   {
     id: "season",
@@ -139,6 +42,156 @@ const periodOptions = [
     label: "3 derniers mois",
   },
 ];
+
+const MONTH_NAMES = [
+  "Jan",
+  "Fév",
+  "Mars",
+  "Avr",
+  "Mai",
+  "Juin",
+  "Juil",
+  "Août",
+  "Sept",
+  "Oct",
+  "Nov",
+  "Déc",
+];
+
+function getDateValue(item) {
+  return (
+    item?.date ??
+    item?.playedAt ??
+    item?.played_at ??
+    item?.rideDate ??
+    item?.ride_date ??
+    item?.eventDate ??
+    item?.event_date ??
+    item?.startDate ??
+    item?.start_date ??
+    item?.createdAt ??
+    item?.created_at ??
+    null
+  );
+}
+
+function getTimestamp(item) {
+  const value = getDateValue(item);
+
+  if (!value) {
+    return 0;
+  }
+
+  const timestamp = new Date(value).getTime();
+
+  return Number.isNaN(timestamp)
+    ? 0
+    : timestamp;
+}
+
+function getProfileId(value) {
+  return String(
+    value?.profileId ??
+    value?.profile_id ??
+    value?.userId ??
+    value?.user_id ??
+    value?.memberId ??
+    value?.member_id ??
+    value?.id ??
+    "",
+  );
+}
+
+function getBikeDistance(ride) {
+  return Number(
+    ride?.distanceKm ??
+    ride?.distance_km ??
+    ride?.distance ??
+    ride?.kilometers ??
+    ride?.km ??
+    0,
+  );
+}
+
+function getEventParticipants(event) {
+  const participants =
+    event?.participants ??
+    event?.eventParticipants ??
+    event?.event_participants ??
+    event?.members ??
+    [];
+
+  return Array.isArray(participants)
+    ? participants
+    : [];
+}
+
+function getMatchPlayers(match) {
+  const players =
+    match?.players ??
+    match?.matchPlayers ??
+    match?.tennisMatchPlayers ??
+    match?.tennis_match_players ??
+    [];
+
+  return Array.isArray(players)
+    ? players
+    : [];
+}
+
+function isMatchCompleted(match) {
+  return (
+    match?.status === "completed" ||
+    match?.status === "finished" ||
+    match?.winnerTeam != null ||
+    match?.winner_team != null
+  );
+}
+
+function getPeriodStart(period) {
+  const now = new Date();
+
+  if (period === "three-months") {
+    return new Date(
+      now.getFullYear(),
+      now.getMonth() - 2,
+      1,
+    ).getTime();
+  }
+
+  if (period === "six-months") {
+    return new Date(
+      now.getFullYear(),
+      now.getMonth() - 5,
+      1,
+    ).getTime();
+  }
+
+  return new Date(
+    now.getFullYear(),
+    0,
+    1,
+  ).getTime();
+}
+
+function isInsidePeriod(item, period) {
+  const timestamp = getTimestamp(item);
+
+  if (!timestamp) {
+    return true;
+  }
+
+  return timestamp >= getPeriodStart(period);
+}
+
+function normalizeMemberName(member) {
+  return (
+    member?.nickname ??
+    member?.firstName ??
+    member?.first_name ??
+    "Membre"
+  );
+}
 
 function StatisticsTooltip({ active, payload, label }) {
   if (!active || !payload?.length) {
@@ -227,89 +280,559 @@ function StatisticCard({
   );
 }
 
-function StatisticsSection({ members = [] }) {
+function StatisticsSection({
+  members = [],
+  tennisMatches = [],
+  bikeRides = [],
+  events = [],
+  galleryPhotos = [],
+  gages = [],
+  tribunalCases = [],
+}) {
   const [selectedMemberId, setSelectedMemberId] = useState(
     members[0]?.id ?? "",
   );
 
   const [selectedPeriod, setSelectedPeriod] = useState("season");
 
+  useEffect(() => {
+    if (
+      members.length > 0 &&
+      !members.some(
+        (member) =>
+          String(member.id) ===
+          String(selectedMemberId),
+      )
+    ) {
+      setSelectedMemberId(
+        String(members[0].id),
+      );
+    }
+  }, [
+    members,
+    selectedMemberId,
+  ]);
+
   const selectedMember = useMemo(() => {
-    return members.find((member) => {
-      return member.id === Number(selectedMemberId);
-    });
+    return members.find(
+      (member) =>
+        String(member.id) ===
+        String(selectedMemberId),
+    );
   }, [members, selectedMemberId]);
+
+  const filteredTennisMatches = useMemo(() => {
+    return tennisMatches.filter(
+      (match) =>
+        isInsidePeriod(
+          match,
+          selectedPeriod,
+        ) &&
+        isMatchCompleted(match),
+    );
+  }, [
+    tennisMatches,
+    selectedPeriod,
+  ]);
+
+  const filteredBikeRides = useMemo(() => {
+    return bikeRides.filter((ride) =>
+      isInsidePeriod(
+        ride,
+        selectedPeriod,
+      ),
+    );
+  }, [
+    bikeRides,
+    selectedPeriod,
+  ]);
+
+  const filteredEvents = useMemo(() => {
+    return events.filter((event) =>
+      isInsidePeriod(
+        event,
+        selectedPeriod,
+      ),
+    );
+  }, [
+    events,
+    selectedPeriod,
+  ]);
+
+  const filteredPhotos = useMemo(() => {
+    return galleryPhotos.filter((photo) =>
+      isInsidePeriod(
+        photo,
+        selectedPeriod,
+      ),
+    );
+  }, [
+    galleryPhotos,
+    selectedPeriod,
+  ]);
+
+  const filteredGages = useMemo(() => {
+    return gages.filter((gage) =>
+      isInsidePeriod(
+        gage,
+        selectedPeriod,
+      ),
+    );
+  }, [
+    gages,
+    selectedPeriod,
+  ]);
+
+  const filteredTribunalCases = useMemo(() => {
+    return tribunalCases.filter(
+      (tribunalCase) =>
+        isInsidePeriod(
+          tribunalCase,
+          selectedPeriod,
+        ),
+    );
+  }, [
+    tribunalCases,
+    selectedPeriod,
+  ]);
 
   const memberChartData = useMemo(() => {
     return members.map((member) => {
+      const profileId =
+        String(member.id);
+
       return {
-        name: member.nickname,
-        wins: member.wins ?? 0,
-        losses: member.losses ?? 0,
-        bikeKm: member.bikeKm ?? 0,
-        events: member.events ?? 0,
+        id: member.id,
+        name: normalizeMemberName(member),
+
+        wins: Number(
+          member.tennisWins ??
+          member.wins ??
+          0,
+        ),
+
+        losses: Number(
+          member.tennisLosses ??
+          member.losses ??
+          0,
+        ),
+
+        bikeKm: Number(
+          member.bikeDistance ??
+          member.bikeKm ??
+          0,
+        ),
+
+        events: filteredEvents.filter(
+          (event) =>
+            getEventParticipants(
+              event,
+            ).some(
+              (participant) =>
+                getProfileId(participant) ===
+                profileId,
+            ),
+        ).length,
       };
     });
-  }, [members]);
+  }, [
+    members,
+    filteredEvents,
+  ]);
+
+  const totalMatches =
+    filteredTennisMatches.length;
+
+  const totalBikeKm = useMemo(() => {
+    return filteredBikeRides.reduce(
+      (total, ride) =>
+        total + getBikeDistance(ride),
+      0,
+    );
+  }, [filteredBikeRides]);
+
+  const totalEvents =
+    filteredEvents.length;
 
   const totalWins = useMemo(() => {
-    return members.reduce((total, member) => {
-      return total + (member.wins ?? 0);
-    }, 0);
+    return members.reduce(
+      (total, member) =>
+        total +
+        Number(
+          member.tennisWins ??
+          member.wins ??
+          0,
+        ),
+      0,
+    );
   }, [members]);
 
   const totalLosses = useMemo(() => {
-    return members.reduce((total, member) => {
-      return total + (member.losses ?? 0);
-    }, 0);
+    return members.reduce(
+      (total, member) =>
+        total +
+        Number(
+          member.tennisLosses ??
+          member.losses ??
+          0,
+        ),
+      0,
+    );
   }, [members]);
 
-  const totalMatches = Math.round((totalWins + totalLosses) / 2);
+  const monthlyActivity = useMemo(() => {
+    const monthCount =
+      selectedPeriod === "three-months"
+        ? 3
+        : selectedPeriod ===
+          "six-months"
+          ? 6
+          : 12;
 
-  const totalBikeKm = useMemo(() => {
-    return members.reduce((total, member) => {
-      return total + (member.bikeKm ?? 0);
-    }, 0);
-  }, [members]);
+    const now = new Date();
 
-  const totalEvents = useMemo(() => {
-    return members.reduce((total, member) => {
-      return total + (member.events ?? 0);
-    }, 0);
-  }, [members]);
+    const months = Array.from(
+      {
+        length: monthCount,
+      },
+      (_, index) => {
+        const date = new Date(
+          now.getFullYear(),
+          now.getMonth() -
+          (monthCount - 1 - index),
+          1,
+        );
 
-  const averageWinRate = useMemo(() => {
-    if (members.length === 0) {
-      return 0;
-    }
+        return {
+          year: date.getFullYear(),
+          monthIndex: date.getMonth(),
+          month:
+            MONTH_NAMES[
+            date.getMonth()
+            ],
+          tennis: 0,
+          bike: 0,
+          events: 0,
+        };
+      },
+    );
 
-    const totalRate = members.reduce((total, member) => {
-      const matches =
-        (member.wins ?? 0) +
-        (member.losses ?? 0);
+    filteredTennisMatches.forEach(
+      (match) => {
+        const date = new Date(
+          getDateValue(match),
+        );
 
-      if (matches === 0) {
-        return total;
+        const target = months.find(
+          (month) =>
+            month.year ===
+            date.getFullYear() &&
+            month.monthIndex ===
+            date.getMonth(),
+        );
+
+        if (target) {
+          target.tennis += 1;
+        }
+      },
+    );
+
+    filteredBikeRides.forEach((ride) => {
+      const date = new Date(
+        getDateValue(ride),
+      );
+
+      const target = months.find(
+        (month) =>
+          month.year ===
+          date.getFullYear() &&
+          month.monthIndex ===
+          date.getMonth(),
+      );
+
+      if (target) {
+        target.bike +=
+          getBikeDistance(ride);
       }
+    });
 
-      return total + ((member.wins ?? 0) / matches) * 100;
-    }, 0);
+    filteredEvents.forEach((event) => {
+      const date = new Date(
+        getDateValue(event),
+      );
 
-    return Math.round(totalRate / members.length);
-  }, [members]);
+      const target = months.find(
+        (month) =>
+          month.year ===
+          date.getFullYear() &&
+          month.monthIndex ===
+          date.getMonth(),
+      );
+
+      if (target) {
+        target.events += 1;
+      }
+    });
+
+    return months.map((month) => ({
+      month: month.month,
+      tennis: month.tennis,
+      bike: Math.round(
+        month.bike * 10,
+      ) / 10,
+      events: month.events,
+    }));
+  }, [
+    filteredTennisMatches,
+    filteredBikeRides,
+    filteredEvents,
+    selectedPeriod,
+  ]);
+
+  const activityDistribution = useMemo(() => {
+    const activities = [
+      {
+        name: "Tennis",
+        count:
+          filteredTennisMatches.length,
+        color: "#5ee49b",
+      },
+      {
+        name: "Cyclisme",
+        count:
+          filteredBikeRides.length,
+        color: "#63b8ff",
+      },
+      {
+        name: "Événements",
+        count: filteredEvents.length,
+        color: "#ffbb58",
+      },
+      {
+        name: "Galerie",
+        count: filteredPhotos.length,
+        color: "#b38cff",
+      },
+      {
+        name: "Gages",
+        count: filteredGages.length,
+        color: "#ff7f94",
+      },
+      {
+        name: "Tribunal",
+        count:
+          filteredTribunalCases.length,
+        color: "#e3b765",
+      },
+    ];
+
+    const total = activities.reduce(
+      (sum, activity) =>
+        sum + activity.count,
+      0,
+    );
+
+    return activities.map(
+      (activity) => ({
+        name: activity.name,
+        color: activity.color,
+        count: activity.count,
+
+        value:
+          total > 0
+            ? Math.round(
+              (activity.count /
+                total) *
+              100,
+            )
+            : 0,
+      }),
+    );
+  }, [
+    filteredTennisMatches,
+    filteredBikeRides,
+    filteredEvents,
+    filteredPhotos,
+    filteredGages,
+    filteredTribunalCases,
+  ]);
+
+  const averageWinRate =
+    totalWins + totalLosses > 0
+      ? Math.round(
+        (totalWins /
+          (totalWins +
+            totalLosses)) *
+        100,
+      )
+      : 0;
+
+  const selectedMemberWins =
+    Number(
+      selectedMember?.tennisWins ??
+      selectedMember?.wins ??
+      0,
+    );
+
+  const selectedMemberLosses =
+    Number(
+      selectedMember?.tennisLosses ??
+      selectedMember?.losses ??
+      0,
+    );
 
   const selectedMemberMatches =
-    (selectedMember?.wins ?? 0) +
-    (selectedMember?.losses ?? 0);
+    selectedMemberWins +
+    selectedMemberLosses;
 
   const selectedMemberWinRate =
     selectedMemberMatches > 0
       ? Math.round(
-          ((selectedMember?.wins ?? 0) /
-            selectedMemberMatches) *
-            100,
-        )
+        (selectedMemberWins /
+          selectedMemberMatches) *
+        100,
+      )
       : 0;
+
+  const records = useMemo(() => {
+    if (members.length === 0) {
+      return [];
+    }
+
+    const byWins = [...members].sort(
+      (memberA, memberB) =>
+        Number(
+          memberB.tennisWins ??
+          memberB.wins ??
+          0,
+        ) -
+        Number(
+          memberA.tennisWins ??
+          memberA.wins ??
+          0,
+        ),
+    );
+
+    const byBike = [...members].sort(
+      (memberA, memberB) =>
+        Number(
+          memberB.bikeDistance ??
+          memberB.bikeKm ??
+          0,
+        ) -
+        Number(
+          memberA.bikeDistance ??
+          memberA.bikeKm ??
+          0,
+        ),
+    );
+
+    const byEvents = [
+      ...memberChartData,
+    ].sort(
+      (memberA, memberB) =>
+        memberB.events -
+        memberA.events,
+    );
+
+    const byRate = [...members]
+      .map((member) => {
+        const wins = Number(
+          member.tennisWins ??
+          member.wins ??
+          0,
+        );
+
+        const losses = Number(
+          member.tennisLosses ??
+          member.losses ??
+          0,
+        );
+
+        const matches =
+          wins + losses;
+
+        return {
+          ...member,
+          calculatedRate:
+            matches > 0
+              ? Math.round(
+                (wins / matches) *
+                100,
+              )
+              : 0,
+          calculatedMatches:
+            matches,
+        };
+      })
+      .filter(
+        (member) =>
+          member.calculatedMatches > 0,
+      )
+      .sort(
+        (memberA, memberB) =>
+          memberB.calculatedRate -
+          memberA.calculatedRate,
+      );
+
+    const topWins = byWins[0];
+    const topBike = byBike[0];
+    const topEvents = byEvents[0];
+    const topRate = byRate[0];
+
+    return [
+      {
+        id: "wins",
+        icon: Trophy,
+        label: "Plus de victoires",
+        member:
+          normalizeMemberName(topWins),
+        value: `${Number(
+          topWins?.tennisWins ??
+          topWins?.wins ??
+          0,
+        )} victoires`,
+        accent: "green",
+      },
+      {
+        id: "bike",
+        icon: Bike,
+        label: "Plus de kilomètres",
+        member:
+          normalizeMemberName(topBike),
+        value: `${Number(
+          topBike?.bikeDistance ??
+          topBike?.bikeKm ??
+          0,
+        ).toLocaleString(
+          "fr-FR",
+        )} km`,
+        accent: "blue",
+      },
+      {
+        id: "events",
+        icon: CalendarCheck,
+        label: "Plus présent",
+        member:
+          topEvents?.name ??
+          "—",
+        value: `${topEvents?.events ?? 0} participations`,
+        accent: "amber",
+      },
+      {
+        id: "rate",
+        icon: Target,
+        label: "Meilleur taux",
+        member:
+          normalizeMemberName(topRate),
+        value: `${topRate?.calculatedRate ?? 0} % de victoires`,
+        accent: "purple",
+      },
+    ];
+  }, [
+    members,
+    memberChartData,
+  ]);
 
   return (
     <section className="statistics-section">
@@ -376,7 +899,7 @@ function StatisticsSection({ members = [] }) {
           icon={Trophy}
           label="Matchs disputés"
           value={totalMatches}
-          detail="+12 %"
+          detail={`${totalWins} victoires`}
           accent="green"
           delay={0}
         />
@@ -384,26 +907,28 @@ function StatisticsSection({ members = [] }) {
         <StatisticCard
           icon={Bike}
           label="Kilomètres vélo"
-          value={totalBikeKm.toLocaleString("fr-FR")}
-          detail="+18 %"
+          value={Math.round(
+            totalBikeKm,
+          ).toLocaleString("fr-FR")}
+          detail={`${filteredBikeRides.length} sorties`}
           accent="blue"
           delay={0.05}
         />
 
         <StatisticCard
           icon={CalendarCheck}
-          label="Participations"
+          label="Événements"
           value={totalEvents}
-          detail="+9 %"
+          detail={`${members.length} membres`}
           accent="amber"
           delay={0.1}
         />
 
         <StatisticCard
           icon={Target}
-          label="Taux de victoire moyen"
+          label="Taux de victoire global"
           value={`${averageWinRate} %`}
-          detail="+4 %"
+          detail={`${totalWins + totalLosses} résultats`}
           accent="purple"
           delay={0.15}
         />
@@ -590,7 +1115,9 @@ function StatisticsSection({ members = [] }) {
             >
               <PieChart>
                 <Pie
-                  data={activityDistribution}
+                  data={activityDistribution.filter(
+                    (item) => item.value > 0,
+                  )}
                   dataKey="value"
                   nameKey="name"
                   innerRadius={66}
@@ -598,12 +1125,16 @@ function StatisticsSection({ members = [] }) {
                   paddingAngle={4}
                   animationDuration={900}
                 >
-                  {activityDistribution.map((item) => (
-                    <Cell
-                      key={item.name}
-                      fill={item.color}
-                    />
-                  ))}
+                  {activityDistribution
+                    .filter(
+                      (item) => item.value > 0,
+                    )
+                    .map((item) => (
+                      <Cell
+                        key={item.name}
+                        fill={item.color}
+                      />
+                    ))}
                 </Pie>
 
                 <Tooltip />
@@ -826,7 +1357,7 @@ function StatisticsSection({ members = [] }) {
 
                   <small>Victoires</small>
                   <strong>
-                    {selectedMember?.wins ?? 0}
+                    {selectedMemberWins}
                   </strong>
                 </div>
 
@@ -848,9 +1379,11 @@ function StatisticsSection({ members = [] }) {
 
                   <small>Vélo</small>
                   <strong>
-                    {(selectedMember?.bikeKm ?? 0).toLocaleString(
-                      "fr-FR",
-                    )}{" "}
+                    {Number(
+                      selectedMember?.bikeDistance ??
+                      selectedMember?.bikeKm ??
+                      0,
+                    ).toLocaleString("fr-FR")}{" "}
                     km
                   </strong>
                 </div>

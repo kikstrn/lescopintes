@@ -35,11 +35,8 @@ import BikeMap from "./components/BikeMap";
 import ActivityFeed from "./components/ActivityFeed";
 import WeeklyChallenge from "./components/WeeklyChallenge";
 import ScoreModal from "./components/ScoreModal";
-
-import GagesSection from "./components/GagesSection";
 import RankingSection from "./components/RankingSection";
 import StatisticsSection from "./components/StatisticsSection";
-
 import EventsSection from "./components/EventsSection";
 import EventFormModal from "./components/EventFormModal";
 import { useEvents } from "./hooks/useEvents";
@@ -59,20 +56,18 @@ import MemberProfileModal from "./components/members/MemberProfileModal";
 import TribunalSection from "./components/tribunal/TribunalSection";
 import TribunalCaseModal from "./components/tribunal/TribunalCaseModal";
 import TribunalFormModal from "./components/tribunal/TribunalFormModal";
-
+import GagesSection from "./components/gages/GagesSection";
+import GageFormModal from "./components/gages/GageFormModal";
+import GageDetailsModal from "./components/gages/GageDetailsModal";
+import { useGages } from "./hooks/useGages";
 import { useTribunalCases } from "./hooks/useTribunalCases";
-
 import { getProfileStatistics } from "./services/profileService";
-
 import { useProfile } from "./hooks/useProfile";
 import { useProfiles } from "./hooks/useProfiles";
-
 import { useGallery } from "./hooks/useGallery";
-
 import { useEffect } from "react";
 import { testSupabaseConnection } from "./lib/testSupabase";
 import { useAuth } from "./context/AuthContext";
-
 import {
   activityData,
   recentActivities,
@@ -280,6 +275,15 @@ function App() {
     setMemberStatisticsError,
   ] = useState(null);
 
+  const [gageFormOpen, setGageFormOpen] =
+    useState(false);
+
+  const [gageDetailsOpen, setGageDetailsOpen] =
+    useState(false);
+
+  const [selectedGage, setSelectedGage] =
+    useState(null);
+
   const {
     events,
     loading: eventsLoading,
@@ -340,6 +344,23 @@ function App() {
   } = useGallery(user?.id);
 
   const {
+    gages,
+    loading: gagesLoading,
+    saving: gagesSaving,
+    uploading: gagesUploading,
+    error: gagesError,
+
+    addGage,
+    startGage,
+    completeGage,
+    validateGage,
+    cancelGage,
+    uploadProof,
+    removeProof,
+    removeGage,
+  } = useGages(user?.id);
+
+  const {
     profile: personalProfile,
     statistics: profileStatistics,
     loading: profileLoading,
@@ -354,6 +375,107 @@ function App() {
     removeAvatar,
     savePassword,
   } = useProfile(user?.id);
+
+  const openGageForm = () => {
+    setGageFormOpen(true);
+  };
+
+  const closeGageForm = () => {
+    if (gagesSaving) {
+      return;
+    }
+
+    setGageFormOpen(false);
+  };
+
+  const openGageDetails = (gage) => {
+    setSelectedGage(gage);
+    setGageDetailsOpen(true);
+  };
+
+  const closeGageDetails = () => {
+    if (gagesSaving || gagesUploading) {
+      return;
+    }
+
+    setGageDetailsOpen(false);
+
+    window.setTimeout(() => {
+      setSelectedGage(null);
+    }, 220);
+  };
+
+  const handleGageSubmit = async (gageData) => {
+    await addGage(gageData);
+    setGageFormOpen(false);
+  };
+
+  const handleStartGage = async (gage) => {
+    await startGage(gage);
+  };
+
+  const handleCompleteGage = async (gage) => {
+    await completeGage(gage);
+  };
+
+  const handleValidateGage = async (gage) => {
+    const confirmed = window.confirm(
+      "Valider définitivement ce gage ?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await validateGage(gage);
+  };
+
+  const handleCancelGage = async (gage) => {
+    const confirmed = window.confirm(
+      "Annuler définitivement ce gage ?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await cancelGage(gage);
+  };
+
+  const handleUploadGageProof = async ({
+    gage,
+    file,
+  }) => {
+    await uploadProof({
+      gage,
+      file,
+    });
+  };
+
+  const handleDeleteGageProof = async (gage) => {
+    const confirmed = window.confirm(
+      "Supprimer cette preuve ?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await removeProof(gage);
+  };
+
+  const handleDeleteGage = async (gage) => {
+    const confirmed = window.confirm(
+      "Supprimer définitivement ce gage ?",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    await removeGage(gage);
+    closeGageDetails();
+  };
 
   const openTribunalForm = () => {
     setTribunalFormOpen(true);
@@ -940,6 +1062,25 @@ function App() {
   };
 
   useEffect(() => {
+    if (!selectedGage?.id) {
+      return;
+    }
+
+    const refreshedGage =
+      gages.find(
+        (gage) =>
+          gage.id === selectedGage.id,
+      );
+
+    if (refreshedGage) {
+      setSelectedGage(refreshedGage);
+    }
+  }, [
+    gages,
+    selectedGage?.id,
+  ]);
+
+  useEffect(() => {
     if (!selectedTribunalCase?.id) {
       return;
     }
@@ -1464,7 +1605,15 @@ function App() {
               )}
 
               {activePage === "statistics" && (
-                <StatisticsSection members={members} />
+                <StatisticsSection
+                  members={members}
+                  tennisMatches={tennisMatches}
+                  bikeRides={bikeRides}
+                  events={events}
+                  galleryPhotos={galleryPhotos}
+                  gages={gages}
+                  tribunalCases={tribunalCases}
+                />
               )}
 
               {activePage === "gallery" && (
@@ -1514,7 +1663,13 @@ function App() {
               )}
 
               {activePage === "gages" && (
-                <GagesSection members={members} />
+                <GagesSection
+                  gages={gages}
+                  loading={gagesLoading}
+                  error={gagesError}
+                  onCreate={openGageForm}
+                  onOpen={openGageDetails}
+                />
               )}
 
               {activePage === "members" && (
@@ -1615,6 +1770,33 @@ function App() {
         onDismiss={
           handleDismissTribunalCase
         }
+      />
+
+      <GageFormModal
+        open={gageFormOpen}
+        members={members}
+        currentProfileId={user?.id}
+        saving={gagesSaving}
+        error={gagesError}
+        onClose={closeGageForm}
+        onSubmit={handleGageSubmit}
+      />
+
+      <GageDetailsModal
+        open={gageDetailsOpen}
+        gage={selectedGage}
+        currentProfile={profile}
+        saving={gagesSaving}
+        uploading={gagesUploading}
+        error={gagesError}
+        onClose={closeGageDetails}
+        onStart={handleStartGage}
+        onComplete={handleCompleteGage}
+        onValidate={handleValidateGage}
+        onCancel={handleCancelGage}
+        onUploadProof={handleUploadGageProof}
+        onDeleteProof={handleDeleteGageProof}
+        onDelete={handleDeleteGage}
       />
 
       <MemberProfileModal
