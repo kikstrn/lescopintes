@@ -153,12 +153,6 @@ function Sidebar({
                     <span className="sidebar__nav-label">
                       {item.label}
                     </span>
-
-                    {item.id === "tribunal" && (
-                      <span className="sidebar__badge">
-                        2
-                      </span>
-                    )}
                   </button>
                 );
               })}

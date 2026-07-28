@@ -16345,3 +16345,1180 @@ body:has(.gallery-viewer) {
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   TRIBUNAL — PAGE
+   ========================================================= */
+
+.tribunal-section {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.tribunal-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  overflow: hidden;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 25px;
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(245, 183, 76, 0.14),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(34, 42, 28, 0.96),
+      rgba(10, 25, 18, 0.97)
+    );
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.tribunal-header::after {
+  position: absolute;
+  right: -80px;
+  bottom: -100px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: rgba(94, 228, 155, 0.08);
+  filter: blur(60px);
+  content: "";
+  pointer-events: none;
+}
+
+.tribunal-header__content {
+  position: relative;
+  z-index: 1;
+  max-width: 650px;
+}
+
+.tribunal-header__content h1 {
+  margin: 7px 0 0;
+  color: #f6fff9;
+  font-size: clamp(1.8rem, 4vw, 3.1rem);
+  font-weight: 850;
+  letter-spacing: -0.045em;
+}
+
+.tribunal-header__content p {
+  max-width: 610px;
+  margin: 11px 0 19px;
+  color: rgba(220, 235, 225, 0.58);
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
+
+.tribunal-header__stats {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(120px, 1fr));
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.tribunal-header__stats > div {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 17px;
+  color: #f4bd5c;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.tribunal-header__stats > div:nth-child(2) {
+  color: #65b9ff;
+}
+
+.tribunal-header__stats > div:nth-child(3) {
+  color: #69e7a4;
+}
+
+.tribunal-header__stats span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tribunal-header__stats strong {
+  color: #f6fff9;
+  font-size: 1.2rem;
+}
+
+.tribunal-header__stats small {
+  color: rgba(220, 235, 225, 0.48);
+  font-size: 0.61rem;
+}
+
+/* =========================================================
+   TRIBUNAL — RECHERCHE ET FILTRES
+   ========================================================= */
+
+.tribunal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.tribunal-search {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  max-width: 450px;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  color: rgba(220, 235, 225, 0.48);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.tribunal-search:focus-within {
+  border-color: rgba(94, 228, 155, 0.42);
+  background: rgba(94, 228, 155, 0.04);
+  box-shadow: 0 0 0 4px rgba(94, 228, 155, 0.06);
+}
+
+.tribunal-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #f5fff8;
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.tribunal-search input::placeholder {
+  color: rgba(220, 235, 225, 0.38);
+}
+
+.tribunal-filters {
+  display: flex;
+  gap: 7px;
+  padding: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.tribunal-filter {
+  min-height: 39px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 10px;
+  color: rgba(220, 235, 225, 0.52);
+  background: transparent;
+  font: inherit;
+  font-size: 0.67rem;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease;
+}
+
+.tribunal-filter:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.tribunal-filter--active {
+  color: #07150d;
+  background: #62e49d;
+}
+
+/* =========================================================
+   TRIBUNAL — GRILLE ET CARTES
+   ========================================================= */
+
+.tribunal-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.tribunal-case-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 21px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(22, 41, 31, 0.94),
+      rgba(10, 26, 19, 0.96)
+    );
+  box-shadow:
+    0 16px 38px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.tribunal-case-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(244, 189, 92, 0.18);
+  box-shadow:
+    0 24px 50px rgba(0, 0, 0, 0.27),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.tribunal-case-card__button {
+  width: 100%;
+  display: block;
+  padding: 19px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tribunal-case-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tribunal-case-card__status {
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.tribunal-case-card__status--pending {
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.tribunal-case-card__status--voting {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.09);
+}
+
+.tribunal-case-card__status--judged {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.09);
+}
+
+.tribunal-case-card__status--dismissed {
+  color: rgba(220, 235, 225, 0.55);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.tribunal-case-card__chevron {
+  color: rgba(220, 235, 225, 0.3);
+  transition: transform 180ms ease;
+}
+
+.tribunal-case-card:hover .tribunal-case-card__chevron {
+  transform: translateX(3px);
+  color: #f4bd5c;
+}
+
+.tribunal-case-card__icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  margin-top: 18px;
+  border: 1px solid rgba(244, 189, 92, 0.16);
+  border-radius: 16px;
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.08);
+}
+
+.tribunal-case-card__content {
+  margin-top: 14px;
+}
+
+.tribunal-case-card__eyebrow {
+  margin: 0;
+  color: rgba(220, 235, 225, 0.38);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tribunal-case-card__content h3 {
+  margin: 7px 0 0;
+  color: #f5fff8;
+  font-size: 0.95rem;
+  font-weight: 820;
+  line-height: 1.3;
+}
+
+.tribunal-case-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  min-height: 44px;
+  margin: 10px 0 0;
+  color: rgba(220, 235, 225, 0.54);
+  font-size: 0.68rem;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.tribunal-case-card__people {
+  display: grid;
+  gap: 8px;
+  margin-top: 17px;
+}
+
+.tribunal-case-card__people > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.055);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.tribunal-case-card__people > div > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.08);
+}
+
+.tribunal-case-card__people > div:nth-child(2) > span {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.08);
+}
+
+.tribunal-case-card__people div div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tribunal-case-card__people small {
+  color: rgba(220, 235, 225, 0.38);
+  font-size: 0.52rem;
+}
+
+.tribunal-case-card__people strong {
+  overflow: hidden;
+  color: #f5fff8;
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tribunal-case-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 15px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.055);
+}
+
+.tribunal-case-card__footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(220, 235, 225, 0.42);
+  font-size: 0.57rem;
+}
+
+/* =========================================================
+   TRIBUNAL — ÉTATS
+   ========================================================= */
+
+.tribunal-state,
+.tribunal-empty {
+  min-height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(20, 39, 30, 0.92),
+      rgba(10, 25, 18, 0.94)
+    );
+  text-align: center;
+}
+
+.tribunal-empty {
+  flex-direction: column;
+}
+
+.tribunal-empty > span {
+  width: 60px;
+  height: 60px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.tribunal-empty h2 {
+  margin: 2px 0 0;
+  color: #f5fff8;
+}
+
+.tribunal-empty p,
+.tribunal-state p {
+  max-width: 500px;
+  margin: 0;
+  color: rgba(220, 235, 225, 0.53);
+}
+
+.tribunal-state--error {
+  color: #ff929a;
+  border-color: rgba(255, 126, 137, 0.14);
+}
+
+/* =========================================================
+   TRIBUNAL — MODALE D’AFFAIRE
+   ========================================================= */
+
+.tribunal-case-modal__overlay,
+.tribunal-form-modal__overlay {
+  position: fixed;
+  z-index: 9600;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: rgba(2, 8, 5, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.tribunal-case-modal,
+.tribunal-form-modal {
+  position: fixed;
+  z-index: 9610;
+  top: 50%;
+  left: 50%;
+  width: min(calc(100vw - 28px), 760px);
+  max-height: calc(100dvh - 28px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  translate: -50% -50%;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 26px;
+  background:
+    radial-gradient(
+      circle at 4% 0%,
+      rgba(244, 189, 92, 0.07),
+      transparent 30%
+    ),
+    #091a12;
+  box-shadow:
+    0 42px 120px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
+}
+
+.tribunal-case-modal__header,
+.tribunal-form-modal__header {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 21px 23px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 26, 18, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.tribunal-case-modal__header h2 {
+  margin: 10px 0 0;
+  color: #f6fff9;
+  font-size: 1.35rem;
+  letter-spacing: -0.025em;
+}
+
+.tribunal-case-modal__header p {
+  margin: 5px 0 0;
+  color: rgba(220, 235, 225, 0.43);
+  font-size: 0.62rem;
+}
+
+.tribunal-case-modal__status {
+  min-height: 29px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 999px;
+  font-size: 0.59rem;
+  font-weight: 800;
+}
+
+.tribunal-case-modal__status--pending {
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.tribunal-case-modal__status--voting {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.09);
+}
+
+.tribunal-case-modal__status--judged {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.09);
+}
+
+.tribunal-case-modal__status--dismissed {
+  color: rgba(220, 235, 225, 0.6);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.tribunal-case-modal__close,
+.tribunal-form-modal__close {
+  width: 41px;
+  height: 41px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: rgba(235, 245, 238, 0.7);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.tribunal-case-modal__content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 23px;
+}
+
+.tribunal-case-modal__people {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.tribunal-case-modal__people article {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.tribunal-case-modal__avatar,
+.tribunal-case-modal__person-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  color: #07150d;
+  background: #62e49d;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.tribunal-case-modal__person-icon {
+  color: #69e7a4;
+  background: rgba(94, 228, 155, 0.08);
+}
+
+.tribunal-case-modal__people article:nth-child(3)
+.tribunal-case-modal__person-icon {
+  color: #65b9ff;
+  background: rgba(101, 185, 255, 0.08);
+}
+
+.tribunal-case-modal__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tribunal-case-modal__people article > div:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tribunal-case-modal__people small {
+  color: rgba(220, 235, 225, 0.4);
+  font-size: 0.53rem;
+}
+
+.tribunal-case-modal__people strong {
+  overflow: hidden;
+  color: #f5fff8;
+  font-size: 0.67rem;
+  text-overflow: ellipsis;
+}
+
+.tribunal-case-modal__reason,
+.tribunal-case-modal__evidence,
+.tribunal-case-modal__vote-section,
+.tribunal-case-modal__verdict {
+  padding: 17px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.tribunal-case-modal__section-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #f4bd5c;
+}
+
+.tribunal-case-modal__section-title h3 {
+  margin: 0;
+  color: #f5fff8;
+  font-size: 0.8rem;
+}
+
+.tribunal-case-modal__reason > p,
+.tribunal-case-modal__evidence > p {
+  margin: 11px 0 0;
+  color: rgba(220, 235, 225, 0.61);
+  font-size: 0.7rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.tribunal-case-modal__vote-results {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.tribunal-case-modal__vote-results > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 55px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.tribunal-case-modal__vote-results span {
+  color: rgba(220, 235, 225, 0.52);
+  font-size: 0.64rem;
+}
+
+.tribunal-case-modal__vote-results strong {
+  color: #f5fff8;
+  font-size: 1rem;
+}
+
+.tribunal-case-modal__vote-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 10px;
+}
+
+.tribunal-vote-button {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 12px;
+  color: rgba(220, 235, 225, 0.65);
+  background: rgba(255, 255, 255, 0.025);
+  font: inherit;
+  font-size: 0.69rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.tribunal-vote-button:first-child:hover,
+.tribunal-vote-button:first-child.tribunal-vote-button--active {
+  color: #ff929a;
+  border-color: rgba(255, 126, 137, 0.22);
+  background: rgba(255, 126, 137, 0.08);
+}
+
+.tribunal-vote-button:last-child:hover,
+.tribunal-vote-button:last-child.tribunal-vote-button--active {
+  color: #69e7a4;
+  border-color: rgba(94, 228, 155, 0.22);
+  background: rgba(94, 228, 155, 0.08);
+}
+
+.tribunal-case-modal__verdict-card {
+  margin-top: 12px;
+  padding: 15px;
+  border: 1px solid rgba(94, 228, 155, 0.1);
+  border-radius: 13px;
+  background: rgba(94, 228, 155, 0.045);
+}
+
+.tribunal-case-modal__verdict-card strong {
+  color: #69e7a4;
+}
+
+.tribunal-case-modal__verdict-card p {
+  margin: 7px 0 0;
+  color: rgba(220, 235, 225, 0.62);
+  font-size: 0.7rem;
+  line-height: 1.6;
+}
+
+.tribunal-case-modal__error,
+.tribunal-form__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px;
+  border: 1px solid rgba(255, 126, 137, 0.16);
+  border-radius: 12px;
+  color: #ff929a;
+  background: rgba(255, 126, 137, 0.065);
+  font-size: 0.69rem;
+}
+
+.tribunal-case-modal__error p {
+  margin: 0;
+}
+
+.tribunal-case-modal__footer,
+.tribunal-form-modal__footer {
+  position: sticky;
+  z-index: 5;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding: 15px 23px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(9, 26, 18, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.tribunal-dismiss-button {
+  color: #ff929a;
+  border-color: rgba(255, 126, 137, 0.15);
+}
+
+/* =========================================================
+   TRIBUNAL — FORMULAIRE
+   ========================================================= */
+
+.tribunal-form-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tribunal-form-modal__title > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 13px;
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.tribunal-form-modal__title small {
+  color: rgba(220, 235, 225, 0.45);
+  font-size: 0.61rem;
+}
+
+.tribunal-form-modal__title h2 {
+  margin: 4px 0 0;
+  color: #f5fff8;
+  font-size: 1rem;
+}
+
+.tribunal-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.tribunal-form__body {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+  padding: 22px 23px;
+}
+
+.tribunal-form__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid rgba(244, 189, 92, 0.12);
+  border-radius: 15px;
+  background: rgba(244, 189, 92, 0.045);
+}
+
+.tribunal-form__notice > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 13px;
+  color: #f4bd5c;
+  background: rgba(244, 189, 92, 0.09);
+}
+
+.tribunal-form__notice strong {
+  color: #f5fff8;
+  font-size: 0.75rem;
+}
+
+.tribunal-form__notice p {
+  margin: 5px 0 0;
+  color: rgba(220, 235, 225, 0.55);
+  font-size: 0.67rem;
+  line-height: 1.55;
+}
+
+.tribunal-form__field {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tribunal-form__field > span {
+  color: rgba(220, 235, 225, 0.62);
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+.tribunal-form__control,
+.tribunal-form__select-control {
+  min-height: 53px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  color: rgba(220, 235, 225, 0.48);
+  background: rgba(255, 255, 255, 0.03);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.tribunal-form__select-control {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.tribunal-form__control:focus-within,
+.tribunal-form__select-control:focus-within {
+  border-color: rgba(94, 228, 155, 0.45);
+  background: rgba(94, 228, 155, 0.04);
+  box-shadow: 0 0 0 4px rgba(94, 228, 155, 0.065);
+}
+
+.tribunal-form__control input,
+.tribunal-form__select-control select {
+  width: 100%;
+  min-width: 0;
+  height: 51px;
+  border: 0;
+  outline: 0;
+  color: #f5fff8;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.tribunal-form__select-control select {
+  cursor: pointer;
+  appearance: none;
+}
+
+.tribunal-form__select-control option {
+  color: #f5fff8;
+  background: #0b2117;
+}
+
+.tribunal-form__control small {
+  color: rgba(220, 235, 225, 0.35);
+  font-size: 0.56rem;
+}
+
+.tribunal-form__field > textarea {
+  width: 100%;
+  min-height: 135px;
+  padding: 13px 14px 29px;
+  resize: vertical;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  outline: 0;
+  color: #f5fff8;
+  background: rgba(255, 255, 255, 0.03);
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+.tribunal-form__field > textarea:focus {
+  border-color: rgba(94, 228, 155, 0.45);
+  box-shadow: 0 0 0 4px rgba(94, 228, 155, 0.065);
+}
+
+.tribunal-form__counter {
+  position: absolute;
+  right: 12px;
+  bottom: 9px;
+  color: rgba(220, 235, 225, 0.35);
+  font-size: 0.56rem;
+}
+
+.tribunal-form__textarea-wrapper {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.085);
+  border-radius: 14px;
+  color: rgba(220, 235, 225, 0.45);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tribunal-form__textarea-wrapper:focus-within {
+  border-color: rgba(94, 228, 155, 0.45);
+  box-shadow: 0 0 0 4px rgba(94, 228, 155, 0.065);
+}
+
+.tribunal-form__textarea-wrapper textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 0 0 20px;
+  resize: vertical;
+  border: 0;
+  outline: 0;
+  color: #f5fff8;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.6;
+}
+
+.tribunal-form__textarea-wrapper small {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  color: rgba(220, 235, 225, 0.35);
+  font-size: 0.56rem;
+}
+
+.tribunal-form__accused-preview {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  border: 1px solid rgba(94, 228, 155, 0.1);
+  border-radius: 14px;
+  background: rgba(94, 228, 155, 0.04);
+}
+
+.tribunal-form__accused-avatar {
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 12px;
+  color: #07150d;
+  background: #62e49d;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.tribunal-form__accused-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tribunal-form__accused-preview > div:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tribunal-form__accused-preview small {
+  color: rgba(220, 235, 225, 0.4);
+  font-size: 0.53rem;
+}
+
+.tribunal-form__accused-preview strong {
+  color: #f5fff8;
+  font-size: 0.72rem;
+}
+
+.tribunal-form__accused-preview p {
+  margin: 0;
+  color: rgba(220, 235, 225, 0.48);
+  font-size: 0.58rem;
+}
+
+/* =========================================================
+   TRIBUNAL — RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1180px) {
+  .tribunal-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tribunal-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tribunal-header__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .tribunal-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .tribunal-search {
+    max-width: none;
+  }
+
+  .tribunal-filters {
+    overflow-x: auto;
+  }
+
+  .tribunal-case-modal__people {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 580px) {
+  .tribunal-header {
+    padding: 21px;
+    border-radius: 21px;
+  }
+
+  .tribunal-header__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .tribunal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tribunal-case-modal,
+  .tribunal-form-modal {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-height: calc(100dvh - 7px);
+    translate: none;
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .tribunal-case-modal__header,
+  .tribunal-form-modal__header {
+    padding: 17px;
+  }
+
+  .tribunal-case-modal__content,
+  .tribunal-form__body {
+    padding: 18px 17px;
+  }
+
+  .tribunal-case-modal__vote-results,
+  .tribunal-case-modal__vote-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .tribunal-case-modal__footer,
+  .tribunal-form-modal__footer {
+    display: grid;
+    grid-template-columns: 1fr;
+    padding:
+      14px
+      17px
+      max(16px, env(safe-area-inset-bottom));
+  }
+
+  .tribunal-case-modal__footer button,
+  .tribunal-form-modal__footer button {
+    width: 100%;
+  }
+}

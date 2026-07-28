@@ -56,6 +56,11 @@ import EditProfileModal from "./components/profile/EditProfileModal";
 import ChangePasswordModal from "./components/profile/ChangePasswordModal";
 import MembersSection from "./components/members/MembersSection";
 import MemberProfileModal from "./components/members/MemberProfileModal";
+import TribunalSection from "./components/tribunal/TribunalSection";
+import TribunalCaseModal from "./components/tribunal/TribunalCaseModal";
+import TribunalFormModal from "./components/tribunal/TribunalFormModal";
+
+import { useTribunalCases } from "./hooks/useTribunalCases";
 
 import { getProfileStatistics } from "./services/profileService";
 
@@ -143,6 +148,7 @@ const implementedPages = [
   "gages",
   "profile",
   "members",
+  "tribunal",
 ];
 
 function formatBikeRideDate(value) {
@@ -235,6 +241,21 @@ function App() {
     useState(false);
 
   const [
+    tribunalFormOpen,
+    setTribunalFormOpen,
+  ] = useState(false);
+
+  const [
+    tribunalCaseModalOpen,
+    setTribunalCaseModalOpen,
+  ] = useState(false);
+
+  const [
+    selectedTribunalCase,
+    setSelectedTribunalCase,
+  ] = useState(null);
+
+  const [
     selectedMember,
     setSelectedMember,
   ] = useState(null);
@@ -291,6 +312,18 @@ function App() {
   } = useBikeRides();
 
   const {
+    cases: tribunalCases,
+    loading: tribunalLoading,
+    saving: tribunalSaving,
+    error: tribunalError,
+    addCase: addTribunalCase,
+    startVoting: startTribunalVoting,
+    vote: voteTribunalCase,
+    judgeCase: judgeTribunalCase,
+    dismissCase: dismissTribunalCase,
+  } = useTribunalCases(user?.id);
+
+  const {
     albums: galleryAlbums,
     photos: galleryPhotos,
     loading: galleryLoading,
@@ -321,6 +354,143 @@ function App() {
     removeAvatar,
     savePassword,
   } = useProfile(user?.id);
+
+  const openTribunalForm = () => {
+    setTribunalFormOpen(true);
+  };
+
+  const closeTribunalForm = () => {
+    if (tribunalSaving) {
+      return;
+    }
+
+    setTribunalFormOpen(false);
+  };
+
+  const openTribunalCase = (
+    tribunalCase,
+  ) => {
+    setSelectedTribunalCase(
+      tribunalCase,
+    );
+
+    setTribunalCaseModalOpen(true);
+  };
+
+  const closeTribunalCase = () => {
+    if (tribunalSaving) {
+      return;
+    }
+
+    setTribunalCaseModalOpen(false);
+
+    window.setTimeout(() => {
+      setSelectedTribunalCase(null);
+    }, 220);
+  };
+
+  const handleTribunalSubmit = async (
+    tribunalData,
+  ) => {
+    await addTribunalCase(
+      tribunalData,
+    );
+
+    setTribunalFormOpen(false);
+  };
+
+  const handleTribunalVote = async ({
+    tribunalCase,
+    value,
+  }) => {
+    await voteTribunalCase({
+      tribunalCase,
+      value,
+    });
+
+    setSelectedTribunalCase(
+      (currentCase) => {
+        if (!currentCase) {
+          return currentCase;
+        }
+
+        const currentVotes =
+          currentCase.votes ?? [];
+
+        const remainingVotes =
+          currentVotes.filter(
+            (voteItem) =>
+              (voteItem.profileId ??
+                voteItem.profile_id) !==
+              user?.id,
+          );
+
+        return {
+          ...currentCase,
+          votes: [
+            ...remainingVotes,
+            {
+              profileId: user?.id,
+              profile_id: user?.id,
+              value,
+              vote: value,
+            },
+          ],
+        };
+      },
+    );
+  };
+
+  const handleStartTribunalVoting =
+    async (tribunalCase) => {
+      await startTribunalVoting(
+        tribunalCase,
+      );
+
+      setSelectedTribunalCase(
+        (currentCase) =>
+          currentCase
+            ? {
+              ...currentCase,
+              status: "voting",
+            }
+            : currentCase,
+      );
+    };
+
+  const handleDismissTribunalCase =
+    async (tribunalCase) => {
+      const confirmed =
+        window.confirm(
+          "Classer cette affaire sans suite ?",
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      await dismissTribunalCase(
+        tribunalCase,
+      );
+
+      closeTribunalCase();
+    };
+
+  const handleJudgeTribunalCase =
+    async (tribunalCase) => {
+      const sanction =
+        window.prompt(
+          "Indique la sanction ou le gage si le membre est déclaré coupable :",
+          "",
+        );
+
+      await judgeTribunalCase(
+        tribunalCase,
+        sanction?.trim() || null,
+      );
+
+      closeTribunalCase();
+    };
 
   const openMemberProfile = async (member) => {
     if (!member?.id) {
@@ -768,6 +938,28 @@ function App() {
       behavior: "smooth",
     });
   };
+
+  useEffect(() => {
+    if (!selectedTribunalCase?.id) {
+      return;
+    }
+
+    const refreshedCase =
+      tribunalCases.find(
+        (tribunalCase) =>
+          tribunalCase.id ===
+          selectedTribunalCase.id,
+      );
+
+    if (refreshedCase) {
+      setSelectedTribunalCase(
+        refreshedCase,
+      );
+    }
+  }, [
+    tribunalCases,
+    selectedTribunalCase?.id,
+  ]);
 
   const renderPlaceholderPage = () => {
     const CurrentIcon = currentNavigationItem?.icon ?? House;
@@ -1335,6 +1527,18 @@ function App() {
                 />
               )}
 
+              {activePage === "tribunal" && (
+                <TribunalSection
+                  cases={tribunalCases}
+                  loading={tribunalLoading}
+                  saving={tribunalSaving}
+                  error={tribunalError}
+                  isAdmin={isAdmin}
+                  onCreate={openTribunalForm}
+                  onOpenCase={openTribunalCase}
+                />
+              )}
+
               {!implementedPages.includes(activePage) &&
                 renderPlaceholderPage()}
             </motion.div>
@@ -1382,6 +1586,35 @@ function App() {
         saving={bikeSaving}
         onClose={closeBikeRideModal}
         onSubmit={handleBikeRideSubmit}
+      />
+
+      <TribunalFormModal
+        open={tribunalFormOpen}
+        members={members}
+        currentProfileId={user?.id}
+        saving={tribunalSaving}
+        error={tribunalError}
+        onClose={closeTribunalForm}
+        onSubmit={handleTribunalSubmit}
+      />
+
+      <TribunalCaseModal
+        open={tribunalCaseModalOpen}
+        tribunalCase={selectedTribunalCase}
+        currentProfile={profile}
+        saving={tribunalSaving}
+        error={tribunalError}
+        onClose={closeTribunalCase}
+        onVote={handleTribunalVote}
+        onStartVoting={
+          handleStartTribunalVoting
+        }
+        onJudge={
+          handleJudgeTribunalCase
+        }
+        onDismiss={
+          handleDismissTribunalCase
+        }
       />
 
       <MemberProfileModal
