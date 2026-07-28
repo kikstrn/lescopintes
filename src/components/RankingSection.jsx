@@ -35,28 +35,30 @@ const rankingTabs = [
   },
 ];
 
-const positionChanges = {
-  1: 0,
-  2: 1,
-  3: -1,
-  4: 1,
-  5: -1,
-};
-
 function getRankingValue(member, rankingType) {
   switch (rankingType) {
     case "tennis":
-      return member.elo ?? 1500;
+      return Number(
+        member.elo ??
+        member.tennisElo ??
+        1500,
+      );
 
     case "bike":
-      return member.bikeKm ?? 0;
+      return Number(
+        member.bikeDistance ?? 0,
+      );
 
     case "events":
-      return member.events ?? 0;
+      return Number(
+        member.eventCount ?? 0,
+      );
 
     case "general":
     default:
-      return member.points ?? 0;
+      return Number(
+        member.calculatedPoints ?? 0,
+      );
   }
 }
 
@@ -92,6 +94,69 @@ function getRankingDescription(rankingType) {
     default:
       return "Classement global combinant les activités et les performances.";
   }
+}
+
+function getMemberId(member) {
+  return String(member?.id ?? "");
+}
+
+function getEventParticipants(event) {
+  const participants =
+    event?.participants ??
+    event?.eventParticipants ??
+    event?.event_participants ??
+    event?.members ??
+    [];
+
+  return Array.isArray(participants)
+    ? participants
+    : [];
+}
+
+function getParticipantProfileId(participant) {
+  return String(
+    participant?.profileId ??
+    participant?.profile_id ??
+    participant?.userId ??
+    participant?.user_id ??
+    participant?.memberId ??
+    participant?.member_id ??
+    participant?.id ??
+    "",
+  );
+}
+
+function getGageAssignedProfileId(gage) {
+  return String(
+    gage?.assignedProfileId ??
+    gage?.assigned_profile_id ??
+    gage?.assignedProfile?.id ??
+    "",
+  );
+}
+
+function calculateGeneralPoints({
+  wins,
+  losses,
+  bikeDistance,
+  eventCount,
+  validatedGages,
+}) {
+  /*
+   * Barème du classement général :
+   * 5 points par victoire
+   * 1 point par défaite / participation tennis
+   * 1 point tous les 10 km à vélo
+   * 3 points par événement
+   * 8 points par gage validé
+   */
+  return (
+    wins * 5 +
+    losses +
+    Math.floor(bikeDistance / 10) +
+    eventCount * 3 +
+    validatedGages * 8
+  );
 }
 
 function PositionChange({ value }) {
@@ -177,17 +242,160 @@ function PodiumAvatar({ member, rank }) {
   );
 }
 
-function RankingSection({ members = [] }) {
+function getMemberWins(member) {
+  return Number(
+    member.tennisWins ??
+    member.wins ??
+    0,
+  );
+}
+
+function getMemberLosses(member) {
+  return Number(
+    member.tennisLosses ??
+    member.losses ??
+    0,
+  );
+}
+
+function getMemberBikeDistance(member) {
+  return Number(
+    member.bikeDistance ??
+    member.bikeKm ??
+    0,
+  );
+}
+
+function getMemberEventCount(member) {
+  return Number(
+    member.eventCount ??
+    member.events ??
+    0,
+  );
+}
+
+function getMemberWinRate(member) {
+  const wins = getMemberWins(member);
+  const losses = getMemberLosses(member);
+  const matches = wins + losses;
+
+  return matches > 0
+    ? Math.round((wins / matches) * 100)
+    : 0;
+}
+
+function RankingSection({
+  members = [],
+  events = [],
+  gages = [],
+}) {
   const [activeTab, setActiveTab] = useState("general");
 
-  const ranking = useMemo(() => {
-    return [...members].sort((memberA, memberB) => {
-      return (
-        getRankingValue(memberB, activeTab) -
-        getRankingValue(memberA, activeTab)
-      );
+  const enrichedMembers = useMemo(() => {
+    return members.map((member) => {
+      const memberId =
+        getMemberId(member);
+
+      const wins =
+        getMemberWins(member);
+
+      const losses =
+        getMemberLosses(member);
+
+      const bikeDistance =
+        getMemberBikeDistance(member);
+
+      const eventCount = events.filter(
+        (event) =>
+          getEventParticipants(event).some(
+            (participant) =>
+              getParticipantProfileId(
+                participant,
+              ) === memberId,
+          ),
+      ).length;
+
+      const validatedGages =
+        gages.filter(
+          (gage) =>
+            getGageAssignedProfileId(
+              gage,
+            ) === memberId &&
+            gage.status === "validated",
+        ).length;
+
+      const calculatedPoints =
+        calculateGeneralPoints({
+          wins,
+          losses,
+          bikeDistance,
+          eventCount,
+          validatedGages,
+        });
+
+      return {
+        ...member,
+
+        wins,
+        losses,
+
+        tennisWins: wins,
+        tennisLosses: losses,
+
+        bikeKm: bikeDistance,
+        bikeDistance,
+
+        events: eventCount,
+        eventCount,
+
+        validatedGages,
+        calculatedPoints,
+      };
     });
-  }, [members, activeTab]);
+  }, [
+    members,
+    events,
+    gages,
+  ]);
+
+  const ranking = useMemo(() => {
+    return [...enrichedMembers].sort(
+      (memberA, memberB) => {
+        const difference =
+          getRankingValue(
+            memberB,
+            activeTab,
+          ) -
+          getRankingValue(
+            memberA,
+            activeTab,
+          );
+
+        if (difference !== 0) {
+          return difference;
+        }
+
+        return String(
+          memberA.nickname ??
+          memberA.firstName ??
+          "",
+        ).localeCompare(
+          String(
+            memberB.nickname ??
+            memberB.firstName ??
+            "",
+          ),
+          "fr",
+          {
+            sensitivity: "base",
+          },
+        );
+      },
+    );
+  }, [
+    enrichedMembers,
+    activeTab,
+  ]);
 
   const first = ranking[0];
   const second = ranking[1];
@@ -267,9 +475,8 @@ function RankingSection({ members = [] }) {
             <button
               key={tab.id}
               type="button"
-              className={`ranking-tabs__button ${
-                isActive ? "ranking-tabs__button--active" : ""
-              }`}
+              className={`ranking-tabs__button ${isActive ? "ranking-tabs__button--active" : ""
+                }`}
               onClick={() => setActiveTab(tab.id)}
             >
               {isActive && (
@@ -381,26 +588,29 @@ function RankingSection({ members = [] }) {
                       member,
                       activeTab,
                     );
+                    const wins =
+                      getMemberWins(member);
+
+                    const losses =
+                      getMemberLosses(member);
 
                     const matches =
-                      (member.wins ?? 0) +
-                      (member.losses ?? 0);
+                      wins + losses;
 
                     const winRate =
                       matches > 0
                         ? Math.round(
-                            ((member.wins ?? 0) / matches) * 100,
-                          )
+                          (wins / matches) * 100,
+                        )
                         : 0;
 
                     return (
                       <motion.article
                         key={member.id}
-                        className={`ranking-row ${
-                          position === 1
-                            ? "ranking-row--leader"
-                            : ""
-                        }`}
+                        className={`ranking-row ${position === 1
+                          ? "ranking-row--leader"
+                          : ""
+                          }`}
                         initial={{
                           opacity: 0,
                           x: 18,
@@ -443,16 +653,23 @@ function RankingSection({ members = [] }) {
                           {activeTab === "tennis" && (
                             <>
                               <span>
-                                {member.wins ?? 0} victoires
+                                {wins} victoires
                               </span>
-                              <small>{winRate} % de réussite</small>
+
+                              <small>
+                                {getMemberEventCount(member)} événements
+                              </small>
                             </>
                           )}
 
                           {activeTab === "bike" && (
                             <>
                               <span>
-                                {member.bikeKm ?? 0} km parcourus
+                                {getMemberBikeDistance(
+                                  member,
+                                ).toLocaleString("fr-FR", {
+                                  maximumFractionDigits: 1,
+                                })} km parcourus
                               </span>
                               <small>
                                 Record annuel personnel
@@ -463,7 +680,7 @@ function RankingSection({ members = [] }) {
                           {activeTab === "events" && (
                             <>
                               <span>
-                                {member.events ?? 0} participations
+                                {getMemberEventCount(member)} participations
                               </span>
                               <small>
                                 Activité dans le groupe
@@ -474,10 +691,20 @@ function RankingSection({ members = [] }) {
                           {activeTab === "general" && (
                             <>
                               <span>
-                                {member.wins ?? 0} victoires
+                                {wins} victoire
+                                {wins > 1 ? "s" : ""}
                               </span>
+
                               <small>
-                                {member.events ?? 0} événements
+                                {member.eventCount ?? 0} événement
+                                {(member.eventCount ?? 0) > 1
+                                  ? "s"
+                                  : ""}
+                                {" · "}
+                                {member.validatedGages ?? 0} gage
+                                {(member.validatedGages ?? 0) > 1
+                                  ? "s"
+                                  : ""}
                               </small>
                             </>
                           )}
@@ -485,15 +712,19 @@ function RankingSection({ members = [] }) {
 
                         <div className="ranking-row__value">
                           <strong>
-                            {value.toLocaleString("fr-FR")}
+                            {Number(value).toLocaleString(
+                              "fr-FR",
+                              {
+                                maximumFractionDigits:
+                                  activeTab === "bike" ? 1 : 0,
+                              },
+                            )}
                           </strong>
 
                           <small>{unit}</small>
                         </div>
 
-                        <PositionChange
-                          value={positionChanges[member.id] ?? 0}
-                        />
+                        <PositionChange value={0} />
                       </motion.article>
                     );
                   })}
@@ -506,15 +737,20 @@ function RankingSection({ members = [] }) {
 
       <section className="ranking-member-cards">
         {ranking.map((member, index) => {
+          const wins =
+            getMemberWins(member);
+
+          const losses =
+            getMemberLosses(member);
+
           const matches =
-            (member.wins ?? 0) +
-            (member.losses ?? 0);
+            wins + losses;
 
           const winRate =
             matches > 0
               ? Math.round(
-                  ((member.wins ?? 0) / matches) * 100,
-                )
+                (wins / matches) * 100,
+              )
               : 0;
 
           return (
@@ -545,9 +781,7 @@ function RankingSection({ members = [] }) {
                   #{index + 1}
                 </span>
 
-                <PositionChange
-                  value={positionChanges[member.id] ?? 0}
-                />
+                <PositionChange value={0} />
               </div>
 
               <div className="ranking-member-card__identity">
@@ -567,7 +801,9 @@ function RankingSection({ members = [] }) {
               <div className="ranking-member-card__stats">
                 <div>
                   <small>Points</small>
-                  <strong>{member.points ?? 0}</strong>
+                  <strong>
+                    {member.calculatedPoints ?? 0}
+                  </strong>
                 </div>
 
                 <div>
@@ -577,7 +813,9 @@ function RankingSection({ members = [] }) {
 
                 <div>
                   <small>Victoires</small>
-                  <strong>{member.wins ?? 0}</strong>
+                  <strong>
+                    {getMemberWins(member)}
+                  </strong>
                 </div>
 
                 <div>

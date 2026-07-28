@@ -1601,7 +1601,11 @@ function App() {
               )}
 
               {activePage === "ranking" && (
-                <RankingSection members={members} />
+                <RankingSection
+                  members={members}
+                  events={events}
+                  gages={gages}
+                />
               )}
 
               {activePage === "statistics" && (
