@@ -1,110 +1,20 @@
-import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { supabase } from "./lib/supabase";
+import { useEffect, useMemo, useState } from "react";
+
 import V2Bridge from "./v2/app/V2Bridge";
-import {
-  Bell,
-  Bike,
-  CalendarDays,
-  ChartNoAxesCombined,
-  ChevronRight,
-  CircleUserRound,
-  Dices,
-  House,
-  Images,
-  Medal,
-  Menu,
-  Flame,
-  Plus,
-  Scale,
-  Trophy,
-  Clock3,
-  MapPin,
-  Mountain,
-  Route,
-  LogOut,
-} from "lucide-react";
-import {
-  AppDataProvider,
-} from "./context/AppDataContext";
+import AppModals from "./v2/app/AppModals";
 
-import {
-  AuthProvider,
-} from "./context/AuthContext";
-import AppShell from "./app/AppShell";
-import {
-  getNavigationItem,
-  getPageTitle,
-  isImplementedPage,
-  navigation,
-} from "./app/navigation";
-import HomePage from "./features/home/HomePage";
-import AppModals from "./app/AppModals";
-import AppPages from "./app/AppPages";
-import { useHomeDashboard } from "./features/home/useHomeDashboard";
-
-
-import Sidebar from "./components/Sidebar";
-import MobileNavigation from "./components/MobileNavigation";
-import BikeMap from "./components/BikeMap";
-// import WeeklyChallenge from "./components/WeeklyChallenge";
 import useChallenges from "./hooks/useChallenges";
 import { useEvents } from "./hooks/useEvents";
 import { useTennisMatches } from "./hooks/useTennisMatches";
 import { useBikeRides } from "./hooks/useBikeRides";
 import { useGages } from "./hooks/useGages";
 import { useTribunalCases } from "./hooks/useTribunalCases";
-import { getProfileStatistics } from "./services/profileService";
 import { useProfile } from "./hooks/useProfile";
 import { useProfiles } from "./hooks/useProfiles";
 import { useGallery } from "./hooks/useGallery";
-import { useEffect } from "react";
-import { testSupabaseConnection } from "./lib/testSupabase";
 import { useAuth } from "./context/AuthContext";
 
-function formatBikeRideDate(value) {
-  if (!value) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  }).format(new Date(value));
-}
-
-function formatBikeRideTime(value) {
-  if (!value) {
-    return "";
-  }
-
-  return new Intl.DateTimeFormat("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value));
-}
-
-function formatBikeRideDuration(minutes) {
-  if (!minutes) {
-    return null;
-  }
-
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = minutes % 60;
-
-  if (hours === 0) {
-    return `${remainingMinutes} min`;
-  }
-
-  if (remainingMinutes === 0) {
-    return `${hours} h`;
-  }
-
-  return `${hours} h ${String(
-    remainingMinutes,
-  ).padStart(2, "0")}`;
-}
+import { getProfileStatistics } from "./services/profileService";
 
 function App() {
 
@@ -148,8 +58,6 @@ function App() {
   const [changePasswordModalOpen, setChangePasswordModalOpen] =
     useState(false);
 
-  const [mobileSidebarOpen, setMobileSidebarOpen] =
-    useState(false);
 
   const [
     tribunalFormOpen,
@@ -199,6 +107,9 @@ function App() {
 
   const [selectedGage, setSelectedGage] =
     useState(null);
+
+  const [scoreModalOpen, setScoreModalOpen] =
+    useState(false);
 
   const {
     events,
@@ -653,10 +564,6 @@ function App() {
     await savePassword(newPassword);
   };
 
-  const handleProfileLogout = async () => {
-    await signOut();
-  };
-
   const handleGalleryCommentAdd = async ({
     photoId,
     content,
@@ -696,13 +603,6 @@ function App() {
     });
   };
 
-const useLegacy =
-  new URLSearchParams(
-    window.location.search,
-  ).get("legacy") === "1";
-
-const useV2 = !useLegacy;
-
   const showPreviousGalleryPhoto = () => {
     setGalleryViewerIndex(
       (currentIndex) =>
@@ -721,30 +621,6 @@ const useV2 = !useLegacy;
           : currentIndex + 1,
     );
   };
-
-  const nextPlannedBikeRide = useMemo(() => {
-    const now = Date.now();
-
-    return (
-      bikeRides
-        .filter((ride) => {
-          const rideTime = new Date(
-            ride.rideDate,
-          ).getTime();
-
-          return (
-            ride.status === "planned" &&
-            rideTime >= now
-          );
-        })
-        .sort((rideA, rideB) => {
-          return (
-            new Date(rideA.rideDate).getTime() -
-            new Date(rideB.rideDate).getTime()
-          );
-        })[0] ?? null
-    );
-  }, [bikeRides]);
 
   const openGalleryUploadModal = () => {
     setGalleryUploadOpen(true);
@@ -936,63 +812,6 @@ const useV2 = !useLegacy;
     });
   };
 
-  const connectedNickname =
-    profile?.nickname ??
-    user?.email?.split("@")[0] ??
-    "Membre";
-
-  const connectedInitials =
-    profile?.initials ??
-    connectedNickname.slice(0, 2).toUpperCase();
-
-  const connectedRole =
-    isAdmin ? "Administrateur" : "Membre";
-
-  const [activePage, setActivePage] = useState("home");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scoreModalOpen, setScoreModalOpen] = useState(false);
-
-  const {
-    sortedMembers,
-    totalMatches,
-    totalBikeKm,
-    upcomingEvents,
-    connectedMember,
-    connectedPoints,
-    connectedRanking,
-    leader,
-    homeActivityData,
-    homeChartSummary,
-    homeRecentActivities,
-    getMemberName,
-    getMemberWins,
-  } = useHomeDashboard({
-    members,
-    profile,
-    user,
-    events,
-    tennisMatches,
-    bikeRides,
-    gages,
-    tribunalCases,
-  });
-
-  const currentNavigationItem =
-    getNavigationItem(activePage);
-
-  const pageTitle =
-    getPageTitle(activePage);
-
-  const navigateTo = (page) => {
-    setActivePage(page);
-    setMobileMenuOpen(false);
-
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
-
   useEffect(() => {
     if (!selectedGage?.id) {
       return;
@@ -1033,74 +852,6 @@ const useV2 = !useLegacy;
     tribunalCases,
     selectedTribunalCase?.id,
   ]);
-
-  const renderPlaceholderPage = () => {
-    const CurrentIcon =
-      currentNavigationItem?.icon ??
-      navigation[0].icon;
-
-    return (
-      <section className="placeholder-page glass-panel">
-        <div className="placeholder-page__icon">
-          <CurrentIcon size={34} />
-        </div>
-
-        <p className="section-heading__eyebrow">
-          Module en préparation
-        </p>
-
-        <h2>{pageTitle}</h2>
-
-        <p>
-          Cette page sera construite lors des prochaines étapes.
-          La navigation est déjà prête et le contenu viendra
-          s’intégrer ici sans modifier l’architecture générale.
-        </p>
-
-        {activePage === "tennis" && (
-          <button
-            type="button"
-            className="primary-button"
-            onClick={() => setScoreModalOpen(true)}
-          >
-            <Plus size={18} />
-            Saisir un premier score
-          </button>
-        )}
-      </section>
-    );
-  };
-
-  const authContextValue = {
-    user,
-    profile,
-    // login,
-    logout,
-
-    isAdmin:
-      profile?.role === "admin",
-  };
-
-  const appDataValue = {
-    members,
-    profile,
-    user,
-    events,
-    tennisMatches,
-    bikeRides,
-    galleryPhotos,
-    tribunalCases,
-    gages,
-    challenges,
-    // refreshProfiles,
-    // refreshEvents,
-    // refreshTennisMatches,
-    // refreshBikeRides,
-    // refreshGallery,
-    // refreshTribunalCases,
-    // refreshGages,
-  };
-
   const v2Actions = {
     openCreateEvent:
       openCreateEventModal,
@@ -1163,11 +914,10 @@ const useV2 = !useLegacy;
     deleteAvatar:
       handleAvatarDelete,
 
-      createChallenge,
-updateChallenge,
-archiveChallenge,
+    createChallenge,
+    updateChallenge,
+    archiveChallenge,
 
-    navigateToLegacy: navigateTo,
   };
 
   const v2Loading = {
@@ -1207,507 +957,29 @@ archiveChallenge,
     gallery: galleryError,
     tribunal: tribunalError,
     gages: gagesError,
+    profile: profileError,
   };
-
-  if (useV2) {
-    return (
-      <>
-        <V2Bridge
-          members={members}
-          events={events}
-          tennisMatches={tennisMatches}
-          bikeRides={bikeRides}
-          galleryAlbums={galleryAlbums}
-          galleryPhotos={galleryPhotos}
-          galleryComments={galleryComments}
-          tribunalCases={tribunalCases}
-          gages={gages}
-          challenges={challenges}
-          activeChallenge={activeChallenge}
-
-          personalProfile={personalProfile}
-          profileStatistics={profileStatistics}
-
-          loading={v2Loading}
-          errors={v2Errors}
-          actions={v2Actions}
-        />
-
-        <AppModals
-          members={members}
-          user={user}
-          profile={profile}
-          isAdmin={isAdmin}
-
-          scoreModalOpen={scoreModalOpen}
-          tennisSaving={tennisSaving}
-          onSaveTennisMatch={
-            handleSaveTennisMatch
-          }
-          onCloseScoreModal={() => {
-            if (!tennisSaving) {
-              setScoreModalOpen(false);
-            }
-          }}
-
-          bikeModalOpen={bikeModalOpen}
-          bikeRideBeingEdited={
-            bikeRideBeingEdited
-          }
-          bikeSaving={bikeSaving}
-          onCloseBikeModal={
-            closeBikeRideModal
-          }
-          onSubmitBikeRide={
-            handleBikeRideSubmit
-          }
-
-          eventModalOpen={
-            eventModalOpen
-          }
-          eventBeingEdited={
-            eventBeingEdited
-          }
-          eventsSaving={
-            eventsSaving
-          }
-
-          galleryUploadOpen={galleryUploadOpen}
-          galleryAlbums={galleryAlbums}
-          galleryUploading={galleryUploading}
-          galleryUploadProgress={
-            galleryUploadProgress
-          }
-          onCloseGalleryUpload={
-            closeGalleryUploadModal
-          }
-          onUploadGalleryPhotos={
-            handleGalleryUpload
-          }
-
-          galleryViewerOpen={galleryViewerOpen}
-          galleryPhotos={galleryPhotos}
-          galleryViewerIndex={galleryViewerIndex}
-          gallerySaving={gallerySaving}
-          onCloseGalleryViewer={
-            closeGalleryViewer
-          }
-          onPreviousGalleryPhoto={
-            showPreviousGalleryPhoto
-          }
-          onNextGalleryPhoto={
-            showNextGalleryPhoto
-          }
-          onLikeGalleryPhoto={
-            handleGalleryLike
-          }
-          onAddGalleryComment={
-            handleGalleryCommentAdd
-          }
-          onEditGalleryComment={
-            handleGalleryCommentEdit
-          }
-          onDeleteGalleryComment={
-            handleGalleryCommentDelete
-          }
-          onCloseEventModal={
-            closeEventModal
-          }
-          onSubmitEvent={
-            handleEventSubmit
-          }
-
-          memberModalOpen={memberModalOpen}
-          selectedMember={selectedMember}
-          selectedMemberStatistics={
-            selectedMemberStatistics
-          }
-          memberStatisticsLoading={
-            memberStatisticsLoading
-          }
-          memberStatisticsError={
-            memberStatisticsError
-          }
-          onCloseMemberProfile={
-            closeMemberProfile
-          }
-
-          gageFormOpen={gageFormOpen}
-          gagesSaving={gagesSaving}
-          gagesError={gagesError}
-          onCloseGageForm={closeGageForm}
-          onSubmitGage={handleGageSubmit}
-
-          gageDetailsOpen={gageDetailsOpen}
-          selectedGage={selectedGage}
-          gagesUploading={gagesUploading}
-          onCloseGageDetails={closeGageDetails}
-          onStartGage={handleStartGage}
-          onCompleteGage={handleCompleteGage}
-          onValidateGage={handleValidateGage}
-          onCancelGage={handleCancelGage}
-          onUploadGageProof={
-            handleUploadGageProof
-          }
-          onDeleteGageProof={
-            handleDeleteGageProof
-          }
-          onDeleteGage={handleDeleteGage}
-
-          tribunalFormOpen={
-            tribunalFormOpen
-          }
-          tribunalSaving={
-            tribunalSaving
-          }
-          tribunalError={
-            tribunalError
-          }
-          onCloseTribunalForm={
-            closeTribunalForm
-          }
-          onSubmitTribunal={
-            handleTribunalSubmit
-          }
-
-          tribunalCaseModalOpen={
-            tribunalCaseModalOpen
-          }
-          selectedTribunalCase={
-            selectedTribunalCase
-          }
-          onCloseTribunalCase={
-            closeTribunalCase
-          }
-          onVoteTribunal={
-            handleTribunalVote
-          }
-          onStartTribunalVoting={
-            handleStartTribunalVoting
-          }
-          onJudgeTribunal={
-            handleJudgeTribunalCase
-          }
-          onDismissTribunal={
-            handleDismissTribunalCase
-          }
-
-          editProfileModalOpen={
-            editProfileModalOpen
-          }
-          personalProfile={
-            personalProfile
-          }
-          profileSaving={
-            profileSaving
-          }
-          onCloseEditProfile={
-            closeEditProfileModal
-          }
-          onSubmitProfile={
-            handleProfileSubmit
-          }
-
-          changePasswordModalOpen={
-            changePasswordModalOpen
-          }
-          changingPassword={
-            changingPassword
-          }
-          onCloseChangePassword={
-            closeChangePasswordModal
-          }
-          onSubmitPassword={
-            handlePasswordSubmit
-          }
-        />
-      </>
-    );
-  }
-
   return (
+    <>
+      <V2Bridge
+        members={members}
+        events={events}
+        tennisMatches={tennisMatches}
+        bikeRides={bikeRides}
+        galleryAlbums={galleryAlbums}
+        galleryPhotos={galleryPhotos}
+        galleryComments={galleryComments}
+        tribunalCases={tribunalCases}
+        gages={gages}
+        challenges={challenges}
+        activeChallenge={activeChallenge}
 
-    <div className="app-shell">
-      <div className="background-orb background-orb--one" />
-      <div className="background-orb background-orb--two" />
-      <div className="background-grid" />
+        personalProfile={personalProfile}
+        profileStatistics={profileStatistics}
 
-      <Sidebar
-        items={navigation}
-        activePage={activePage}
-        onNavigate={navigateTo}
-        onLogout={logout}
-        profile={profile}
-        isOpen={mobileSidebarOpen}
-        onClose={() =>
-          setMobileSidebarOpen(false)
-        }
-      />
-
-      <div className="app-content">
-        <header className="topbar">
-          <div className="topbar__left">
-            <button
-              type="button"
-              className="icon-button mobile-menu-button"
-              aria-label="Ouvrir le menu"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <Menu size={22} />
-            </button>
-
-            <div>
-              <p className="topbar__eyebrow">
-                Les Co’Pintes
-              </p>
-
-              <h1 className="topbar__title">
-                {pageTitle}
-              </h1>
-            </div>
-          </div>
-
-          <div className="topbar__actions">
-            <button
-              type="button"
-              className="icon-button notification-button"
-              aria-label="Notifications"
-            >
-              <Bell size={20} />
-              <span className="notification-dot" />
-            </button>
-
-            <button
-              type="button"
-              className="profile-button"
-              aria-label="Ouvrir le profil de Kiks"
-              onClick={() => navigateTo("profile")}
-            >
-              <span className="profile-button__avatar">
-                {connectedInitials}
-              </span>
-
-              <span className="profile-button__text">
-                <strong>{connectedNickname}</strong>
-                <small>{connectedRole}</small>
-              </span>
-
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        </header>
-
-        <main className="dashboard">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activePage}
-              initial={{
-                opacity: 0,
-                y: 14,
-              }}
-              animate={{
-                opacity: 1,
-                y: 0,
-              }}
-              exit={{
-                opacity: 0,
-                y: -10,
-              }}
-              transition={{
-                duration: 0.28,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-            >
-
-              {profilesLoading && (
-                <section className="data-status glass-panel">
-                  <span className="data-status__spinner" />
-
-                  <div>
-                    <strong>Chargement des membres</strong>
-                    <p>Récupération des données Supabase…</p>
-                  </div>
-                </section>
-              )}
-
-              {profilesError && (
-                <section className="data-status data-status--error glass-panel">
-                  <div>
-                    <strong>Impossible de charger les membres</strong>
-                    <p>{profilesError}</p>
-                  </div>
-                </section>
-              )}
-
-              <AppPages
-                activePage={activePage}
-                homeProps={homeProps}
-
-                members={members}
-                profile={profile}
-                user={user}
-                isAdmin={isAdmin}
-
-                events={events}
-                eventsLoading={eventsLoading}
-                eventsSaving={eventsSaving}
-                eventsError={eventsError}
-                onCreateEvent={
-                  openCreateEventModal
-                }
-                onEditEvent={
-                  openEditEventModal
-                }
-                onDeleteEvent={removeEvent}
-                onAttendance={
-                  handleAttendance
-                }
-
-                tennisMatches={tennisMatches}
-                tennisLoading={tennisLoading}
-                tennisError={tennisError}
-                onAddMatch={() =>
-                  setScoreModalOpen(true)
-                }
-
-                bikeRides={bikeRides}
-                bikeLoading={bikeLoading}
-                bikeSaving={bikeSaving}
-                bikeError={bikeError}
-                onCreateBikeRide={
-                  openCreateBikeRideModal
-                }
-                onEditBikeRide={
-                  openEditBikeRideModal
-                }
-                onDeleteBikeRide={
-                  handleDeleteBikeRide
-                }
-                onJoinBikeRide={
-                  handleJoinBikeRide
-                }
-                onLeaveBikeRide={
-                  handleLeaveBikeRide
-                }
-
-                galleryAlbums={galleryAlbums}
-                galleryPhotos={galleryPhotos}
-                galleryLoading={galleryLoading}
-                galleryError={galleryError}
-                onOpenGalleryUpload={
-                  openGalleryUploadModal
-                }
-                onOpenGalleryPhoto={
-                  openGalleryPhoto
-                }
-                onLikeGalleryPhoto={
-                  handleGalleryLike
-                }
-                onDeleteGalleryPhoto={
-                  handleGalleryPhotoDelete
-                }
-
-                personalProfile={personalProfile}
-                profileStatistics={
-                  profileStatistics
-                }
-                profileLoading={profileLoading}
-                profileActivityLoading={
-                  tennisLoading ||
-                  bikeLoading ||
-                  galleryLoading
-                }
-                profileSaving={profileSaving}
-                uploadingAvatar={
-                  uploadingAvatar
-                }
-                profileError={profileError}
-                galleryComments={
-                  galleryComments
-                }
-                onEditProfile={
-                  openEditProfileModal
-                }
-                onChangePassword={
-                  openChangePasswordModal
-                }
-                onUploadAvatar={
-                  handleAvatarUpload
-                }
-                onDeleteAvatar={
-                  handleAvatarDelete
-                }
-                onNavigate={navigateTo}
-
-                gages={gages}
-                gagesLoading={gagesLoading}
-                gagesError={gagesError}
-                onCreateGage={openGageForm}
-                onOpenGage={openGageDetails}
-
-                tribunalCases={tribunalCases}
-                tribunalLoading={
-                  tribunalLoading
-                }
-                tribunalSaving={
-                  tribunalSaving
-                }
-                tribunalError={tribunalError}
-                onCreateTribunalCase={
-                  openTribunalForm
-                }
-                onOpenTribunalCase={
-                  openTribunalCase
-                }
-
-                profilesLoading={
-                  profilesLoading
-                }
-                profilesError={profilesError}
-                onOpenMember={
-                  openMemberProfile
-                }
-
-                challenges={challenges}
-                activeChallenge={
-                  activeChallenge
-                }
-                createChallenge={
-                  createChallenge
-                }
-                updateChallenge={
-                  updateChallenge
-                }
-                archiveChallenge={
-                  archiveChallenge
-                }
-
-                renderPlaceholderPage={
-                  renderPlaceholderPage
-                }
-                isImplementedPage={
-                  isImplementedPage
-                }
-              />
-
-
-              {!isImplementedPage(activePage) &&
-                renderPlaceholderPage()}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-
-      <MobileNavigation
-        items={navigation}
-        activePage={activePage}
-        onNavigate={navigateTo}
-        onLogout={logout}
-        profile={profile}
-        menuOpen={mobileMenuOpen}
-        onClose={() =>
-          setMobileMenuOpen(false)
-        }
+        loading={v2Loading}
+        errors={v2Errors}
+        actions={v2Actions}
       />
 
       <AppModals
@@ -1716,90 +988,37 @@ archiveChallenge,
         profile={profile}
         isAdmin={isAdmin}
 
-        tennisSaving={tennisSaving}
         scoreModalOpen={scoreModalOpen}
-        onSaveTennisMatch={handleSaveTennisMatch}
+        tennisSaving={tennisSaving}
+        onSaveTennisMatch={
+          handleSaveTennisMatch
+        }
         onCloseScoreModal={() => {
           if (!tennisSaving) {
             setScoreModalOpen(false);
           }
         }}
 
-        eventModalOpen={eventModalOpen}
-        eventBeingEdited={eventBeingEdited}
-        eventsSaving={eventsSaving}
-        onCloseEventModal={closeEventModal}
-        onSubmitEvent={handleEventSubmit}
-
         bikeModalOpen={bikeModalOpen}
-        bikeRideBeingEdited={bikeRideBeingEdited}
+        bikeRideBeingEdited={
+          bikeRideBeingEdited
+        }
         bikeSaving={bikeSaving}
-        onCloseBikeModal={closeBikeRideModal}
-        onSubmitBikeRide={handleBikeRideSubmit}
-
-        tribunalFormOpen={tribunalFormOpen}
-        tribunalSaving={tribunalSaving}
-        tribunalError={tribunalError}
-        onCloseTribunalForm={closeTribunalForm}
-        onSubmitTribunal={handleTribunalSubmit}
-
-        tribunalCaseModalOpen={
-          tribunalCaseModalOpen
+        onCloseBikeModal={
+          closeBikeRideModal
         }
-        selectedTribunalCase={
-          selectedTribunalCase
-        }
-        onCloseTribunalCase={
-          closeTribunalCase
-        }
-        onVoteTribunal={
-          handleTribunalVote
-        }
-        onStartTribunalVoting={
-          handleStartTribunalVoting
-        }
-        onJudgeTribunal={
-          handleJudgeTribunalCase
-        }
-        onDismissTribunal={
-          handleDismissTribunalCase
+        onSubmitBikeRide={
+          handleBikeRideSubmit
         }
 
-        gageFormOpen={gageFormOpen}
-        gagesSaving={gagesSaving}
-        gagesError={gagesError}
-        onCloseGageForm={closeGageForm}
-        onSubmitGage={handleGageSubmit}
-
-        gageDetailsOpen={gageDetailsOpen}
-        selectedGage={selectedGage}
-        gagesUploading={gagesUploading}
-        onCloseGageDetails={closeGageDetails}
-        onStartGage={handleStartGage}
-        onCompleteGage={handleCompleteGage}
-        onValidateGage={handleValidateGage}
-        onCancelGage={handleCancelGage}
-        onUploadGageProof={
-          handleUploadGageProof
+        eventModalOpen={
+          eventModalOpen
         }
-        onDeleteGageProof={
-          handleDeleteGageProof
+        eventBeingEdited={
+          eventBeingEdited
         }
-        onDeleteGage={handleDeleteGage}
-
-        memberModalOpen={memberModalOpen}
-        selectedMember={selectedMember}
-        selectedMemberStatistics={
-          selectedMemberStatistics
-        }
-        memberStatisticsLoading={
-          memberStatisticsLoading
-        }
-        memberStatisticsError={
-          memberStatisticsError
-        }
-        onCloseMemberProfile={
-          closeMemberProfile
+        eventsSaving={
+          eventsSaving
         }
 
         galleryUploadOpen={galleryUploadOpen}
@@ -1840,12 +1059,97 @@ archiveChallenge,
         onDeleteGalleryComment={
           handleGalleryCommentDelete
         }
+        onCloseEventModal={
+          closeEventModal
+        }
+        onSubmitEvent={
+          handleEventSubmit
+        }
+
+        memberModalOpen={memberModalOpen}
+        selectedMember={selectedMember}
+        selectedMemberStatistics={
+          selectedMemberStatistics
+        }
+        memberStatisticsLoading={
+          memberStatisticsLoading
+        }
+        memberStatisticsError={
+          memberStatisticsError
+        }
+        onCloseMemberProfile={
+          closeMemberProfile
+        }
+
+        gageFormOpen={gageFormOpen}
+        gagesSaving={gagesSaving}
+        gagesError={gagesError}
+        onCloseGageForm={closeGageForm}
+        onSubmitGage={handleGageSubmit}
+
+        gageDetailsOpen={gageDetailsOpen}
+        selectedGage={selectedGage}
+        gagesUploading={gagesUploading}
+        onCloseGageDetails={closeGageDetails}
+        onStartGage={handleStartGage}
+        onCompleteGage={handleCompleteGage}
+        onValidateGage={handleValidateGage}
+        onCancelGage={handleCancelGage}
+        onUploadGageProof={
+          handleUploadGageProof
+        }
+        onDeleteGageProof={
+          handleDeleteGageProof
+        }
+        onDeleteGage={handleDeleteGage}
+
+        tribunalFormOpen={
+          tribunalFormOpen
+        }
+        tribunalSaving={
+          tribunalSaving
+        }
+        tribunalError={
+          tribunalError
+        }
+        onCloseTribunalForm={
+          closeTribunalForm
+        }
+        onSubmitTribunal={
+          handleTribunalSubmit
+        }
+
+        tribunalCaseModalOpen={
+          tribunalCaseModalOpen
+        }
+        selectedTribunalCase={
+          selectedTribunalCase
+        }
+        onCloseTribunalCase={
+          closeTribunalCase
+        }
+        onVoteTribunal={
+          handleTribunalVote
+        }
+        onStartTribunalVoting={
+          handleStartTribunalVoting
+        }
+        onJudgeTribunal={
+          handleJudgeTribunalCase
+        }
+        onDismissTribunal={
+          handleDismissTribunalCase
+        }
 
         editProfileModalOpen={
           editProfileModalOpen
         }
-        personalProfile={personalProfile}
-        profileSaving={profileSaving}
+        personalProfile={
+          personalProfile
+        }
+        profileSaving={
+          profileSaving
+        }
         onCloseEditProfile={
           closeEditProfileModal
         }
@@ -1856,7 +1160,9 @@ archiveChallenge,
         changePasswordModalOpen={
           changePasswordModalOpen
         }
-        changingPassword={changingPassword}
+        changingPassword={
+          changingPassword
+        }
         onCloseChangePassword={
           closeChangePasswordModal
         }
@@ -1864,22 +1170,7 @@ archiveChallenge,
           handlePasswordSubmit
         }
       />
-
-      {/* <ChallengesSection
-      challenges={challenges}
-      activeChallenge={activeChallenge}
-      createChallenge={createChallenge}
-      updateChallenge={updateChallenge}
-      archiveChallenge={archiveChallenge}
-      members={members}
-      tennisMatches={tennisMatches}
-      bikeRides={bikeRides}
-      events={events}
-      tribunalCases={tribunalCases}
-      gages={gages}
-    /> */}
-
-    </div>
+    </>
   );
 }
 

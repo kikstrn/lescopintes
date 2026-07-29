@@ -1,20 +1,20 @@
-import ScoreModal from "../components/ScoreModal";
-import EventFormModal from "../components/EventFormModal";
-import BikeRideFormModal from "../components/BikeRideFormModal";
+import ScoreModal from "../../components/ScoreModal";
+import EventFormModal from "../../components/EventFormModal";
+import BikeRideFormModal from "../../components/BikeRideFormModal";
 
-import TribunalFormModal from "../components/tribunal/TribunalFormModal";
-import TribunalCaseModal from "../components/tribunal/TribunalCaseModal";
+import TribunalFormModal from "../../components/tribunal/TribunalFormModal";
+import TribunalCaseModal from "../../components/tribunal/TribunalCaseModal";
 
-import GageFormModal from "../components/gages/GageFormModal";
-import GageDetailsModal from "../components/gages/GageDetailsModal";
+import GageFormModal from "../../components/gages/GageFormModal";
+import GageDetailsModal from "../../components/gages/GageDetailsModal";
 
-import MemberProfileModal from "../components/members/MemberProfileModal";
+import MemberProfileModal from "../../components/members/MemberProfileModal";
 
-import UploadPhotosModal from "../components/gallery/UploadPhotosModal";
-import GalleryViewer from "../components/gallery/GalleryViewer";
+import UploadPhotosModal from "../../components/gallery/UploadPhotosModal";
+import GalleryViewer from "../../components/gallery/GalleryViewer";
 
-import EditProfileModal from "../components/profile/EditProfileModal";
-import ChangePasswordModal from "../components/profile/ChangePasswordModal";
+import EditProfileModal from "../../components/profile/EditProfileModal";
+import ChangePasswordModal from "../../components/profile/ChangePasswordModal";
 
 function AppModals({
   members = [],
