@@ -119,6 +119,22 @@ function BikeRideFormModal({
   ] = useState("");
 
   useEffect(() => {
+  if (!open) {
+    return;
+  }
+
+  document.body.classList.add(
+    "modal-is-open",
+  );
+
+  return () => {
+    document.body.classList.remove(
+      "modal-is-open",
+    );
+  };
+}, [open]);
+
+  useEffect(() => {
     if (!open) {
       return;
     }

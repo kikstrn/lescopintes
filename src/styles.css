@@ -18994,3 +18994,115 @@ body,
     max-width: 100%;
   }
 }
+
+/* =========================================================
+   MODALES TENNIS / CYCLISME — CORRECTION NAVIGATION MOBILE
+   ========================================================= */
+
+@media (max-width: 768px) {
+  /* La modale et son fond doivent passer devant la navigation */
+  .score-modal__overlay,
+  .bike-ride-modal__overlay,
+  .modal-overlay {
+    z-index: 10000 !important;
+  }
+
+  .score-modal,
+  .bike-ride-modal,
+  .modal-content {
+    z-index: 10010 !important;
+  }
+
+  /* La navigation reste derrière les modales */
+  .mobile-bottom-nav {
+    z-index: 900 !important;
+  }
+
+  /* Modales limitées à la hauteur réelle du téléphone */
+  .score-modal,
+  .bike-ride-modal {
+    position: fixed !important;
+    inset: auto 0 0 0 !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100dvh !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    overflow: hidden !important;
+
+    border-radius: 24px 24px 0 0 !important;
+  }
+
+  /* La partie centrale défile */
+  .score-modal__body,
+  .bike-ride-modal__body,
+  .score-form,
+  .bike-ride-form {
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+
+    padding-bottom: 24px;
+  }
+
+  /* Le pied avec Enregistrer reste visible */
+  .score-modal__footer,
+  .bike-ride-modal__footer,
+  .score-form__footer,
+  .bike-ride-form__footer {
+    position: sticky !important;
+    z-index: 5;
+    bottom: 0;
+
+    flex: 0 0 auto;
+
+    padding:
+      14px
+      16px
+      max(18px, env(safe-area-inset-bottom)) !important;
+
+    background: rgba(9, 26, 18, 0.98) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+
+    backdrop-filter: blur(18px);
+  }
+
+  .score-modal__footer button,
+  .bike-ride-modal__footer button,
+  .score-form__footer button,
+  .bike-ride-form__footer button {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 768px) {
+  body:has(.score-modal),
+  body:has(.bike-ride-modal),
+  body:has(.modal-overlay) {
+    overflow: hidden;
+  }
+
+  body:has(.score-modal) .mobile-bottom-nav,
+  body:has(.bike-ride-modal) .mobile-bottom-nav,
+  body:has(.modal-overlay) .mobile-bottom-nav {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+@media (max-width: 768px) {
+  body.modal-is-open {
+    overflow: hidden;
+  }
+
+  body.modal-is-open .mobile-bottom-nav {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(120%);
+  }
+}

@@ -158,6 +158,22 @@ function ScoreModal({
   const [notes, setNotes] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+  if (!open) {
+    return;
+  }
+
+  document.body.classList.add(
+    "modal-is-open",
+  );
+
+  return () => {
+    document.body.classList.remove(
+      "modal-is-open",
+    );
+  };
+}, [open]);
+
   const resetForm = () => {
     const initialPlayers = getInitialPlayers(members);
 

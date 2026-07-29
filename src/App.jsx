@@ -13,6 +13,7 @@ import {
   Images,
   Medal,
   Menu,
+  Flame,
   Plus,
   Scale,
   Trophy,
@@ -22,6 +23,13 @@ import {
   Route,
   LogOut,
 } from "lucide-react";
+import {
+  AppDataProvider,
+} from "./context/AppDataContext";
+
+import {
+  AuthProvider,
+} from "./context/AuthContext";
 
 
 import Sidebar from "./components/Sidebar";
@@ -34,6 +42,7 @@ import ActivityChart from "./components/ActivityChart";
 import BikeMap from "./components/BikeMap";
 import ActivityFeed from "./components/ActivityFeed";
 // import WeeklyChallenge from "./components/WeeklyChallenge";
+import useChallenges from "./hooks/useChallenges";
 import ScoreModal from "./components/ScoreModal";
 import RankingSection from "./components/RankingSection";
 import StatisticsSection from "./components/StatisticsSection";
@@ -121,6 +130,11 @@ const navigation = [
     icon: CircleUserRound,
   },
   {
+    id: "challenges",
+    label: "Défis",
+    icon: Flame,
+  },
+  {
     id: "logout",
     label: "Déconnexion",
     icon: LogOut,
@@ -139,6 +153,7 @@ const implementedPages = [
   "profile",
   "members",
   "tribunal",
+  "challenges",
 ];
 
 function formatBikeRideDate(value) {
@@ -466,6 +481,17 @@ function App() {
     judgeCase: judgeTribunalCase,
     dismissCase: dismissTribunalCase,
   } = useTribunalCases(user?.id);
+
+  const {
+  challenges,
+  activeChallenge,
+
+  createChallenge,
+
+  updateChallenge,
+
+  archiveChallenge,
+} = useChallenges();
 
   const {
     albums: galleryAlbums,
@@ -1623,7 +1649,38 @@ function App() {
     );
   };
 
+  const authContextValue = {
+  user,
+  profile,
+  // login,
+  logout,
+
+  isAdmin:
+    profile?.role === "admin",
+};
+
+const appDataValue = {
+  members,
+  profile,
+  user,
+  events,
+  tennisMatches,
+  bikeRides,
+  galleryPhotos,
+  tribunalCases,
+  gages,
+  challenges,
+  // refreshProfiles,
+  // refreshEvents,
+  // refreshTennisMatches,
+  // refreshBikeRides,
+  // refreshGallery,
+  // refreshTribunalCases,
+  // refreshGages,
+};
+
   return (
+    
     <div className="app-shell">
       <div className="background-orb background-orb--one" />
       <div className="background-orb background-orb--two" />
@@ -2417,6 +2474,20 @@ function App() {
         onClose={closeEditProfileModal}
         onSubmit={handleProfileSubmit}
       />
+
+          {/* <ChallengesSection
+      challenges={challenges}
+      activeChallenge={activeChallenge}
+      createChallenge={createChallenge}
+      updateChallenge={updateChallenge}
+      archiveChallenge={archiveChallenge}
+      members={members}
+      tennisMatches={tennisMatches}
+      bikeRides={bikeRides}
+      events={events}
+      tribunalCases={tribunalCases}
+      gages={gages}
+    /> */}
 
       <ChangePasswordModal
         open={changePasswordModalOpen}
