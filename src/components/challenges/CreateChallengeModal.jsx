@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, } from "react";
 
 const challengeTypes = [
   {
@@ -54,6 +54,22 @@ function CreateChallengeModal({
     end_date: "",
   });
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    document.body.classList.add(
+      "modal-is-open",
+    );
+
+    return () => {
+      document.body.classList.remove(
+        "modal-is-open",
+      );
+    };
+  }, [open]);
+
   if (!open) return null;
 
   function update(name, value) {
@@ -67,9 +83,37 @@ function CreateChallengeModal({
     event.preventDefault();
 
     await onCreate({
-      ...form,
-      season: new Date().getFullYear(),
+      title: form.title.trim(),
+      description:
+        form.description.trim() || null,
+
+      challenge_type:
+        form.challenge_type,
+
+      category:
+        form.challenge_type,
+
+      target_value:
+        Number(form.target_value),
+
+      reward:
+        form.reward.trim() || null,
+
+      start_date:
+        form.start_date,
+
+      end_date:
+        form.end_date,
+
+      season:
+        new Date(
+          form.start_date,
+        ).getFullYear(),
+
       status: "active",
+
+      created_by:
+        currentProfileId,
     });
 
     onClose();
@@ -86,27 +130,43 @@ function CreateChallengeModal({
 
         <form onSubmit={submit}>
 
-          <input
-            placeholder="Titre"
-            value={form.title}
-            onChange={(event) =>
-              update(
-                "title",
-                event.target.value,
-              )
-            }
-          />
+          <div className="form-field">
+            <label htmlFor="challenge-title">
+              Titre du défi
+            </label>
 
-          <textarea
-            placeholder="Description"
-            value={form.description}
-            onChange={(event) =>
-              update(
-                "description",
-                event.target.value,
-              )
-            }
-          />
+            <input
+              id="challenge-title"
+              type="text"
+              placeholder="Ex. 100 km cette semaine"
+              value={form.title}
+              onChange={(event) =>
+                update(
+                  "title",
+                  event.target.value,
+                )
+              }
+              required
+            />
+          </div>
+
+          <div className="form-field">
+            <label htmlFor="challenge-description">
+              Description
+            </label>
+
+            <textarea
+              id="challenge-description"
+              placeholder="Décris le défi et ses règles…"
+              value={form.description}
+              onChange={(event) =>
+                update(
+                  "description",
+                  event.target.value,
+                )
+              }
+            />
+          </div>
 
           <select
             value={form.challenge_type}

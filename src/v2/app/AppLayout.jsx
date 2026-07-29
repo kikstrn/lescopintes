@@ -9,26 +9,73 @@ import {
   Menu,
 } from "lucide-react";
 
-import Sidebar from "../components/Sidebar";
-import MobileNavigation from "../components/MobileNavigation";
+import Sidebar from "../../components/Sidebar";
+import MobileNavigation from "../../components/MobileNavigation";
+
+import { useAuth } from "../../context/AuthContext";
+
+import {
+  useNavigation,
+} from "../context/NavigationContext";
+
+import {
+  getNavigationItem,
+  navigation,
+} from "../shared/constants/navigation";
 
 function AppLayout({
-  navigation,
-  activePage,
-  pageTitle,
-  profile,
-  connectedNickname,
-  connectedInitials,
-  connectedRole,
-  mobileMenuOpen,
-  mobileSidebarOpen,
-  onNavigate,
-  onLogout,
-  onOpenMobileMenu,
-  onCloseMobileMenu,
-  onCloseSidebar,
   children,
 }) {
+  const {
+    user,
+    profile,
+    isAdmin,
+    logout,
+  } = useAuth();
+
+  const {
+    activePage,
+    mobileMenuOpen,
+    navigateTo,
+    openMobileMenu,
+    closeMobileMenu,
+  } = useNavigation();
+
+  const currentNavigationItem =
+    getNavigationItem(activePage);
+
+  const pageTitle =
+    currentNavigationItem?.label ??
+    "Accueil";
+
+  const nickname =
+    profile?.nickname ??
+    user?.email?.split("@")[0] ??
+    "Membre";
+
+  const initials =
+    profile?.initials ??
+    nickname
+      .slice(0, 2)
+      .toUpperCase();
+
+  const roleLabel =
+    isAdmin
+      ? "Administrateur"
+      : "Membre";
+
+  const handleNavigate = async (
+    pageId,
+  ) => {
+    if (pageId === "logout") {
+      closeMobileMenu();
+      await logout?.();
+      return;
+    }
+
+    navigateTo(pageId);
+  };
+
   return (
     <div className="app-shell">
       <div className="background-orb background-orb--one" />
@@ -38,11 +85,11 @@ function AppLayout({
       <Sidebar
         items={navigation}
         activePage={activePage}
-        onNavigate={onNavigate}
-        onLogout={onLogout}
+        onNavigate={handleNavigate}
+        onLogout={logout}
         profile={profile}
-        isOpen={mobileSidebarOpen}
-        onClose={onCloseSidebar}
+        isOpen={mobileMenuOpen}
+        onClose={closeMobileMenu}
       />
 
       <div className="app-content">
@@ -52,7 +99,7 @@ function AppLayout({
               type="button"
               className="icon-button mobile-menu-button"
               aria-label="Ouvrir le menu"
-              onClick={onOpenMobileMenu}
+              onClick={openMobileMenu}
             >
               <Menu size={22} />
             </button>
@@ -75,26 +122,29 @@ function AppLayout({
               aria-label="Notifications"
             >
               <Bell size={20} />
+
               <span className="notification-dot" />
             </button>
 
             <button
               type="button"
               className="profile-button"
-              aria-label={`Ouvrir le profil de ${connectedNickname}`}
-              onClick={() => onNavigate("profile")}
+              aria-label={`Ouvrir le profil de ${nickname}`}
+              onClick={() =>
+                navigateTo("profile")
+              }
             >
               <span className="profile-button__avatar">
-                {connectedInitials}
+                {initials}
               </span>
 
               <span className="profile-button__text">
                 <strong>
-                  {connectedNickname}
+                  {nickname}
                 </strong>
 
                 <small>
-                  {connectedRole}
+                  {roleLabel}
                 </small>
               </span>
 
@@ -121,7 +171,12 @@ function AppLayout({
               }}
               transition={{
                 duration: 0.28,
-                ease: [0.22, 1, 0.36, 1],
+                ease: [
+                  0.22,
+                  1,
+                  0.36,
+                  1,
+                ],
               }}
             >
               {children}
@@ -133,11 +188,11 @@ function AppLayout({
       <MobileNavigation
         items={navigation}
         activePage={activePage}
-        onNavigate={onNavigate}
-        onLogout={onLogout}
+        onNavigate={handleNavigate}
+        onLogout={logout}
         profile={profile}
         menuOpen={mobileMenuOpen}
-        onClose={onCloseMobileMenu}
+        onClose={closeMobileMenu}
       />
     </div>
   );

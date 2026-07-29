@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "./lib/supabase";
+import V2Bridge from "./v2/app/V2Bridge";
 import {
   Bell,
   Bike,
@@ -30,44 +31,27 @@ import {
 import {
   AuthProvider,
 } from "./context/AuthContext";
+import AppShell from "./app/AppShell";
+import {
+  getNavigationItem,
+  getPageTitle,
+  isImplementedPage,
+  navigation,
+} from "./app/navigation";
+import HomePage from "./features/home/HomePage";
+import AppModals from "./app/AppModals";
+import AppPages from "./app/AppPages";
+import { useHomeDashboard } from "./features/home/useHomeDashboard";
 
 
 import Sidebar from "./components/Sidebar";
 import MobileNavigation from "./components/MobileNavigation";
-import HeroBanner from "./components/HeroBanner";
-import StatCard from "./components/StatCard";
-import EventCard from "./components/EventCard";
-import Podium from "./components/Podium";
-import ActivityChart from "./components/ActivityChart";
 import BikeMap from "./components/BikeMap";
-import ActivityFeed from "./components/ActivityFeed";
 // import WeeklyChallenge from "./components/WeeklyChallenge";
 import useChallenges from "./hooks/useChallenges";
-import ScoreModal from "./components/ScoreModal";
-import RankingSection from "./components/RankingSection";
-import StatisticsSection from "./components/StatisticsSection";
-import EventsSection from "./components/EventsSection";
-import EventFormModal from "./components/EventFormModal";
 import { useEvents } from "./hooks/useEvents";
-import TennisSection from "./components/TennisSection";
 import { useTennisMatches } from "./hooks/useTennisMatches";
-import CyclingSection from "./components/CyclingSection";
-import BikeRideFormModal from "./components/BikeRideFormModal";
 import { useBikeRides } from "./hooks/useBikeRides";
-import GallerySection from "./components/gallery/GallerySection";
-import GalleryViewer from "./components/gallery/GalleryViewer";
-import UploadPhotosModal from "./components/gallery/UploadPhotosModal";
-import ProfileSection from "./components/profile/ProfileSection";
-import EditProfileModal from "./components/profile/EditProfileModal";
-import ChangePasswordModal from "./components/profile/ChangePasswordModal";
-import MembersSection from "./components/members/MembersSection";
-import MemberProfileModal from "./components/members/MemberProfileModal";
-import TribunalSection from "./components/tribunal/TribunalSection";
-import TribunalCaseModal from "./components/tribunal/TribunalCaseModal";
-import TribunalFormModal from "./components/tribunal/TribunalFormModal";
-import GagesSection from "./components/gages/GagesSection";
-import GageFormModal from "./components/gages/GageFormModal";
-import GageDetailsModal from "./components/gages/GageDetailsModal";
 import { useGages } from "./hooks/useGages";
 import { useTribunalCases } from "./hooks/useTribunalCases";
 import { getProfileStatistics } from "./services/profileService";
@@ -77,84 +61,6 @@ import { useGallery } from "./hooks/useGallery";
 import { useEffect } from "react";
 import { testSupabaseConnection } from "./lib/testSupabase";
 import { useAuth } from "./context/AuthContext";
-
-const navigation = [
-  {
-    id: "home",
-    label: "Accueil",
-    icon: House,
-  },
-  {
-    id: "events",
-    label: "Événements",
-    icon: CalendarDays,
-  },
-  {
-    id: "tennis",
-    label: "Tennis",
-    icon: Trophy,
-  },
-  {
-    id: "bike",
-    label: "Cyclisme",
-    icon: Bike,
-  },
-  {
-    id: "ranking",
-    label: "Classement",
-    icon: Medal,
-  },
-  {
-    id: "statistics",
-    label: "Statistiques",
-    icon: ChartNoAxesCombined,
-  },
-  {
-    id: "gallery",
-    label: "Galerie",
-    icon: Images,
-  },
-  {
-    id: "gages",
-    label: "Gages",
-    icon: Dices,
-  },
-  {
-    id: "tribunal",
-    label: "Tribunal",
-    icon: Scale,
-  },
-  {
-    id: "members",
-    label: "Membres",
-    icon: CircleUserRound,
-  },
-  {
-    id: "challenges",
-    label: "Défis",
-    icon: Flame,
-  },
-  {
-    id: "logout",
-    label: "Déconnexion",
-    icon: LogOut,
-  },
-];
-
-const implementedPages = [
-  "home",
-  "ranking",
-  "events",
-  "statistics",
-  "bike",
-  "tennis",
-  "gallery",
-  "gages",
-  "profile",
-  "members",
-  "tribunal",
-  "challenges",
-];
 
 function formatBikeRideDate(value) {
   if (!value) {
@@ -198,151 +104,6 @@ function formatBikeRideDuration(minutes) {
   return `${hours} h ${String(
     remainingMinutes,
   ).padStart(2, "0")}`;
-}
-
-const HOME_MONTH_LABELS = [
-  "Jan",
-  "Fév",
-  "Mars",
-  "Avr",
-  "Mai",
-  "Juin",
-  "Juil",
-  "Août",
-  "Sept",
-  "Oct",
-  "Nov",
-  "Déc",
-];
-
-function getSafeDate(value) {
-  if (!value) {
-    return null;
-  }
-
-  const date = new Date(value);
-
-  return Number.isNaN(date.getTime())
-    ? null
-    : date;
-}
-
-function getItemDate(item) {
-  return (
-    item?.startsAt ??
-    item?.starts_at ??
-    item?.rideDate ??
-    item?.ride_date ??
-    item?.playedAt ??
-    item?.played_at ??
-    item?.matchDate ??
-    item?.match_date ??
-    item?.createdAt ??
-    item?.created_at ??
-    null
-  );
-}
-
-function getBikeDistance(ride) {
-  return Number(
-    ride?.distanceKm ??
-    ride?.distance_km ??
-    ride?.distance ??
-    0,
-  );
-}
-
-function getMemberPoints(member) {
-  return Number(
-    member?.calculatedPoints ??
-    member?.totalPoints ??
-    member?.points ??
-    0,
-  );
-}
-
-function getMemberWins(member) {
-  return Number(
-    member?.tennisWins ??
-    member?.wins ??
-    0,
-  );
-}
-
-function getMemberLosses(member) {
-  return Number(
-    member?.tennisLosses ??
-    member?.losses ??
-    0,
-  );
-}
-
-function getMemberBikeKm(member) {
-  return Number(
-    member?.bikeDistance ??
-    member?.bikeKm ??
-    0,
-  );
-}
-
-function getMemberName(member) {
-  return (
-    member?.nickname ??
-    member?.firstName ??
-    member?.first_name ??
-    "Membre"
-  );
-}
-
-function formatRelativeActivityDate(value) {
-  const date = getSafeDate(value);
-
-  if (!date) {
-    return "Date inconnue";
-  }
-
-  const difference =
-    Date.now() - date.getTime();
-
-  const minutes = Math.floor(
-    difference / 60000,
-  );
-
-  if (minutes < 1) {
-    return "À l’instant";
-  }
-
-  if (minutes < 60) {
-    return `Il y a ${minutes} min`;
-  }
-
-  const hours = Math.floor(
-    minutes / 60,
-  );
-
-  if (hours < 24) {
-    return `Il y a ${hours} h`;
-  }
-
-  const days = Math.floor(
-    hours / 24,
-  );
-
-  if (days === 1) {
-    return "Hier";
-  }
-
-  if (days < 7) {
-    return `Il y a ${days} jours`;
-  }
-
-  return new Intl.DateTimeFormat(
-    "fr-FR",
-    {
-      day: "numeric",
-      month: "short",
-    },
-  ).format(date);
 }
 
 function App() {
@@ -483,15 +244,15 @@ function App() {
   } = useTribunalCases(user?.id);
 
   const {
-  challenges,
-  activeChallenge,
+    challenges,
+    activeChallenge,
 
-  createChallenge,
+    createChallenge,
 
-  updateChallenge,
+    updateChallenge,
 
-  archiveChallenge,
-} = useChallenges();
+    archiveChallenge,
+  } = useChallenges();
 
   const {
     albums: galleryAlbums,
@@ -935,6 +696,11 @@ function App() {
     });
   };
 
+  const useV2 =
+    new URLSearchParams(
+      window.location.search,
+    ).get("v2") === "1";
+
   const showPreviousGalleryPhoto = () => {
     setGalleryViewerIndex(
       (currentIndex) =>
@@ -1184,384 +950,36 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scoreModalOpen, setScoreModalOpen] = useState(false);
 
-  const sortedMembers = useMemo(() => {
-    return [...members].sort(
-      (memberA, memberB) => {
-        const pointsDifference =
-          getMemberPoints(memberB) -
-          getMemberPoints(memberA);
-
-        if (pointsDifference !== 0) {
-          return pointsDifference;
-        }
-
-        return (
-          getMemberWins(memberB) -
-          getMemberWins(memberA)
-        );
-      },
-    );
-  }, [members]);
-
-  const completedTennisMatches =
-    useMemo(() => {
-      return tennisMatches.filter(
-        (match) =>
-          match.status === "completed" ||
-          match.status === "finished" ||
-          match.winnerTeam != null ||
-          match.winner_team != null,
-      );
-    }, [tennisMatches]);
-
-  const totalMatches =
-    completedTennisMatches.length;
-
-  const totalBikeKm = useMemo(() => {
-    if (bikeRides.length > 0) {
-      return bikeRides.reduce(
-        (total, ride) =>
-          total + getBikeDistance(ride),
-        0,
-      );
-    }
-
-    return members.reduce(
-      (total, member) =>
-        total +
-        getMemberBikeKm(member),
-      0,
-    );
-  }, [
-    bikeRides,
-    members,
-  ]);
-
-  const upcomingEvents = useMemo(() => {
-    const now = Date.now();
-
-    return events
-      .filter((event) => {
-        const date = getSafeDate(
-          event.startsAt ??
-          event.starts_at,
-        );
-
-        return (
-          date &&
-          date.getTime() >= now &&
-          event.status !== "cancelled"
-        );
-      })
-      .sort((eventA, eventB) => {
-        return (
-          getSafeDate(
-            eventA.startsAt ??
-            eventA.starts_at,
-          )?.getTime() -
-          getSafeDate(
-            eventB.startsAt ??
-            eventB.starts_at,
-          )?.getTime()
-        );
-      });
-  }, [events]);
-
-  const connectedRanking = useMemo(() => {
-    if (!user?.id) {
-      return null;
-    }
-
-    const index =
-      sortedMembers.findIndex(
-        (member) =>
-          String(member.id) ===
-          String(user.id),
-      );
-
-    return index >= 0
-      ? index + 1
-      : null;
-  }, [
+  const {
     sortedMembers,
-    user?.id,
-  ]);
-
-  const connectedMember = useMemo(() => {
-    return (
-      members.find(
-        (member) =>
-          String(member.id) ===
-          String(user?.id),
-      ) ??
-      profile ??
-      null
-    );
-  }, [
+    totalMatches,
+    totalBikeKm,
+    upcomingEvents,
+    connectedMember,
+    connectedPoints,
+    connectedRanking,
+    leader,
+    homeActivityData,
+    homeChartSummary,
+    homeRecentActivities,
+    getMemberName,
+    getMemberWins,
+  } = useHomeDashboard({
     members,
     profile,
-    user?.id,
-  ]);
-
-  const connectedPoints =
-    getMemberPoints(connectedMember);
-
-  const leader =
-    sortedMembers[0] ?? null;
-
-  const homeActivityData = useMemo(() => {
-    const now = new Date();
-
-    const months = Array.from(
-      { length: 6 },
-      (_, index) => {
-        const date = new Date(
-          now.getFullYear(),
-          now.getMonth() -
-          (5 - index),
-          1,
-        );
-
-        return {
-          year: date.getFullYear(),
-          monthIndex: date.getMonth(),
-          month:
-            HOME_MONTH_LABELS[
-            date.getMonth()
-            ],
-          tennis: 0,
-          velo: 0,
-        };
-      },
-    );
-
-    completedTennisMatches.forEach(
-      (match) => {
-        const date = getSafeDate(
-          getItemDate(match),
-        );
-
-        if (!date) {
-          return;
-        }
-
-        const target = months.find(
-          (month) =>
-            month.year ===
-            date.getFullYear() &&
-            month.monthIndex ===
-            date.getMonth(),
-        );
-
-        if (target) {
-          target.tennis += 1;
-        }
-      },
-    );
-
-    bikeRides.forEach((ride) => {
-      const date = getSafeDate(
-        getItemDate(ride),
-      );
-
-      if (!date) {
-        return;
-      }
-
-      const target = months.find(
-        (month) =>
-          month.year ===
-          date.getFullYear() &&
-          month.monthIndex ===
-          date.getMonth(),
-      );
-
-      if (target) {
-        target.velo +=
-          getBikeDistance(ride);
-      }
-    });
-
-    return months.map((month) => ({
-      month: month.month,
-      tennis: month.tennis,
-      velo:
-        Math.round(
-          month.velo * 10,
-        ) / 10,
-    }));
-  }, [
-    completedTennisMatches,
+    user,
+    events,
+    tennisMatches,
     bikeRides,
-  ]);
-
-  const homeChartSummary = useMemo(() => {
-    const totalTennis =
-      homeActivityData.reduce(
-        (total, month) =>
-          total + month.tennis,
-        0,
-      );
-
-    const totalBike =
-      homeActivityData.reduce(
-        (total, month) =>
-          total + month.velo,
-        0,
-      );
-
-    return {
-      title: `${totalTennis} match${totalTennis > 1 ? "s" : ""
-        } · ${Math.round(
-          totalBike,
-        ).toLocaleString("fr-FR")} km`,
-
-      description:
-        "Activité enregistrée pendant les six derniers mois.",
-    };
-  }, [homeActivityData]);
-
-  const homeRecentActivities =
-    useMemo(() => {
-      const matchActivities =
-        tennisMatches.map((match) => ({
-          id: `tennis-${match.id}`,
-          icon: "tennis",
-          title:
-            match.title ??
-            "Match de tennis enregistré",
-          description:
-            match.scoreSummary ??
-            match.score_summary ??
-            match.result ??
-            "Un nouveau résultat a été ajouté.",
-          date: getItemDate(match),
-          page: "tennis",
-        }));
-
-      const bikeActivities =
-        bikeRides.map((ride) => ({
-          id: `bike-${ride.id}`,
-          icon: "bike",
-          title:
-            ride.title ??
-            "Sortie vélo",
-          description: `${getBikeDistance(
-            ride,
-          ).toLocaleString(
-            "fr-FR",
-            {
-              maximumFractionDigits: 1,
-            },
-          )} km${ride.location
-              ? ` · ${ride.location}`
-              : ""
-            }`,
-          date: getItemDate(ride),
-          page: "bike",
-        }));
-
-      const eventActivities =
-        events.map((event) => ({
-          id: `event-${event.id}`,
-          icon: "party",
-          title:
-            event.title ??
-            "Nouvel événement",
-          description:
-            event.description ??
-            "Un événement a été ajouté.",
-          date: getItemDate(event),
-          page: "events",
-        }));
-
-      const gageActivities =
-        gages.map((gage) => ({
-          id: `gage-${gage.id}`,
-          icon: "gage",
-          title:
-            gage.title ??
-            "Nouveau gage",
-          description:
-            gage.status === "validated"
-              ? "Le gage a été validé."
-              : gage.status ===
-                "completed"
-                ? "Le gage a été réalisé."
-                : "Un gage a été attribué.",
-          date: getItemDate(gage),
-          page: "gages",
-        }));
-
-      const tribunalActivities =
-        tribunalCases.map(
-          (tribunalCase) => ({
-            id: `tribunal-${tribunalCase.id}`,
-            icon: "tribunal",
-            title:
-              tribunalCase.title ??
-              "Nouvelle affaire",
-            description:
-              tribunalCase.status ===
-                "judged"
-                ? "Le verdict a été rendu."
-                : tribunalCase.status ===
-                  "voting"
-                  ? "Le vote est ouvert."
-                  : "Une affaire a été créée.",
-            date:
-              getItemDate(
-                tribunalCase,
-              ),
-            page: "tribunal",
-          }),
-        );
-
-      return [
-        ...matchActivities,
-        ...bikeActivities,
-        ...eventActivities,
-        ...gageActivities,
-        ...tribunalActivities,
-      ]
-        .filter((activity) =>
-          Boolean(
-            getSafeDate(
-              activity.date,
-            ),
-          ),
-        )
-        .sort((activityA, activityB) => {
-          return (
-            getSafeDate(
-              activityB.date,
-            ).getTime() -
-            getSafeDate(
-              activityA.date,
-            ).getTime()
-          );
-        })
-        .slice(0, 6)
-        .map((activity) => ({
-          ...activity,
-          time:
-            formatRelativeActivityDate(
-              activity.date,
-            ),
-        }));
-    }, [
-      tennisMatches,
-      bikeRides,
-      events,
-      gages,
-      tribunalCases,
-    ]);
-
-  const currentNavigationItem = navigation.find((item) => {
-    return item.id === activePage;
+    gages,
+    tribunalCases,
   });
 
-  const pageTitle = currentNavigationItem?.label ?? "Accueil";
+  const currentNavigationItem =
+    getNavigationItem(activePage);
+
+  const pageTitle =
+    getPageTitle(activePage);
 
   const navigateTo = (page) => {
     setActivePage(page);
@@ -1615,7 +1033,9 @@ function App() {
   ]);
 
   const renderPlaceholderPage = () => {
-    const CurrentIcon = currentNavigationItem?.icon ?? House;
+    const CurrentIcon =
+      currentNavigationItem?.icon ??
+      navigation[0].icon;
 
     return (
       <section className="placeholder-page glass-panel">
@@ -1650,37 +1070,361 @@ function App() {
   };
 
   const authContextValue = {
-  user,
-  profile,
-  // login,
-  logout,
+    user,
+    profile,
+    // login,
+    logout,
 
-  isAdmin:
-    profile?.role === "admin",
-};
+    isAdmin:
+      profile?.role === "admin",
+  };
 
-const appDataValue = {
-  members,
-  profile,
-  user,
-  events,
-  tennisMatches,
-  bikeRides,
-  galleryPhotos,
-  tribunalCases,
-  gages,
-  challenges,
-  // refreshProfiles,
-  // refreshEvents,
-  // refreshTennisMatches,
-  // refreshBikeRides,
-  // refreshGallery,
-  // refreshTribunalCases,
-  // refreshGages,
-};
+  const appDataValue = {
+    members,
+    profile,
+    user,
+    events,
+    tennisMatches,
+    bikeRides,
+    galleryPhotos,
+    tribunalCases,
+    gages,
+    challenges,
+    // refreshProfiles,
+    // refreshEvents,
+    // refreshTennisMatches,
+    // refreshBikeRides,
+    // refreshGallery,
+    // refreshTribunalCases,
+    // refreshGages,
+  };
+
+  const v2Actions = {
+    openCreateEvent:
+      openCreateEventModal,
+
+    openEditEvent:
+      openEditEventModal,
+
+    deleteEvent:
+      removeEvent,
+
+    changeEventAttendance:
+      handleAttendance,
+
+    openScoreModal: () =>
+      setScoreModalOpen(true),
+
+    openCreateBikeRide:
+      openCreateBikeRideModal,
+
+    openEditBikeRide:
+      openEditBikeRideModal,
+
+    deleteBikeRide:
+      handleDeleteBikeRide,
+
+    joinBikeRide:
+      handleJoinBikeRide,
+
+    leaveBikeRide:
+      handleLeaveBikeRide,
+
+    openGalleryUpload:
+      openGalleryUploadModal,
+
+    openGalleryPhoto,
+
+    likeGalleryPhoto:
+      handleGalleryLike,
+
+    deleteGalleryPhoto:
+      handleGalleryPhotoDelete,
+
+    openMemberProfile,
+
+    openGageForm,
+    openGageDetails,
+
+    openTribunalForm,
+    openTribunalCase,
+
+    openEditProfile:
+      openEditProfileModal,
+
+    openChangePassword:
+      openChangePasswordModal,
+
+    uploadAvatar:
+      handleAvatarUpload,
+
+    deleteAvatar:
+      handleAvatarDelete,
+
+      createChallenge,
+updateChallenge,
+archiveChallenge,
+
+    navigateToLegacy: navigateTo,
+  };
+
+  const v2Loading = {
+    profiles: profilesLoading,
+
+    events: eventsLoading,
+    eventsSaving,
+
+    tennis: tennisLoading,
+    tennisSaving,
+
+    bike: bikeLoading,
+    bikeSaving,
+
+    gallery: galleryLoading,
+    gallerySaving,
+    galleryUploading,
+
+    tribunal: tribunalLoading,
+    tribunalSaving,
+
+    gages: gagesLoading,
+    gagesSaving,
+    gagesUploading,
+
+    profile: profileLoading,
+    profileSaving,
+    uploadingAvatar,
+    changingPassword,
+  };
+
+  const v2Errors = {
+    profiles: profilesError,
+    events: eventsError,
+    tennis: tennisError,
+    bike: bikeError,
+    gallery: galleryError,
+    tribunal: tribunalError,
+    gages: gagesError,
+  };
+
+  if (useV2) {
+    return (
+      <>
+        <V2Bridge
+          members={members}
+          events={events}
+          tennisMatches={tennisMatches}
+          bikeRides={bikeRides}
+          galleryAlbums={galleryAlbums}
+          galleryPhotos={galleryPhotos}
+          galleryComments={galleryComments}
+          tribunalCases={tribunalCases}
+          gages={gages}
+          challenges={challenges}
+          activeChallenge={activeChallenge}
+
+          personalProfile={personalProfile}
+          profileStatistics={profileStatistics}
+
+          loading={v2Loading}
+          errors={v2Errors}
+          actions={v2Actions}
+        />
+
+        <AppModals
+          members={members}
+          user={user}
+          profile={profile}
+          isAdmin={isAdmin}
+
+          scoreModalOpen={scoreModalOpen}
+          tennisSaving={tennisSaving}
+          onSaveTennisMatch={
+            handleSaveTennisMatch
+          }
+          onCloseScoreModal={() => {
+            if (!tennisSaving) {
+              setScoreModalOpen(false);
+            }
+          }}
+
+          bikeModalOpen={bikeModalOpen}
+          bikeRideBeingEdited={
+            bikeRideBeingEdited
+          }
+          bikeSaving={bikeSaving}
+          onCloseBikeModal={
+            closeBikeRideModal
+          }
+          onSubmitBikeRide={
+            handleBikeRideSubmit
+          }
+
+          eventModalOpen={
+            eventModalOpen
+          }
+          eventBeingEdited={
+            eventBeingEdited
+          }
+          eventsSaving={
+            eventsSaving
+          }
+
+          galleryUploadOpen={galleryUploadOpen}
+          galleryAlbums={galleryAlbums}
+          galleryUploading={galleryUploading}
+          galleryUploadProgress={
+            galleryUploadProgress
+          }
+          onCloseGalleryUpload={
+            closeGalleryUploadModal
+          }
+          onUploadGalleryPhotos={
+            handleGalleryUpload
+          }
+
+          galleryViewerOpen={galleryViewerOpen}
+          galleryPhotos={galleryPhotos}
+          galleryViewerIndex={galleryViewerIndex}
+          gallerySaving={gallerySaving}
+          onCloseGalleryViewer={
+            closeGalleryViewer
+          }
+          onPreviousGalleryPhoto={
+            showPreviousGalleryPhoto
+          }
+          onNextGalleryPhoto={
+            showNextGalleryPhoto
+          }
+          onLikeGalleryPhoto={
+            handleGalleryLike
+          }
+          onAddGalleryComment={
+            handleGalleryCommentAdd
+          }
+          onEditGalleryComment={
+            handleGalleryCommentEdit
+          }
+          onDeleteGalleryComment={
+            handleGalleryCommentDelete
+          }
+          onCloseEventModal={
+            closeEventModal
+          }
+          onSubmitEvent={
+            handleEventSubmit
+          }
+
+          memberModalOpen={memberModalOpen}
+          selectedMember={selectedMember}
+          selectedMemberStatistics={
+            selectedMemberStatistics
+          }
+          memberStatisticsLoading={
+            memberStatisticsLoading
+          }
+          memberStatisticsError={
+            memberStatisticsError
+          }
+          onCloseMemberProfile={
+            closeMemberProfile
+          }
+
+          gageFormOpen={gageFormOpen}
+          gagesSaving={gagesSaving}
+          gagesError={gagesError}
+          onCloseGageForm={closeGageForm}
+          onSubmitGage={handleGageSubmit}
+
+          gageDetailsOpen={gageDetailsOpen}
+          selectedGage={selectedGage}
+          gagesUploading={gagesUploading}
+          onCloseGageDetails={closeGageDetails}
+          onStartGage={handleStartGage}
+          onCompleteGage={handleCompleteGage}
+          onValidateGage={handleValidateGage}
+          onCancelGage={handleCancelGage}
+          onUploadGageProof={
+            handleUploadGageProof
+          }
+          onDeleteGageProof={
+            handleDeleteGageProof
+          }
+          onDeleteGage={handleDeleteGage}
+
+          tribunalFormOpen={
+            tribunalFormOpen
+          }
+          tribunalSaving={
+            tribunalSaving
+          }
+          tribunalError={
+            tribunalError
+          }
+          onCloseTribunalForm={
+            closeTribunalForm
+          }
+          onSubmitTribunal={
+            handleTribunalSubmit
+          }
+
+          tribunalCaseModalOpen={
+            tribunalCaseModalOpen
+          }
+          selectedTribunalCase={
+            selectedTribunalCase
+          }
+          onCloseTribunalCase={
+            closeTribunalCase
+          }
+          onVoteTribunal={
+            handleTribunalVote
+          }
+          onStartTribunalVoting={
+            handleStartTribunalVoting
+          }
+          onJudgeTribunal={
+            handleJudgeTribunalCase
+          }
+          onDismissTribunal={
+            handleDismissTribunalCase
+          }
+
+          editProfileModalOpen={
+            editProfileModalOpen
+          }
+          personalProfile={
+            personalProfile
+          }
+          profileSaving={
+            profileSaving
+          }
+          onCloseEditProfile={
+            closeEditProfileModal
+          }
+          onSubmitProfile={
+            handleProfileSubmit
+          }
+
+          changePasswordModalOpen={
+            changePasswordModalOpen
+          }
+          changingPassword={
+            changingPassword
+          }
+          onCloseChangePassword={
+            closeChangePasswordModal
+          }
+          onSubmitPassword={
+            handlePasswordSubmit
+          }
+        />
+      </>
+    );
+  }
 
   return (
-    
+
     <div className="app-shell">
       <div className="background-orb background-orb--one" />
       <div className="background-orb background-orb--two" />
@@ -1793,534 +1537,159 @@ const appDataValue = {
                 </section>
               )}
 
-              {activePage === "home" && (
-                <>
-                  <HeroBanner
-                    nickname={connectedNickname}
-                    memberCount={members.length}
-                    eventCount={events.length}
-                    matchCount={totalMatches}
-                    leaderName={
-                      leader
-                        ? getMemberName(leader)
-                        : null
-                    }
-                    currentChallenge={null}
-                    onCreateEvent={openCreateEventModal}
-                    onAddScore={() =>
-                      setScoreModalOpen(true)
-                    }
-                    onOpenMembers={() =>
-                      navigateTo("members")
-                    }
-                  />
+              <AppPages
+                activePage={activePage}
+                homeProps={homeProps}
 
-                  <section className="stats-grid">
-                    <StatCard
-                      icon={Trophy}
-                      label="Matchs joués"
-                      value={totalMatches}
-                      detail={`${getMemberWins(
-                        connectedMember,
-                      )} victoire${getMemberWins(
-                        connectedMember,
-                      ) > 1
-                          ? "s"
-                          : ""
-                        } pour toi`}
-                      accent="green"
-                    />
+                members={members}
+                profile={profile}
+                user={user}
+                isAdmin={isAdmin}
 
-                    <StatCard
-                      icon={Bike}
-                      label="Kilomètres vélo"
-                      value={Math.round(
-                        totalBikeKm,
-                      ).toLocaleString("fr-FR")}
-                      detail={`${bikeRides.length} sortie${bikeRides.length > 1
-                          ? "s"
-                          : ""
-                        } enregistrée${bikeRides.length > 1
-                          ? "s"
-                          : ""
-                        }`}
-                      accent="blue"
-                    />
+                events={events}
+                eventsLoading={eventsLoading}
+                eventsSaving={eventsSaving}
+                eventsError={eventsError}
+                onCreateEvent={
+                  openCreateEventModal
+                }
+                onEditEvent={
+                  openEditEventModal
+                }
+                onDeleteEvent={removeEvent}
+                onAttendance={
+                  handleAttendance
+                }
 
-                    <StatCard
-                      icon={CalendarDays}
-                      label="Événements"
-                      value={events.length}
-                      detail={`${upcomingEvents.length} à venir`}
-                      accent="amber"
-                    />
+                tennisMatches={tennisMatches}
+                tennisLoading={tennisLoading}
+                tennisError={tennisError}
+                onAddMatch={() =>
+                  setScoreModalOpen(true)
+                }
 
-                    <StatCard
-                      icon={Medal}
-                      label={`Points de ${connectedNickname}`}
-                      value={connectedPoints}
-                      detail={
-                        connectedRanking
-                          ? `${connectedRanking}${connectedRanking === 1
-                            ? "er"
-                            : "e"
-                          } sur ${members.length}`
-                          : "Non classé"
-                      }
-                      accent="purple"
-                    />
-                  </section>
+                bikeRides={bikeRides}
+                bikeLoading={bikeLoading}
+                bikeSaving={bikeSaving}
+                bikeError={bikeError}
+                onCreateBikeRide={
+                  openCreateBikeRideModal
+                }
+                onEditBikeRide={
+                  openEditBikeRideModal
+                }
+                onDeleteBikeRide={
+                  handleDeleteBikeRide
+                }
+                onJoinBikeRide={
+                  handleJoinBikeRide
+                }
+                onLeaveBikeRide={
+                  handleLeaveBikeRide
+                }
 
-                  <section className="dashboard-grid dashboard-grid--main">
-                    <div className="dashboard-column dashboard-column--wide">
-                      <section className="section-block">
-                        <div className="section-heading">
-                          <div>
-                            <span className="section-heading__eyebrow">
-                              Agenda
-                            </span>
+                galleryAlbums={galleryAlbums}
+                galleryPhotos={galleryPhotos}
+                galleryLoading={galleryLoading}
+                galleryError={galleryError}
+                onOpenGalleryUpload={
+                  openGalleryUploadModal
+                }
+                onOpenGalleryPhoto={
+                  openGalleryPhoto
+                }
+                onLikeGalleryPhoto={
+                  handleGalleryLike
+                }
+                onDeleteGalleryPhoto={
+                  handleGalleryPhotoDelete
+                }
 
-                            <h2>
-                              Prochains événements
-                            </h2>
-                          </div>
+                personalProfile={personalProfile}
+                profileStatistics={
+                  profileStatistics
+                }
+                profileLoading={profileLoading}
+                profileActivityLoading={
+                  tennisLoading ||
+                  bikeLoading ||
+                  galleryLoading
+                }
+                profileSaving={profileSaving}
+                uploadingAvatar={
+                  uploadingAvatar
+                }
+                profileError={profileError}
+                galleryComments={
+                  galleryComments
+                }
+                onEditProfile={
+                  openEditProfileModal
+                }
+                onChangePassword={
+                  openChangePasswordModal
+                }
+                onUploadAvatar={
+                  handleAvatarUpload
+                }
+                onDeleteAvatar={
+                  handleAvatarDelete
+                }
+                onNavigate={navigateTo}
 
-                          <button
-                            type="button"
-                            className="text-button"
-                            onClick={() => navigateTo("events")}
-                          >
-                            Tout afficher
-                            <ChevronRight size={17} />
-                          </button>
-                        </div>
+                gages={gages}
+                gagesLoading={gagesLoading}
+                gagesError={gagesError}
+                onCreateGage={openGageForm}
+                onOpenGage={openGageDetails}
 
-                        <div className="events-grid">
-                          {upcomingEvents
-                            .slice(0, 3)
-                            .map((event, index) => (
-                              <EventCard
-                                key={event.id}
-                                event={event}
-                                index={index}
-                              />
-                            ))}
-                          {upcomingEvents.length === 0 && (
-                            <div className="home-empty-state glass-panel">
-                              <CalendarDays size={24} />
+                tribunalCases={tribunalCases}
+                tribunalLoading={
+                  tribunalLoading
+                }
+                tribunalSaving={
+                  tribunalSaving
+                }
+                tribunalError={tribunalError}
+                onCreateTribunalCase={
+                  openTribunalForm
+                }
+                onOpenTribunalCase={
+                  openTribunalCase
+                }
 
-                              <div>
-                                <strong>
-                                  Aucun événement à venir
-                                </strong>
+                profilesLoading={
+                  profilesLoading
+                }
+                profilesError={profilesError}
+                onOpenMember={
+                  openMemberProfile
+                }
 
-                                <p>
-                                  Crée un événement pour
-                                  l’afficher sur l’accueil.
-                                </p>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </section>
+                challenges={challenges}
+                activeChallenge={
+                  activeChallenge
+                }
+                createChallenge={
+                  createChallenge
+                }
+                updateChallenge={
+                  updateChallenge
+                }
+                archiveChallenge={
+                  archiveChallenge
+                }
 
-                      <section className="next-bike-ride glass-panel">
-                        <header className="next-bike-ride__header">
-                          <div>
-                            <span className="section-heading__eyebrow">
-                              Cyclisme
-                            </span>
+                renderPlaceholderPage={
+                  renderPlaceholderPage
+                }
+                isImplementedPage={
+                  isImplementedPage
+                }
+              />
 
-                            <h2>Prochaine sortie vélo</h2>
-                          </div>
 
-                          <button
-                            type="button"
-                            className="text-button"
-                            onClick={() => navigateTo("bike")}
-                          >
-                            Voir les sorties
-                            <ChevronRight size={17} />
-                          </button>
-                        </header>
-
-                        {bikeLoading ? (
-                          <div className="next-bike-ride__state">
-                            <span className="data-status__spinner" />
-
-                            <p>Chargement de la prochaine sortie…</p>
-                          </div>
-                        ) : nextPlannedBikeRide ? (
-                          <motion.article
-                            key={nextPlannedBikeRide.id}
-                            className="next-bike-ride__content"
-                            initial={{
-                              opacity: 0,
-                              y: 12,
-                            }}
-                            animate={{
-                              opacity: 1,
-                              y: 0,
-                            }}
-                          >
-                            <div className="next-bike-ride__icon">
-                              <Bike size={29} />
-                            </div>
-
-                            <div className="next-bike-ride__main">
-                              <span className="next-bike-ride__badge">
-                                Sortie prévue
-                              </span>
-
-                              <h3>{nextPlannedBikeRide.title}</h3>
-
-                              {nextPlannedBikeRide.description && (
-                                <p>
-                                  {nextPlannedBikeRide.description}
-                                </p>
-                              )}
-
-                              <div className="next-bike-ride__meta">
-                                <span>
-                                  <CalendarDays size={16} />
-
-                                  {formatBikeRideDate(
-                                    nextPlannedBikeRide.rideDate,
-                                  )}
-                                </span>
-
-                                <span>
-                                  <Clock3 size={16} />
-
-                                  {formatBikeRideTime(
-                                    nextPlannedBikeRide.rideDate,
-                                  )}
-                                </span>
-
-                                {nextPlannedBikeRide.location && (
-                                  <span>
-                                    <MapPin size={16} />
-
-                                    {nextPlannedBikeRide.location}
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="next-bike-ride__metrics">
-                                <div>
-                                  <Route size={17} />
-
-                                  <span>
-                                    <small>Distance</small>
-
-                                    <strong>
-                                      {nextPlannedBikeRide.distanceKm || 0} km
-                                    </strong>
-                                  </span>
-                                </div>
-
-                                <div>
-                                  <Mountain size={17} />
-
-                                  <span>
-                                    <small>Dénivelé</small>
-
-                                    <strong>
-                                      {nextPlannedBikeRide.elevationM || 0} m
-                                    </strong>
-                                  </span>
-                                </div>
-
-                                {nextPlannedBikeRide.durationMinutes && (
-                                  <div>
-                                    <Clock3 size={17} />
-
-                                    <span>
-                                      <small>Durée</small>
-
-                                      <strong>
-                                        {formatBikeRideDuration(
-                                          nextPlannedBikeRide.durationMinutes,
-                                        )}
-                                      </strong>
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="next-bike-ride__side">
-                              <div className="next-bike-ride__participants">
-                                <small>Participants</small>
-
-                                <div>
-                                  {nextPlannedBikeRide.participantProfiles
-                                    .slice(0, 5)
-                                    .map((participant) => (
-                                      <span
-                                        key={participant.id}
-                                        title={participant.nickname}
-                                      >
-                                        {participant.initials}
-                                      </span>
-                                    ))}
-                                </div>
-                              </div>
-
-                              <button
-                                type="button"
-                                className="primary-button"
-                                onClick={() => navigateTo("bike")}
-                              >
-                                Voir la sortie
-                              </button>
-                            </div>
-                          </motion.article>
-                        ) : (
-                          <div className="next-bike-ride__empty">
-                            <span>
-                              <Bike size={29} />
-                            </span>
-
-                            <div>
-                              <strong>Aucune sortie prévue</strong>
-
-                              <p>
-                                Ajoute une sortie avec le statut « Prévue » pour
-                                l’afficher ici.
-                              </p>
-                            </div>
-
-                            <button
-                              type="button"
-                              className="primary-button"
-                              onClick={openCreateBikeRideModal}
-                            >
-                              <Plus size={17} />
-                              Planifier une sortie
-                            </button>
-                          </div>
-                        )}
-                      </section>
-
-                      <section className="section-block">
-                        <div className="section-heading">
-                          <div>
-                            <span className="section-heading__eyebrow">
-                              Performances
-                            </span>
-
-                            <h2>
-                              Activité du groupe
-                            </h2>
-                          </div>
-
-                          <div className="chart-legend">
-                            <span className="chart-legend__item">
-                              <i className="chart-legend__dot chart-legend__dot--green" />
-                              Tennis
-                            </span>
-
-                            <span className="chart-legend__item">
-                              <i className="chart-legend__dot chart-legend__dot--blue" />
-                              Vélo
-                            </span>
-                          </div>
-                        </div>
-
-                        <ActivityChart
-                          data={homeActivityData}
-                          summary={homeChartSummary}
-                        />
-                      </section>
-                    </div>
-
-                    <aside className="dashboard-column dashboard-column--side">
-                      <Podium members={sortedMembers} />
-
-                      {/* <WeeklyChallenge
-                        challenge={weeklyChallenge}
-                      /> */}
-                      <section className="weekly-challenge weekly-challenge--empty glass-panel">
-                        <div className="weekly-challenge__header">
-                          <div className="weekly-challenge__icon">
-                            <Dices size={22} />
-                          </div>
-
-                          <div className="weekly-challenge__title-group">
-                            <span className="section-heading__eyebrow">
-                              Défi de la semaine
-                            </span>
-
-                            <h2>
-                              Aucun challenge actif
-                            </h2>
-                          </div>
-                        </div>
-
-                        <p className="weekly-challenge__description">
-                          Les challenges hebdomadaires
-                          seront bientôt gérés depuis une
-                          page dédiée.
-                        </p>
-                      </section>
-
-                      <ActivityFeed
-                        activities={homeRecentActivities}
-                        onOpenActivity={(activity) =>
-                          navigateTo(
-                            activity.page ?? "home",
-                          )
-                        }
-                      />
-                    </aside>
-                  </section>
-                </>
-              )}
-
-              {activePage === "events" && (
-                <EventsSection
-                  events={events}
-                  loading={eventsLoading}
-                  saving={eventsSaving}
-                  error={eventsError}
-                  currentProfile={profile}
-                  isAdmin={isAdmin}
-                  onCreate={openCreateEventModal}
-                  onEdit={openEditEventModal}
-                  onDelete={removeEvent}
-                  onAttendance={handleAttendance}
-                />
-              )}
-
-              {activePage === "tennis" && (
-                <TennisSection
-                  matches={tennisMatches}
-                  members={members}
-                  loading={tennisLoading}
-                  error={tennisError}
-                  onAddMatch={() =>
-                    setScoreModalOpen(true)
-                  }
-                />
-              )}
-
-              {activePage === "bike" && (
-                <CyclingSection
-                  rides={bikeRides}
-                  members={members}
-                  loading={bikeLoading}
-                  saving={bikeSaving}
-                  error={bikeError}
-                  currentProfile={profile}
-                  isAdmin={isAdmin}
-                  onCreate={openCreateBikeRideModal}
-                  onEdit={openEditBikeRideModal}
-                  onDelete={handleDeleteBikeRide}
-                  onJoin={handleJoinBikeRide}
-                  onLeave={handleLeaveBikeRide}
-                />
-              )}
-
-              {activePage === "ranking" && (
-                <RankingSection
-                  members={members}
-                  events={events}
-                  gages={gages}
-                />
-              )}
-
-              {activePage === "statistics" && (
-                <StatisticsSection
-                  members={members}
-                  tennisMatches={tennisMatches}
-                  bikeRides={bikeRides}
-                  events={events}
-                  galleryPhotos={galleryPhotos}
-                  gages={gages}
-                  tribunalCases={tribunalCases}
-                />
-              )}
-
-              {activePage === "gallery" && (
-                <GallerySection
-                  albums={galleryAlbums}
-                  photos={galleryPhotos}
-                  loading={galleryLoading}
-                  error={galleryError}
-                  currentProfile={
-                    profile ?? {
-                      id: user?.id,
-                      nickname: "Membre",
-                      initials: "CP",
-                    }
-                  }
-                  isAdmin={isAdmin}
-                  onOpenUpload={openGalleryUploadModal}
-                  onOpenPhoto={openGalleryPhoto}
-                  onLikePhoto={handleGalleryLike}
-                  onDeletePhoto={handleGalleryPhotoDelete}
-                />
-              )}
-
-              {activePage === "profile" && (
-                <ProfileSection
-                  profile={personalProfile}
-                  statistics={profileStatistics}
-                  tennisMatches={tennisMatches}
-                  bikeRides={bikeRides}
-                  galleryPhotos={galleryPhotos}
-                  galleryComments={galleryComments}
-                  loading={profileLoading}
-                  activityLoading={
-                    tennisLoading ||
-                    bikeLoading ||
-                    galleryLoading
-                  }
-                  saving={profileSaving}
-                  uploadingAvatar={uploadingAvatar}
-                  error={profileError}
-                  onEditProfile={openEditProfileModal}
-                  onChangePassword={openChangePasswordModal}
-                  onUploadAvatar={handleAvatarUpload}
-                  onDeleteAvatar={handleAvatarDelete}
-                  onNavigate={navigateTo}
-                />
-              )}
-
-              {activePage === "gages" && (
-                <GagesSection
-                  gages={gages}
-                  loading={gagesLoading}
-                  error={gagesError}
-                  onCreate={openGageForm}
-                  onOpen={openGageDetails}
-                />
-              )}
-
-              {activePage === "members" && (
-                <MembersSection
-                  members={members}
-                  loading={profilesLoading}
-                  error={profilesError}
-                  currentProfileId={user?.id}
-                  onOpenMember={openMemberProfile}
-                />
-              )}
-
-              {activePage === "tribunal" && (
-                <TribunalSection
-                  cases={tribunalCases}
-                  loading={tribunalLoading}
-                  saving={tribunalSaving}
-                  error={tribunalError}
-                  isAdmin={isAdmin}
-                  onCreate={openTribunalForm}
-                  onOpenCase={openTribunalCase}
-                />
-              )}
-
-              {!implementedPages.includes(activePage) &&
+              {!isImplementedPage(activePage) &&
                 renderPlaceholderPage()}
             </motion.div>
           </AnimatePresence>
@@ -2339,143 +1708,162 @@ const appDataValue = {
         }
       />
 
-      <ScoreModal
-        open={scoreModalOpen}
+      <AppModals
         members={members}
-        saving={tennisSaving}
-        onSave={handleSaveTennisMatch}
-        onClose={() => {
+        user={user}
+        profile={profile}
+        isAdmin={isAdmin}
+
+        tennisSaving={tennisSaving}
+        scoreModalOpen={scoreModalOpen}
+        onSaveTennisMatch={handleSaveTennisMatch}
+        onCloseScoreModal={() => {
           if (!tennisSaving) {
             setScoreModalOpen(false);
           }
         }}
-      />
 
-      <EventFormModal
-        open={eventModalOpen}
-        event={eventBeingEdited}
-        saving={eventsSaving}
-        onClose={closeEventModal}
-        onSubmit={handleEventSubmit}
-      />
+        eventModalOpen={eventModalOpen}
+        eventBeingEdited={eventBeingEdited}
+        eventsSaving={eventsSaving}
+        onCloseEventModal={closeEventModal}
+        onSubmitEvent={handleEventSubmit}
 
-      <BikeRideFormModal
-        open={bikeModalOpen}
-        ride={bikeRideBeingEdited}
-        members={members}
-        currentProfileId={user?.id}
-        saving={bikeSaving}
-        onClose={closeBikeRideModal}
-        onSubmit={handleBikeRideSubmit}
-      />
+        bikeModalOpen={bikeModalOpen}
+        bikeRideBeingEdited={bikeRideBeingEdited}
+        bikeSaving={bikeSaving}
+        onCloseBikeModal={closeBikeRideModal}
+        onSubmitBikeRide={handleBikeRideSubmit}
 
-      <TribunalFormModal
-        open={tribunalFormOpen}
-        members={members}
-        currentProfileId={user?.id}
-        saving={tribunalSaving}
-        error={tribunalError}
-        onClose={closeTribunalForm}
-        onSubmit={handleTribunalSubmit}
-      />
+        tribunalFormOpen={tribunalFormOpen}
+        tribunalSaving={tribunalSaving}
+        tribunalError={tribunalError}
+        onCloseTribunalForm={closeTribunalForm}
+        onSubmitTribunal={handleTribunalSubmit}
 
-      <TribunalCaseModal
-        open={tribunalCaseModalOpen}
-        tribunalCase={selectedTribunalCase}
-        currentProfile={profile}
-        saving={tribunalSaving}
-        error={tribunalError}
-        onClose={closeTribunalCase}
-        onVote={handleTribunalVote}
-        onStartVoting={
+        tribunalCaseModalOpen={
+          tribunalCaseModalOpen
+        }
+        selectedTribunalCase={
+          selectedTribunalCase
+        }
+        onCloseTribunalCase={
+          closeTribunalCase
+        }
+        onVoteTribunal={
+          handleTribunalVote
+        }
+        onStartTribunalVoting={
           handleStartTribunalVoting
         }
-        onJudge={
+        onJudgeTribunal={
           handleJudgeTribunalCase
         }
-        onDismiss={
+        onDismissTribunal={
           handleDismissTribunalCase
         }
-      />
 
-      <GageFormModal
-        open={gageFormOpen}
-        members={members}
-        currentProfileId={user?.id}
-        saving={gagesSaving}
-        error={gagesError}
-        onClose={closeGageForm}
-        onSubmit={handleGageSubmit}
-      />
+        gageFormOpen={gageFormOpen}
+        gagesSaving={gagesSaving}
+        gagesError={gagesError}
+        onCloseGageForm={closeGageForm}
+        onSubmitGage={handleGageSubmit}
 
-      <GageDetailsModal
-        open={gageDetailsOpen}
-        gage={selectedGage}
-        currentProfile={profile}
-        saving={gagesSaving}
-        uploading={gagesUploading}
-        error={gagesError}
-        onClose={closeGageDetails}
-        onStart={handleStartGage}
-        onComplete={handleCompleteGage}
-        onValidate={handleValidateGage}
-        onCancel={handleCancelGage}
-        onUploadProof={handleUploadGageProof}
-        onDeleteProof={handleDeleteGageProof}
-        onDelete={handleDeleteGage}
-      />
-
-      <MemberProfileModal
-        open={memberModalOpen}
-        member={selectedMember}
-        statistics={selectedMemberStatistics}
-        loading={memberStatisticsLoading}
-        error={memberStatisticsError}
-        onClose={closeMemberProfile}
-      />
-
-      <UploadPhotosModal
-        open={galleryUploadOpen}
-        albums={galleryAlbums}
-        members={members}
-        currentProfileId={user?.id}
-        uploading={galleryUploading}
-        uploadProgress={galleryUploadProgress}
-        onClose={closeGalleryUploadModal}
-        onUpload={handleGalleryUpload}
-      />
-
-      <GalleryViewer
-        photos={galleryPhotos}
-        currentIndex={galleryViewerIndex}
-        isOpen={galleryViewerOpen}
-        currentProfile={
-          profile ?? {
-            id: user?.id,
-            nickname: "Membre",
-            initials: "CP",
-          }
+        gageDetailsOpen={gageDetailsOpen}
+        selectedGage={selectedGage}
+        gagesUploading={gagesUploading}
+        onCloseGageDetails={closeGageDetails}
+        onStartGage={handleStartGage}
+        onCompleteGage={handleCompleteGage}
+        onValidateGage={handleValidateGage}
+        onCancelGage={handleCancelGage}
+        onUploadGageProof={
+          handleUploadGageProof
         }
-        isAdmin={isAdmin}
-        saving={gallerySaving}
-        onClose={closeGalleryViewer}
-        onPrevious={showPreviousGalleryPhoto}
-        onNext={showNextGalleryPhoto}
-        onLike={handleGalleryLike}
-        onAddComment={handleGalleryCommentAdd}
-        onEditComment={handleGalleryCommentEdit}
-        onDeleteComment={handleGalleryCommentDelete}
+        onDeleteGageProof={
+          handleDeleteGageProof
+        }
+        onDeleteGage={handleDeleteGage}
+
+        memberModalOpen={memberModalOpen}
+        selectedMember={selectedMember}
+        selectedMemberStatistics={
+          selectedMemberStatistics
+        }
+        memberStatisticsLoading={
+          memberStatisticsLoading
+        }
+        memberStatisticsError={
+          memberStatisticsError
+        }
+        onCloseMemberProfile={
+          closeMemberProfile
+        }
+
+        galleryUploadOpen={galleryUploadOpen}
+        galleryAlbums={galleryAlbums}
+        galleryUploading={galleryUploading}
+        galleryUploadProgress={
+          galleryUploadProgress
+        }
+        onCloseGalleryUpload={
+          closeGalleryUploadModal
+        }
+        onUploadGalleryPhotos={
+          handleGalleryUpload
+        }
+
+        galleryViewerOpen={galleryViewerOpen}
+        galleryPhotos={galleryPhotos}
+        galleryViewerIndex={galleryViewerIndex}
+        gallerySaving={gallerySaving}
+        onCloseGalleryViewer={
+          closeGalleryViewer
+        }
+        onPreviousGalleryPhoto={
+          showPreviousGalleryPhoto
+        }
+        onNextGalleryPhoto={
+          showNextGalleryPhoto
+        }
+        onLikeGalleryPhoto={
+          handleGalleryLike
+        }
+        onAddGalleryComment={
+          handleGalleryCommentAdd
+        }
+        onEditGalleryComment={
+          handleGalleryCommentEdit
+        }
+        onDeleteGalleryComment={
+          handleGalleryCommentDelete
+        }
+
+        editProfileModalOpen={
+          editProfileModalOpen
+        }
+        personalProfile={personalProfile}
+        profileSaving={profileSaving}
+        onCloseEditProfile={
+          closeEditProfileModal
+        }
+        onSubmitProfile={
+          handleProfileSubmit
+        }
+
+        changePasswordModalOpen={
+          changePasswordModalOpen
+        }
+        changingPassword={changingPassword}
+        onCloseChangePassword={
+          closeChangePasswordModal
+        }
+        onSubmitPassword={
+          handlePasswordSubmit
+        }
       />
 
-      <EditProfileModal
-        open={editProfileModalOpen}
-        profile={personalProfile}
-        saving={profileSaving}
-        onClose={closeEditProfileModal}
-        onSubmit={handleProfileSubmit}
-      />
-
-          {/* <ChallengesSection
+      {/* <ChallengesSection
       challenges={challenges}
       activeChallenge={activeChallenge}
       createChallenge={createChallenge}
@@ -2489,12 +1877,6 @@ const appDataValue = {
       gages={gages}
     /> */}
 
-      <ChangePasswordModal
-        open={changePasswordModalOpen}
-        changingPassword={changingPassword}
-        onClose={closeChangePasswordModal}
-        onSubmit={handlePasswordSubmit}
-      />
     </div>
   );
 }

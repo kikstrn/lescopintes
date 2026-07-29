@@ -1,0 +1,28 @@
+import HomePage from "../features/home/HomePage";
+import EventsPage from "../features/events/EventsPage";
+import TennisPage from "../features/tennis/TennisPage";
+import CyclingPage from "../features/cycling/CyclingPage";
+import GalleryPage from "../features/gallery/GalleryPage";
+import MembersPage from "../features/members/MembersPage";
+import RankingPage from "../features/ranking/RankingPage";
+import StatisticsPage from "../features/statistics/StatisticsPage";
+import GagesPage from "../features/gages/GagesPage";
+import TribunalPage from "../features/tribunal/TribunalPage";
+import ProfilePage from "../features/profile/ProfilePage";
+import ChallengesPage from "../features/challenges/ChallengesPage";
+
+export const v2Pages = {
+  home: HomePage,
+
+  events: EventsPage,
+  tennis: TennisPage,
+  bike: CyclingPage,
+  ranking: RankingPage,
+  statistics: StatisticsPage,
+  gallery: GalleryPage,
+  gages: GagesPage,
+  tribunal: TribunalPage,
+  members: MembersPage,
+  challenges: ChallengesPage,
+  profile: ProfilePage,
+};
