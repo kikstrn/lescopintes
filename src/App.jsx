@@ -696,10 +696,12 @@ function App() {
     });
   };
 
-  const useV2 =
-    new URLSearchParams(
-      window.location.search,
-    ).get("v2") === "1";
+const useLegacy =
+  new URLSearchParams(
+    window.location.search,
+  ).get("legacy") === "1";
+
+const useV2 = !useLegacy;
 
   const showPreviousGalleryPhoto = () => {
     setGalleryViewerIndex(
