@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
-import V2Bridge from "./v2/app/V2Bridge";
 import AppModals from "./v2/app/AppModals";
+import AppV2 from "./v2/AppV2";
 
 import useChallenges from "./hooks/useChallenges";
 import { useEvents } from "./hooks/useEvents";
@@ -959,28 +959,34 @@ function App() {
     gages: gagesError,
     profile: profileError,
   };
+
+  const appData = {
+  members,
+  events,
+  tennisMatches,
+  bikeRides,
+
+  galleryAlbums,
+  galleryPhotos,
+  galleryComments,
+
+  tribunalCases,
+  gages,
+
+  challenges,
+  activeChallenge,
+
+  personalProfile,
+  profileStatistics,
+
+  loading: v2Loading,
+  errors: v2Errors,
+
+  ...v2Actions,
+};
   return (
     <>
-      <V2Bridge
-        members={members}
-        events={events}
-        tennisMatches={tennisMatches}
-        bikeRides={bikeRides}
-        galleryAlbums={galleryAlbums}
-        galleryPhotos={galleryPhotos}
-        galleryComments={galleryComments}
-        tribunalCases={tribunalCases}
-        gages={gages}
-        challenges={challenges}
-        activeChallenge={activeChallenge}
-
-        personalProfile={personalProfile}
-        profileStatistics={profileStatistics}
-
-        loading={v2Loading}
-        errors={v2Errors}
-        actions={v2Actions}
-      />
+      <AppV2 appData={appData} />
 
       <AppModals
         members={members}

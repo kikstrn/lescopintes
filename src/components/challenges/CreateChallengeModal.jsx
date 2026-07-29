@@ -43,6 +43,7 @@ function CreateChallengeModal({
   open,
   onClose,
   onCreate,
+  currentProfileId = null,
 }) {
   const [form, setForm] = useState({
     title: "",
