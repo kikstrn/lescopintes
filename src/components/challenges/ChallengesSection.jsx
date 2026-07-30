@@ -347,195 +347,70 @@ function ChallengesSection({
     activeChallenge?.category ??
     null;
 
-  const leaderboard = useMemo(() => {
-    if (
-      !activeChallenge ||
-      !challengeType
-    ) {
-      return [];
-    }
+const leaderboard = useMemo(() => {
+  if (!activeChallenge) {
+    return [];
+  }
 
-    return members
-      .map((member) => {
-        const memberId =
-          getMemberId(member);
+  const rewardPoints = Number(
+    activeChallenge?.points_reward ??
+      activeChallenge?.reward ??
+      0,
+  );
 
-        const validatedEntry =
-          validatedChallengeEntries.find(
-            (entry) =>
-              String(entry.profileId) ===
-              memberId,
-          );
+  return members
+    .map((member) => {
+      const memberId = String(
+        member?.id ?? "",
+      );
 
-        /*
-         * Dès qu'une participation est validée,
-         * sa progression devient la source du
-         * classement. Cela garantit une mise à jour
-         * immédiate pour les catégories manuelles
-         * comme "Autre" et "Bar".
-         */
-        if (validatedEntry) {
-          return {
-            ...member,
+      const validatedEntry =
+        validatedChallengeEntries.find(
+          (entry) =>
+            String(entry.profileId) ===
+              memberId &&
+            entry.status ===
+              "validated",
+        );
 
-            value: Number(
-              validatedEntry.pointsAwarded ??
-              activeChallenge?.points_reward ??
-              activeChallenge?.reward ??
-              0,
-            ),
-          };
-        }
+      return {
+        ...member,
 
-        let value = 0;
+        value: validatedEntry
+          ? rewardPoints
+          : 0,
+      };
+    })
+    .sort((memberA, memberB) => {
+      const valueDifference =
+        memberB.value -
+        memberA.value;
 
-        switch (challengeType) {
-          case "bike_distance":
-            value = bikeRides
-              .filter(
-                (ride) =>
-                  getRideProfileId(ride) ===
-                  memberId,
-              )
-              .reduce(
-                (sum, ride) =>
-                  sum +
-                  getRideDistance(ride),
-                0,
-              );
-            break;
+      if (valueDifference !== 0) {
+        return valueDifference;
+      }
 
-          case "bike_rides":
-            value = bikeRides.filter(
-              (ride) =>
-                getRideProfileId(ride) ===
-                memberId,
-            ).length;
-            break;
-
-          case "tennis_matches":
-            value = tennisMatches.filter(
-              (match) =>
-                getMatchPlayers(match).includes(
-                  memberId,
-                ),
-            ).length;
-            break;
-
-          case "tennis_wins":
-            value = Number(
-              member?.tennisWins ??
-              member?.wins ??
-              0,
-            );
-            break;
-
-          case "events":
-            value = events.filter((event) =>
-              getEventParticipants(event).some(
-                (participant) =>
-                  getParticipantProfileId(
-                    participant,
-                  ) === memberId,
-              ),
-            ).length;
-            break;
-
-          case "gallery_uploads":
-            value = galleryPhotos.filter(
-              (photo) =>
-                getPhotoProfileId(photo) ===
-                memberId,
-            ).length;
-            break;
-
-          case "tribunal_votes":
-            value = tribunalCases.reduce(
-              (total, tribunalCase) =>
-                total +
-                getTribunalVotes(
-                  tribunalCase,
-                ).filter(
-                  (vote) =>
-                    getVoteProfileId(vote) ===
-                    memberId,
-                ).length,
-              0,
-            );
-            break;
-
-          case "gages_completed":
-            value = gages.filter(
-              (gage) =>
-                getGageAssignedProfileId(
-                  gage,
-                ) === memberId &&
-                [
-                  "completed",
-                  "validated",
-                ].includes(
-                  gage?.status,
-                ),
-            ).length;
-            break;
-
-          case "points":
-            value = Number(
-              member?.calculatedPoints ??
-              member?.totalPoints ??
-              member?.points ??
-              0,
-            );
-            break;
-
-          default:
-            value = 0;
-        }
-
-        return {
-          ...member,
-          value:
-            Math.round(value * 10) /
-            10,
-        };
-      })
-      .sort((memberA, memberB) => {
-        const valueDifference =
-          memberB.value -
-          memberA.value;
-
-        if (valueDifference !== 0) {
-          return valueDifference;
-        }
-
-        return String(
-          memberA?.nickname ??
+      return String(
+        memberA?.nickname ??
           memberA?.firstName ??
           "",
-        ).localeCompare(
-          String(
-            memberB?.nickname ??
+      ).localeCompare(
+        String(
+          memberB?.nickname ??
             memberB?.firstName ??
             "",
-          ),
-          "fr",
-          {
-            sensitivity: "base",
-          },
-        );
-      });
-  }, [
-    activeChallenge,
-    challengeType,
-    members,
-    bikeRides,
-    tennisMatches,
-    events,
-    tribunalCases,
-    gages,
-    galleryPhotos,
-    validatedChallengeEntries,
-  ]);
+        ),
+        "fr",
+        {
+          sensitivity: "base",
+        },
+      );
+    });
+}, [
+  activeChallenge,
+  members,
+  validatedChallengeEntries,
+]);
 
   const Icon =
     challengeIcons[challengeType] ??
