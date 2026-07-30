@@ -24,6 +24,19 @@ function ChallengesPage() {
     createChallenge,
     updateChallenge,
     archiveChallenge,
+
+    currentChallengeEntry,
+    pendingChallengeEntries = [],
+    validatedChallengeEntries = [],
+
+    challengeEntriesLoading = false,
+    challengeEntriesSaving = false,
+    challengeEntriesError = null,
+
+    submitChallengeEntry,
+    validateChallengeEntry,
+    rejectChallengeEntry,
+    deleteChallengeEntry,
   } = useAppData();
 
   return (
@@ -42,6 +55,42 @@ function ChallengesPage() {
       createChallenge={createChallenge}
       updateChallenge={updateChallenge}
       archiveChallenge={archiveChallenge}
+
+      currentChallengeEntry={
+        currentChallengeEntry
+      }
+
+      pendingChallengeEntries={
+        pendingChallengeEntries
+      }
+
+      validatedChallengeEntries={
+        validatedChallengeEntries
+      }
+
+      challengeEntriesLoading={
+        challengeEntriesLoading
+      }
+
+      challengeEntriesSaving={
+        challengeEntriesSaving
+      }
+
+      challengeEntriesError={
+        challengeEntriesError
+      }
+
+      submitChallengeEntry={
+        submitChallengeEntry
+      }
+
+      validateChallengeEntry={
+        validateChallengeEntry
+      }
+
+      rejectChallengeEntry={
+        rejectChallengeEntry
+      }
 
       isAdmin={isAdmin}
       currentProfileId={user?.id}

@@ -32,6 +32,8 @@ const activityIcons = {
     gage_completed: CheckCircle2,
     gage_validated: CheckCircle2,
     gage_cancelled: XCircle,
+    challenge_entry_validated:
+        CheckCircle2,
 };
 
 function getGalleryPhoto(

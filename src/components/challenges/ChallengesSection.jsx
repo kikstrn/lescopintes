@@ -14,6 +14,7 @@ import {
   Trophy,
 } from "lucide-react";
 
+import ChallengeEntryModal from "../../v2/features/challenges/ChallengeEntryModal";
 import CreateChallengeModal from "./CreateChallengeModal";
 
 const challengeIcons = {
@@ -26,6 +27,8 @@ const challengeIcons = {
   tribunal_votes: Gavel,
   gages_completed: CheckCircle2,
   points: Flame,
+  other: Flame,
+  bar: Trophy,
 };
 
 function getMemberId(member) {
@@ -35,19 +38,19 @@ function getMemberId(member) {
 function getRideProfileId(ride) {
   return String(
     ride?.profileId ??
-      ride?.profile_id ??
-      ride?.createdBy ??
-      ride?.created_by ??
-      "",
+    ride?.profile_id ??
+    ride?.createdBy ??
+    ride?.created_by ??
+    "",
   );
 }
 
 function getRideDistance(ride) {
   return Number(
     ride?.distanceKm ??
-      ride?.distance_km ??
-      ride?.distance ??
-      0,
+    ride?.distance_km ??
+    ride?.distance ??
+    0,
   );
 }
 
@@ -58,28 +61,31 @@ function getMatchPlayers(match) {
     match?.match_players ??
     [];
 
-  if (Array.isArray(players) && players.length > 0) {
+  if (
+    Array.isArray(players) &&
+    players.length > 0
+  ) {
     return players.map((player) =>
       String(
         player?.profileId ??
-          player?.profile_id ??
-          player?.memberId ??
-          player?.member_id ??
-          player?.id ??
-          "",
+        player?.profile_id ??
+        player?.memberId ??
+        player?.member_id ??
+        player?.id ??
+        "",
       ),
     );
   }
 
   return [
     match?.player1Id ??
-      match?.player1_id,
+    match?.player1_id,
     match?.player2Id ??
-      match?.player2_id,
+    match?.player2_id,
     match?.player3Id ??
-      match?.player3_id,
+    match?.player3_id,
     match?.player4Id ??
-      match?.player4_id,
+    match?.player4_id,
   ]
     .filter(Boolean)
     .map(String);
@@ -100,34 +106,34 @@ function getEventParticipants(event) {
 function getParticipantProfileId(participant) {
   return String(
     participant?.profileId ??
-      participant?.profile_id ??
-      participant?.memberId ??
-      participant?.member_id ??
-      participant?.userId ??
-      participant?.user_id ??
-      participant?.id ??
-      "",
+    participant?.profile_id ??
+    participant?.memberId ??
+    participant?.member_id ??
+    participant?.userId ??
+    participant?.user_id ??
+    participant?.id ??
+    "",
   );
 }
 
 function getGageAssignedProfileId(gage) {
   return String(
     gage?.assignedProfileId ??
-      gage?.assigned_profile_id ??
-      gage?.assignedProfile?.id ??
-      "",
+    gage?.assigned_profile_id ??
+    gage?.assignedProfile?.id ??
+    "",
   );
 }
 
 function getPhotoProfileId(photo) {
   return String(
     photo?.profileId ??
-      photo?.profile_id ??
-      photo?.uploadedBy ??
-      photo?.uploaded_by ??
-      photo?.createdBy ??
-      photo?.created_by ??
-      "",
+    photo?.profile_id ??
+    photo?.uploadedBy ??
+    photo?.uploaded_by ??
+    photo?.createdBy ??
+    photo?.created_by ??
+    "",
   );
 }
 
@@ -146,16 +152,161 @@ function getTribunalVotes(tribunalCase) {
 function getVoteProfileId(vote) {
   return String(
     vote?.profileId ??
-      vote?.profile_id ??
-      vote?.userId ??
-      vote?.user_id ??
-      "",
+    vote?.profile_id ??
+    vote?.userId ??
+    vote?.user_id ??
+    "",
+  );
+}
+
+function getEntryMemberName(entry) {
+  return (
+    entry?.profile?.nickname ??
+    entry?.profile?.first_name ??
+    entry?.profile?.firstName ??
+    "Membre"
+  );
+}
+
+function getEntryInitials(entry) {
+  const name =
+    getEntryMemberName(entry);
+
+  return (
+    entry?.profile?.initials ??
+    name
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+  );
+}
+
+function EntryProof({ entry }) {
+  if (!entry?.proofUrl) {
+    return null;
+  }
+
+  return (
+    <button
+      type="button"
+      className="challenge-entry-card__proof-image"
+      onClick={() =>
+        window.open(
+          entry.proofUrl,
+          "_blank",
+          "noopener,noreferrer",
+        )
+      }
+    >
+      <img
+        src={entry.proofUrl}
+        alt={`Preuve envoyée par ${getEntryMemberName(
+          entry,
+        )}`}
+        loading="lazy"
+      />
+
+      <span>
+        Voir la preuve en grand
+      </span>
+    </button>
+  );
+}
+
+function ChallengeEntryCard({
+  entry,
+  saving = false,
+  showActions = false,
+  onValidate,
+  onReject,
+}) {
+  return (
+    <article className="challenge-entry-card">
+      <div className="challenge-entry-card__member">
+        <span className="challenge-entry-card__avatar">
+          {entry.profile?.avatar_url ? (
+            <img
+              src={
+                entry.profile.avatar_url
+              }
+              alt=""
+            />
+          ) : (
+            getEntryInitials(entry)
+          )}
+        </span>
+
+        <div>
+          <strong>
+            {getEntryMemberName(entry)}
+          </strong>
+
+          <small>
+            Progression :{" "}
+            {Number(
+              entry.progressValue ?? 0,
+            ).toLocaleString(
+              "fr-FR",
+            )}
+          </small>
+
+          {entry.status ===
+            "validated" && (
+              <small>
+                Points attribués :{" "}
+                {Number(
+                  entry.pointsAwarded ?? 0,
+                ).toLocaleString(
+                  "fr-FR",
+                )}
+              </small>
+            )}
+        </div>
+      </div>
+
+      {entry.proofText && (
+        <p className="challenge-entry-card__proof">
+          {entry.proofText}
+        </p>
+      )}
+
+      <EntryProof entry={entry} />
+
+      {showActions && (
+        <div className="challenge-entry-card__actions">
+          <button
+            type="button"
+            className="secondary-button challenge-entry-card__reject"
+            disabled={saving}
+            onClick={() =>
+              onReject?.(entry)
+            }
+          >
+            Refuser
+          </button>
+
+          <button
+            type="button"
+            className="primary-button"
+            disabled={saving}
+            onClick={() =>
+              onValidate?.(entry)
+            }
+          >
+            Valider
+          </button>
+        </div>
+      )}
+    </article>
   );
 }
 
 function ChallengesSection({
   activeChallenge = null,
   challenges = [],
+
   createChallenge,
   updateChallenge,
   archiveChallenge,
@@ -168,11 +319,28 @@ function ChallengesSection({
   gages = [],
   galleryPhotos = [],
 
+  currentChallengeEntry = null,
+  pendingChallengeEntries = [],
+  validatedChallengeEntries = [],
+
+  challengeEntriesLoading = false,
+  challengeEntriesSaving = false,
+  challengeEntriesError = null,
+
+  submitChallengeEntry,
+  validateChallengeEntry,
+  rejectChallengeEntry,
+
   isAdmin = false,
   currentProfileId = null,
 }) {
   const [modalOpen, setModalOpen] =
     useState(false);
+
+  const [
+    entryModalOpen,
+    setEntryModalOpen,
+  ] = useState(false);
 
   const challengeType =
     activeChallenge?.challenge_type ??
@@ -180,7 +348,10 @@ function ChallengesSection({
     null;
 
   const leaderboard = useMemo(() => {
-    if (!activeChallenge || !challengeType) {
+    if (
+      !activeChallenge ||
+      !challengeType
+    ) {
       return [];
     }
 
@@ -188,6 +359,33 @@ function ChallengesSection({
       .map((member) => {
         const memberId =
           getMemberId(member);
+
+        const validatedEntry =
+          validatedChallengeEntries.find(
+            (entry) =>
+              String(entry.profileId) ===
+              memberId,
+          );
+
+        /*
+         * Dès qu'une participation est validée,
+         * sa progression devient la source du
+         * classement. Cela garantit une mise à jour
+         * immédiate pour les catégories manuelles
+         * comme "Autre" et "Bar".
+         */
+        if (validatedEntry) {
+          return {
+            ...member,
+
+            value: Number(
+              validatedEntry.pointsAwarded ??
+              activeChallenge?.points_reward ??
+              activeChallenge?.reward ??
+              0,
+            ),
+          };
+        }
 
         let value = 0;
 
@@ -227,8 +425,8 @@ function ChallengesSection({
           case "tennis_wins":
             value = Number(
               member?.tennisWins ??
-                member?.wins ??
-                0,
+              member?.wins ??
+              0,
             );
             break;
 
@@ -275,16 +473,18 @@ function ChallengesSection({
                 [
                   "completed",
                   "validated",
-                ].includes(gage?.status),
+                ].includes(
+                  gage?.status,
+                ),
             ).length;
             break;
 
           case "points":
             value = Number(
               member?.calculatedPoints ??
-                member?.totalPoints ??
-                member?.points ??
-                0,
+              member?.totalPoints ??
+              member?.points ??
+              0,
             );
             break;
 
@@ -295,7 +495,8 @@ function ChallengesSection({
         return {
           ...member,
           value:
-            Math.round(value * 10) / 10,
+            Math.round(value * 10) /
+            10,
         };
       })
       .sort((memberA, memberB) => {
@@ -309,13 +510,13 @@ function ChallengesSection({
 
         return String(
           memberA?.nickname ??
-            memberA?.firstName ??
-            "",
+          memberA?.firstName ??
+          "",
         ).localeCompare(
           String(
             memberB?.nickname ??
-              memberB?.firstName ??
-              "",
+            memberB?.firstName ??
+            "",
           ),
           "fr",
           {
@@ -333,6 +534,7 @@ function ChallengesSection({
     tribunalCases,
     gages,
     galleryPhotos,
+    validatedChallengeEntries,
   ]);
 
   const Icon =
@@ -357,6 +559,54 @@ function ChallengesSection({
       );
 
       setModalOpen(false);
+    };
+
+  const handleValidateEntry =
+    async (entry) => {
+      if (
+        typeof validateChallengeEntry !==
+        "function"
+      ) {
+        return;
+      }
+
+      await validateChallengeEntry({
+        entryId: entry.id,
+        validatorId:
+          currentProfileId,
+        pointsAwarded: Number(
+          activeChallenge?.points_reward ??
+          activeChallenge?.reward ??
+          0,
+        ),
+      });
+    };
+
+  const handleRejectEntry =
+    async (entry) => {
+      if (
+        typeof rejectChallengeEntry !==
+        "function"
+      ) {
+        return;
+      }
+
+      const reason =
+        window.prompt(
+          "Indique la raison du refus :",
+          "",
+        );
+
+      if (reason === null) {
+        return;
+      }
+
+      await rejectChallengeEntry({
+        entryId: entry.id,
+        validatorId:
+          currentProfileId,
+        reason,
+      });
     };
 
   return (
@@ -437,7 +687,7 @@ function ChallengesSection({
             <strong>
               {Number(
                 activeChallenge.target_value ??
-                  0,
+                0,
               ).toLocaleString(
                 "fr-FR",
               )}
@@ -449,6 +699,50 @@ function ChallengesSection({
                 {activeChallenge.reward}
               </p>
             )}
+
+            <button
+              type="button"
+              className="primary-button challenge-progress__participate"
+              disabled={
+                challengeEntriesLoading ||
+                challengeEntriesSaving ||
+                currentChallengeEntry
+                  ?.status ===
+                "validated"
+              }
+              onClick={() =>
+                setEntryModalOpen(true)
+              }
+            >
+              {currentChallengeEntry
+                ?.status ===
+                "validated"
+                ? "Participation validée"
+                : currentChallengeEntry
+                  ? "Modifier ma participation"
+                  : "Participer au défi"}
+            </button>
+
+            {currentChallengeEntry
+              ?.status ===
+              "submitted" && (
+                <p className="challenge-entry-status challenge-entry-status--pending">
+                  Ta participation attend la
+                  validation d’un administrateur.
+                </p>
+              )}
+
+            {currentChallengeEntry
+              ?.status ===
+              "rejected" && (
+                <p className="challenge-entry-status challenge-entry-status--rejected">
+                  Participation refusée
+                  {currentChallengeEntry
+                    .rejectionReason
+                    ? ` : ${currentChallengeEntry.rejectionReason}`
+                    : "."}
+                </p>
+              )}
           </div>
 
           <div className="challenge-leaderboard glass-panel">
@@ -490,7 +784,7 @@ function ChallengesSection({
 
                         <small>
                           {member.role ===
-                          "admin"
+                            "admin"
                             ? "Administrateur"
                             : "Membre"}
                         </small>
@@ -556,8 +850,118 @@ function ChallengesSection({
                 ))
             )}
           </div>
+
+          {isAdmin && (
+            <section className="challenge-admin glass-panel">
+              <header className="challenge-admin__header">
+                <div>
+                  <span className="section-heading__eyebrow">
+                    Administration
+                  </span>
+
+                  <h2>
+                    Participations à valider
+                  </h2>
+                </div>
+
+                <span className="challenge-admin__count">
+                  {
+                    pendingChallengeEntries.length
+                  }
+                </span>
+              </header>
+
+              {challengeEntriesLoading ? (
+                <div className="challenge-admin__state">
+                  Chargement des participations…
+                </div>
+              ) : challengeEntriesError ? (
+                <div className="challenge-admin__state challenge-admin__state--error">
+                  {challengeEntriesError}
+                </div>
+              ) : pendingChallengeEntries.length ===
+                0 ? (
+                <div className="challenge-admin__state">
+                  Aucune participation en attente.
+                </div>
+              ) : (
+                <div className="challenge-admin__list">
+                  {pendingChallengeEntries.map(
+                    (entry) => (
+                      <ChallengeEntryCard
+                        key={entry.id}
+                        entry={entry}
+                        saving={
+                          challengeEntriesSaving
+                        }
+                        showActions
+                        onValidate={
+                          handleValidateEntry
+                        }
+                        onReject={
+                          handleRejectEntry
+                        }
+                      />
+                    ),
+                  )}
+                </div>
+              )}
+            </section>
+          )}
+
+          {isAdmin &&
+            validatedChallengeEntries.length >
+            0 && (
+              <section className="challenge-admin glass-panel">
+                <header className="challenge-admin__header">
+                  <div>
+                    <span className="section-heading__eyebrow">
+                      Historique
+                    </span>
+
+                    <h2>
+                      Participations validées
+                    </h2>
+                  </div>
+
+                  <span className="challenge-admin__count">
+                    {
+                      validatedChallengeEntries.length
+                    }
+                  </span>
+                </header>
+
+                <div className="challenge-admin__list">
+                  {validatedChallengeEntries.map(
+                    (entry) => (
+                      <ChallengeEntryCard
+                        key={entry.id}
+                        entry={entry}
+                      />
+                    ),
+                  )}
+                </div>
+              </section>
+            )}
         </section>
       )}
+
+      <ChallengeEntryModal
+        open={entryModalOpen}
+        challenge={activeChallenge}
+        currentEntry={
+          currentChallengeEntry
+        }
+        saving={
+          challengeEntriesSaving
+        }
+        onClose={() =>
+          setEntryModalOpen(false)
+        }
+        onSubmit={
+          submitChallengeEntry
+        }
+      />
 
       <CreateChallengeModal
         open={modalOpen}

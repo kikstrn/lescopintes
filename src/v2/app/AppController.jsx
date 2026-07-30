@@ -7,6 +7,7 @@ import { useAppActions } from "../shared/hooks/useAppActions";
 import { useAppModals } from "../shared/hooks/useAppModals";
 import { useNotifications } from "../shared/hooks/useNotifications";
 import { useActivityFeed } from "../shared/hooks/useActivityFeed";
+import { useChallengeEntries } from "../shared/hooks/useChallengeEntries";
 
 import useChallenges from "../../hooks/useChallenges";
 import { useBikeRides } from "../../hooks/useBikeRides";
@@ -26,6 +27,7 @@ function AppController() {
     useActivityFeed({
       limit: 30,
     });
+
   const { profile, user, isAdmin } = useAuth();
   const modals = useAppModals();
 
@@ -108,6 +110,15 @@ function AppController() {
     updateChallenge,
     archiveChallenge,
   } = challengesApi;
+
+  const challengeEntriesState =
+    useChallengeEntries({
+      challengeId:
+        activeChallenge?.id ?? null,
+
+      currentProfileId:
+        user?.id ?? null,
+    });
 
   const actions = useAppActions({
     user,
@@ -266,6 +277,11 @@ function AppController() {
     profileSaving,
     uploadingAvatar,
     changingPassword,
+    challengeEntries:
+      challengeEntriesState.loading,
+
+    challengeEntriesSaving:
+      challengeEntriesState.saving,
   };
 
   const errors = {
@@ -277,6 +293,8 @@ function AppController() {
     tribunal: tribunalError,
     gages: gagesError,
     profile: profileError,
+    challengeEntries:
+      challengeEntriesState.error,
   };
 
   const appData = {
@@ -362,6 +380,41 @@ function AppController() {
 
     refreshActivityFeed:
       activityFeedState.refreshActivityFeed,
+
+    challengeEntries:
+      challengeEntriesState.entries,
+
+    currentChallengeEntry:
+      challengeEntriesState.currentEntry,
+
+    pendingChallengeEntries:
+      challengeEntriesState
+        .pendingValidationEntries,
+
+    validatedChallengeEntries:
+      challengeEntriesState
+        .validatedEntries,
+
+    challengeEntriesLoading:
+      challengeEntriesState.loading,
+
+    challengeEntriesSaving:
+      challengeEntriesState.saving,
+
+    challengeEntriesError:
+      challengeEntriesState.error,
+
+    submitChallengeEntry:
+      challengeEntriesState.submitEntry,
+
+    validateChallengeEntry:
+      challengeEntriesState.validateEntry,
+
+    rejectChallengeEntry:
+      challengeEntriesState.rejectEntry,
+
+    deleteChallengeEntry:
+      challengeEntriesState.deleteEntry,
 
     createChallenge,
     updateChallenge,
