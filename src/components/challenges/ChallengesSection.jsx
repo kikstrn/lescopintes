@@ -347,70 +347,61 @@ function ChallengesSection({
     activeChallenge?.category ??
     null;
 
-const leaderboard = useMemo(() => {
-  if (!activeChallenge) {
-    return [];
-  }
+  const leaderboard = useMemo(() => {
+    if (!activeChallenge) {
+      return [];
+    }
 
-  const rewardPoints = Number(
-    activeChallenge?.points_reward ??
-      activeChallenge?.reward ??
-      0,
-  );
-
-  return members
-    .map((member) => {
-      const memberId = String(
-        member?.id ?? "",
-      );
-
-      const validatedEntry =
-        validatedChallengeEntries.find(
-          (entry) =>
-            String(entry.profileId) ===
-              memberId &&
-            entry.status ===
-              "validated",
+    return members
+      .map((member) => {
+        const memberId = String(
+          member?.id ?? "",
         );
 
-      return {
-        ...member,
+        const validatedEntry =
+          validatedChallengeEntries.find(
+            (entry) =>
+              String(entry.profileId) ===
+              memberId &&
+              entry.status ===
+              "validated",
+          );
 
-        value: validatedEntry
-          ? rewardPoints
-          : 0,
-      };
-    })
-    .sort((memberA, memberB) => {
-      const valueDifference =
-        memberB.value -
-        memberA.value;
+        return {
+          ...member,
+          value: Number(
+            validatedEntry?.pointsAwarded ??
+            0,
+          ),
+        };
+      })
+      .sort((memberA, memberB) => {
+        const difference =
+          memberB.value -
+          memberA.value;
 
-      if (valueDifference !== 0) {
-        return valueDifference;
-      }
+        if (difference !== 0) {
+          return difference;
+        }
 
-      return String(
-        memberA?.nickname ??
+        return String(
+          memberA?.nickname ??
           memberA?.firstName ??
           "",
-      ).localeCompare(
-        String(
-          memberB?.nickname ??
+        ).localeCompare(
+          String(
+            memberB?.nickname ??
             memberB?.firstName ??
             "",
-        ),
-        "fr",
-        {
-          sensitivity: "base",
-        },
-      );
-    });
-}, [
-  activeChallenge,
-  members,
-  validatedChallengeEntries,
-]);
+          ),
+          "fr",
+        );
+      });
+  }, [
+    activeChallenge,
+    members,
+    validatedChallengeEntries,
+  ]);
 
   const Icon =
     challengeIcons[challengeType] ??
@@ -445,15 +436,24 @@ const leaderboard = useMemo(() => {
         return;
       }
 
+      const rewardPoints =
+        Number(
+          activeChallenge?.points_reward,
+        ) > 0
+          ? Number(
+            activeChallenge.points_reward,
+          )
+          : Number(
+            activeChallenge?.reward ?? 0,
+          );
+
       await validateChallengeEntry({
         entryId: entry.id,
         validatorId:
           currentProfileId,
-        pointsAwarded: Number(
-          activeChallenge?.points_reward ??
-          activeChallenge?.reward ??
-          0,
-        ),
+        pointsAwarded: Number.isFinite(rewardPoints)
+          ? rewardPoints
+          : 0,
       });
     };
 
