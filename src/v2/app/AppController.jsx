@@ -5,6 +5,8 @@ import AppModals from "./AppModals";
 
 import { useAppActions } from "../shared/hooks/useAppActions";
 import { useAppModals } from "../shared/hooks/useAppModals";
+import { useNotifications } from "../shared/hooks/useNotifications";
+import { useActivityFeed } from "../shared/hooks/useActivityFeed";
 
 import useChallenges from "../../hooks/useChallenges";
 import { useBikeRides } from "../../hooks/useBikeRides";
@@ -20,6 +22,10 @@ import { useAuth } from "../../context/AuthContext";
 import { getProfileStatistics } from "../../services/profileService";
 
 function AppController() {
+  const activityFeedState =
+    useActivityFeed({
+      limit: 30,
+    });
   const { profile, user, isAdmin } = useAuth();
   const modals = useAppModals();
 
@@ -37,6 +43,7 @@ function AppController() {
   const gagesApi = useGages(user?.id);
   const profileApi = useProfile(user?.id);
   const challengesApi = useChallenges();
+  const notificationsState = useNotifications();
 
   const {
     events,
@@ -319,6 +326,42 @@ function AppController() {
     openChangePassword: modals.openChangePasswordModal,
     uploadAvatar: actions.handleAvatarUpload,
     deleteAvatar: actions.handleAvatarDelete,
+
+    notifications:
+      notificationsState.notifications,
+
+    unreadNotificationsCount:
+      notificationsState.unreadCount,
+
+    notificationsLoading:
+      notificationsState.loading,
+
+    notificationsError:
+      notificationsState.error,
+
+    markNotificationAsRead:
+      notificationsState.markAsRead,
+
+    markAllNotificationsAsRead:
+      notificationsState.markAllAsRead,
+
+    deleteNotification:
+      notificationsState.deleteNotification,
+
+    clearReadNotifications:
+      notificationsState.clearReadNotifications,
+
+    activityFeed:
+      activityFeedState.activities,
+
+    activityFeedLoading:
+      activityFeedState.loading,
+
+    activityFeedError:
+      activityFeedState.error,
+
+    refreshActivityFeed:
+      activityFeedState.refreshActivityFeed,
 
     createChallenge,
     updateChallenge,

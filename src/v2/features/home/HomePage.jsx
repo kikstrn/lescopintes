@@ -10,17 +10,58 @@ import StatCard from "../../../components/StatCard";
 import EventCard from "../../../components/EventCard";
 import Podium from "../../../components/Podium";
 import ActivityChart from "../../../components/ActivityChart";
-import ActivityFeed from "../../../components/ActivityFeed";
 
 import { useAuth } from "../../../context/AuthContext";
 import { useAppData } from "../../context/AppDataContext";
 import { useNavigation } from "../../context/NavigationContext";
+import LiveActivityFeed from "../activity/LiveActivityFeed";
 
 import {
   getMemberName,
   getMemberWins,
   useHomeDashboard,
 } from "./useHomeDashboard";
+
+
+function formatRelativeDate(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  const difference =
+    Date.now() - date.getTime();
+
+  const minutes = Math.floor(
+    difference / 60000,
+  );
+
+  if (minutes < 1) {
+    return "À l’instant";
+  }
+
+  if (minutes < 60) {
+    return `Il y a ${minutes} min`;
+  }
+
+  const hours = Math.floor(
+    minutes / 60,
+  );
+
+  if (hours < 24) {
+    return `Il y a ${hours} h`;
+  }
+
+  const days = Math.floor(
+    hours / 24,
+  );
+
+  if (days === 1) {
+    return "Hier";
+  }
+
+  return `Il y a ${days} jours`;
+}
 
 function HomePage() {
   const {
@@ -36,6 +77,12 @@ function HomePage() {
     gages = [],
     tribunalCases = [],
     activeChallenge = null,
+
+    activityFeed = [],
+    activityFeedLoading = false,
+    activityFeedError = null,
+
+    galleryPhotos = [],
 
     openCreateEvent,
     openScoreModal,
@@ -112,9 +159,8 @@ function HomePage() {
           icon={Trophy}
           label="Matchs joués"
           value={totalMatches}
-          detail={`${memberWins} victoire${
-            memberWins > 1 ? "s" : ""
-          } pour toi`}
+          detail={`${memberWins} victoire${memberWins > 1 ? "s" : ""
+            } pour toi`}
           accent="green"
         />
 
@@ -126,15 +172,13 @@ function HomePage() {
           ).toLocaleString(
             "fr-FR",
           )}
-          detail={`${bikeRides.length} sortie${
-            bikeRides.length > 1
+          detail={`${bikeRides.length} sortie${bikeRides.length > 1
+            ? "s"
+            : ""
+            } enregistrée${bikeRides.length > 1
               ? "s"
               : ""
-          } enregistrée${
-            bikeRides.length > 1
-              ? "s"
-              : ""
-          }`}
+            }`}
           accent="blue"
         />
 
@@ -152,11 +196,10 @@ function HomePage() {
           value={connectedPoints}
           detail={
             connectedRanking
-              ? `${connectedRanking}${
-                  connectedRanking === 1
-                    ? "er"
-                    : "e"
-                } sur ${members.length}`
+              ? `${connectedRanking}${connectedRanking === 1
+                ? "er"
+                : "e"
+              } sur ${members.length}`
               : "Non classé"
           }
           accent="purple"
@@ -245,19 +288,39 @@ function HomePage() {
             members={sortedMembers}
           />
 
-          <ActivityFeed
-            activities={
-              recentActivities
-            }
-            onOpenActivity={(
-              activity,
-            ) =>
-              navigateTo(
-                activity.page ??
-                  "home",
-              )
-            }
-          />
+          {activityFeedLoading ? (
+            <section className="data-status glass-panel">
+              <span className="data-status__spinner" />
+
+              <div>
+                <strong>
+                  Chargement de l’activité
+                </strong>
+
+                <p>
+                  Récupération du flux du groupe…
+                </p>
+              </div>
+            </section>
+          ) : activityFeedError ? (
+            <section className="data-status data-status--error glass-panel">
+              <div>
+                <strong>
+                  Impossible de charger l’activité
+                </strong>
+
+                <p>{activityFeedError}</p>
+              </div>
+            </section>
+          ) : (
+            <LiveActivityFeed
+              activities={activityFeed}
+              loading={activityFeedLoading}
+              galleryPhotos={galleryPhotos}
+              error={activityFeedError}
+              onNavigate={navigateTo}
+            />
+          )}
         </aside>
       </section>
     </>

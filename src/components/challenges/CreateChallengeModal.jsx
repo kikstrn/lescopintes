@@ -37,6 +37,14 @@ const challengeTypes = [
     value: "points",
     label: "Points gagnés",
   },
+  {
+    value: "other",
+    label: "Autre",
+  },
+  {
+    value: "bar",
+    label: "Bar",
+  },
 ];
 
 function CreateChallengeModal({

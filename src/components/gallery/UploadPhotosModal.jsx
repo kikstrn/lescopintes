@@ -39,7 +39,23 @@ const ACCEPTED_TYPES = [
 ];
 
 const MAX_FILES = 20;
-const MAX_FILE_SIZE = 15 * 1024 * 1024;
+
+/*
+ * Taille maximale du fichier sélectionné.
+ * Il sera ensuite compressé avant l’envoi.
+ */
+const MAX_FILE_SIZE =
+    25 * 1024 * 1024;
+
+/*
+ * Objectif maximal après compression.
+ */
+const MAX_COMPRESSED_SIZE =
+    2 * 1024 * 1024;
+
+const MAX_WIDTH = 1920;
+const MAX_HEIGHT = 1920;
+const IMAGE_QUALITY = 0.82;
 
 function getTodayValue() {
     const date = new Date();
@@ -195,7 +211,9 @@ function UploadPhotosModal({
                 MAX_FILE_SIZE
             ) {
                 throw new Error(
-                    `« ${file.name} » dépasse la limite de 15 Mo.`,
+                    `« ${file.name} » dépasse la limite de ${MAX_FILE_SIZE /
+                    (1024 * 1024)
+                    } Mo.`,
                 );
             }
         }
@@ -238,9 +256,11 @@ function UploadPhotosModal({
                 await prepareGalleryImages(
                     validFiles,
                     {
-                        maxWidth: 2200,
-                        maxHeight: 2200,
-                        quality: 0.84,
+                        maxWidth: MAX_WIDTH,
+                        maxHeight: MAX_HEIGHT,
+                        quality: IMAGE_QUALITY,
+                        maxFileSize:
+                            MAX_COMPRESSED_SIZE,
 
                         onProgress: ({
                             completed,
@@ -644,9 +664,7 @@ function UploadPhotosModal({
                                     </p>
 
                                     <small>
-                                        JPEG, PNG, WebP,
-                                        HEIC · 15 Mo maximum
-                                        par fichier
+                                        JPEG, PNG, WebP, HEIC · 25 Mo maximum avant compression
                                     </small>
 
                                     {preparing && (
