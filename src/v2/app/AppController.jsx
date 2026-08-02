@@ -2,10 +2,12 @@ import { useEffect, useMemo } from "react";
 
 import AppV2 from "../AppV2";
 import AppModals from "./AppModals";
+import BadgeUnlockedCelebration from "../../components/celebration/BadgeUnlockedCelebration";
 
 import { useAppActions } from "../shared/hooks/useAppActions";
 import { useAppModals } from "../shared/hooks/useAppModals";
 import { useNotifications } from "../shared/hooks/useNotifications";
+import { useBadgeCelebration } from "../shared/hooks/useBadgeCelebration";
 import { useActivityFeed } from "../shared/hooks/useActivityFeed";
 import { useChallengeEntries } from "../shared/hooks/useChallengeEntries";
 import { usePointsTotals } from "../shared/hooks/usePointsTotals";
@@ -55,6 +57,14 @@ function AppController() {
   const profileApi = useProfile(user?.id);
   const challengesApi = useChallenges();
   const notificationsState = useNotifications();
+
+  const badgeCelebration =
+    useBadgeCelebration({
+      notifications:
+        notificationsState.notifications,
+      loading:
+        notificationsState.loading,
+    });
 
   const {
     events,
@@ -588,6 +598,18 @@ function AppController() {
   return (
     <>
       <AppV2 appData={appData} />
+
+      <BadgeUnlockedCelebration
+        notification={
+          badgeCelebration.currentCelebration
+        }
+        open={
+          badgeCelebration.isOpen
+        }
+        onClose={
+          badgeCelebration.closeCelebration
+        }
+      />
 
       <AppModals
         members={membersWithPoints}

@@ -121,7 +121,7 @@ function ProfileBadges({
             (badge) => {
               const Icon =
                 iconMap[
-                  badge.icon
+                badge.icon
                 ] ?? Award;
 
               const awardedBadge =
@@ -161,10 +161,47 @@ function ProfileBadges({
                         )}
                       </small>
                     ) : (
-                      <small>
-                        Objectif :{" "}
-                        {badge.threshold}
-                      </small>
+                      <>
+                        <div className="profile-badge__progress">
+                          <div className="profile-badge__progress-label">
+                            <span>
+                              {Number(
+                                badge.currentValue ?? 0,
+                              ).toLocaleString(
+                                "fr-FR",
+                                {
+                                  maximumFractionDigits: 1,
+                                },
+                              )}
+                            </span>
+
+                            <span>
+                              /{" "}
+                              {Number(
+                                badge.targetValue ??
+                                badge.threshold ??
+                                0,
+                              ).toLocaleString(
+                                "fr-FR",
+                              )}
+                            </span>
+                          </div>
+
+                          <div className="profile-badge__progress-bar">
+                            <span
+                              style={{
+                                width: `${badge.progressPercent ??
+                                  0
+                                  }%`,
+                              }}
+                            />
+                          </div>
+
+                          <small>
+                            {badge.progressPercent ?? 0} %
+                          </small>
+                        </div>
+                      </>
                     )}
                   </div>
 

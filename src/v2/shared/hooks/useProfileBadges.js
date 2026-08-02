@@ -44,6 +44,91 @@ function normalizeBadge(row) {
   };
 }
 
+function getBadgeCurrentValue(
+  badge,
+  progress,
+) {
+  if (!progress) {
+    return 0;
+  }
+
+  const valuesByCode = {
+    points_100:
+      progress.total_points,
+
+    points_500:
+      progress.total_points,
+
+    points_1000:
+      progress.total_points,
+
+    tennis_first_match:
+      progress.tennis_matches,
+
+    tennis_10_matches:
+      progress.tennis_matches,
+
+    tennis_first_win:
+      progress.tennis_wins,
+
+    tennis_10_wins:
+      progress.tennis_wins,
+
+    tennis_1600_elo:
+      progress.tennis_elo,
+
+    bike_first_ride:
+      progress.bike_rides,
+
+    bike_10_rides:
+      progress.bike_rides,
+
+    bike_100_km:
+      progress.bike_distance,
+
+    bike_500_km:
+      progress.bike_distance,
+
+    bike_1000_km:
+      progress.bike_distance,
+
+    bike_single_100_km:
+      progress.bike_longest_ride,
+
+    event_first:
+      progress.event_attended,
+
+    event_5:
+      progress.event_attended,
+
+    event_20:
+      progress.event_attended,
+
+    event_first_created:
+      progress.event_created,
+
+    event_10_created:
+      progress.event_created,
+
+    gage_first:
+      progress.validated_gages,
+
+    gage_5:
+      progress.validated_gages,
+
+    challenge_first:
+      progress.validated_challenges,
+
+    challenge_5:
+      progress.validated_challenges,
+  };
+
+  return Number(
+    valuesByCode[badge.code] ??
+    0,
+  );
+}
+
 export function useProfileBadges(
   profileId,
 ) {
@@ -57,6 +142,9 @@ export function useProfileBadges(
     useState(true);
 
   const [error, setError] =
+    useState(null);
+
+  const [progress, setProgress] =
     useState(null);
 
   const fetchBadges =
@@ -74,6 +162,7 @@ export function useProfileBadges(
       try {
         const [
           awardedResult,
+          progressResult,
           allResult,
         ] = await Promise.all([
           supabase
@@ -103,7 +192,11 @@ export function useProfileBadges(
                 ascending: false,
               },
             ),
-
+          supabase
+            .from("profile_badge_progress")
+            .select("*")
+            .eq("profile_id", profileId)
+            .maybeSingle(),
           supabase
             .from("badges")
             .select(`
@@ -139,6 +232,10 @@ export function useProfileBadges(
           throw awardedResult.error;
         }
 
+        if (progressResult.error) {
+          throw progressResult.error;
+        }
+
         if (allResult.error) {
           throw allResult.error;
         }
@@ -148,6 +245,10 @@ export function useProfileBadges(
             awardedResult.data ??
             []
           ).map(normalizeBadge),
+        );
+
+        setProgress(
+          progressResult.data ?? null,
         );
 
         setAllBadges(
@@ -170,7 +271,7 @@ export function useProfileBadges(
               threshold:
                 Number(
                   badge.threshold ??
-                    0,
+                  0,
                 ),
             }),
           ),
@@ -183,7 +284,7 @@ export function useProfileBadges(
 
         setError(
           requestError?.message ??
-            "Impossible de charger les badges.",
+          "Impossible de charger les badges.",
         );
       } finally {
         setLoading(false);
@@ -245,26 +346,57 @@ export function useProfileBadges(
     useMemo(
       () =>
         allBadges.map(
-          (badge) => ({
-            ...badge,
+          (badge) => {
+            const currentValue =
+              getBadgeCurrentValue(
+                badge,
+                progress,
+              );
 
-            unlocked:
-              unlockedCodes.has(
-                badge.code,
-              ),
+            const targetValue =
+              Number(
+                badge.threshold ?? 0,
+              );
 
-            awardedBadge:
-              badges.find(
-                (item) =>
-                  item.code ===
+            const progressPercent =
+              targetValue > 0
+                ? Math.min(
+                  100,
+                  Math.round(
+                    (
+                      currentValue /
+                      targetValue
+                    ) * 100,
+                  ),
+                )
+                : 0;
+
+            return {
+              ...badge,
+
+              unlocked:
+                unlockedCodes.has(
                   badge.code,
-              ) ?? null,
-          }),
+                ),
+
+              awardedBadge:
+                badges.find(
+                  (item) =>
+                    item.code ===
+                    badge.code,
+                ) ?? null,
+
+              currentValue,
+              targetValue,
+              progressPercent,
+            };
+          },
         ),
       [
         allBadges,
         badges,
         unlockedCodes,
+        progress,
       ],
     );
 
