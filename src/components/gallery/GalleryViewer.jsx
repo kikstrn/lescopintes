@@ -14,6 +14,7 @@ import {
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
   Heart,
   LoaderCircle,
   MessageCircle,
@@ -61,6 +62,12 @@ function GalleryViewer({
   const [editingValue, setEditingValue] =
     useState("");
   const [commentError, setCommentError] =
+    useState("");
+
+  const [downloading, setDownloading] =
+    useState(false);
+
+  const [downloadError, setDownloadError] =
     useState("");
 
   const photo = photos[currentIndex];
@@ -137,7 +144,127 @@ function GalleryViewer({
     setEditingCommentId(null);
     setEditingValue("");
     setCommentError("");
+    setDownloadError("");
+    setDownloading(false);
   }, [currentIndex]);
+
+  const getDownloadFileName = () => {
+    const originalName =
+      photo?.fileName ??
+      photo?.file_name ??
+      "";
+
+    if (originalName) {
+      return originalName;
+    }
+
+    const caption = String(
+      photo?.caption ?? "",
+    )
+      .trim()
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(
+        /[\u0300-\u036f]/g,
+        "",
+      )
+      .replace(
+        /[^a-z0-9]+/g,
+        "-",
+      )
+      .replace(
+        /^[-]+|[-]+$/g,
+        "",
+      )
+      .slice(0, 70);
+
+    const mimeType =
+      photo?.mimeType ??
+      photo?.mime_type ??
+      "";
+
+    const extension =
+      mimeType === "image/png"
+        ? "png"
+        : mimeType === "image/webp"
+          ? "webp"
+          : "jpg";
+
+    return `${
+      caption || "photo-co-pintes"
+    }.${extension}`;
+  };
+
+  const handleDownload = async () => {
+    const signedUrl =
+      photo?.signedUrl ??
+      photo?.signed_url ??
+      null;
+
+    if (!signedUrl) {
+      setDownloadError(
+        "Cette photo n’est pas disponible au téléchargement.",
+      );
+      return;
+    }
+
+    setDownloading(true);
+    setDownloadError("");
+
+    try {
+      const response =
+        await fetch(signedUrl);
+
+      if (!response.ok) {
+        throw new Error(
+          "Le fichier n’a pas pu être récupéré.",
+        );
+      }
+
+      const blob =
+        await response.blob();
+
+      const objectUrl =
+        URL.createObjectURL(blob);
+
+      const downloadLink =
+        document.createElement("a");
+
+      downloadLink.href =
+        objectUrl;
+
+      downloadLink.download =
+        getDownloadFileName();
+
+      downloadLink.style.display =
+        "none";
+
+      document.body.appendChild(
+        downloadLink,
+      );
+
+      downloadLink.click();
+      downloadLink.remove();
+
+      window.setTimeout(() => {
+        URL.revokeObjectURL(
+          objectUrl,
+        );
+      }, 1000);
+    } catch (error) {
+      console.error(
+        "Impossible de télécharger la photo :",
+        error,
+      );
+
+      setDownloadError(
+        error?.message ??
+          "Impossible de télécharger la photo.",
+      );
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const handleLike = async () => {
     if (
@@ -407,6 +534,40 @@ function GalleryViewer({
 
                     <button
                       type="button"
+                      className="gallery-viewer__download"
+                      aria-label="Télécharger la photo"
+                      title="Télécharger la photo"
+                      disabled={
+                        downloading ||
+                        !(
+                          photo.signedUrl ??
+                          photo.signed_url
+                        )
+                      }
+                      onClick={
+                        handleDownload
+                      }
+                    >
+                      {downloading ? (
+                        <LoaderCircle
+                          className="gallery-viewer__spinner"
+                          size={19}
+                        />
+                      ) : (
+                        <Download
+                          size={19}
+                        />
+                      )}
+
+                      <span className="gallery-viewer__download-label">
+                        {downloading
+                          ? "Téléchargement…"
+                          : "Télécharger"}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
                       className={
                         liked
                           ? "gallery-viewer__like gallery-viewer__like--active"
@@ -436,6 +597,15 @@ function GalleryViewer({
                     </div>
                   </div>
                 </footer>
+
+                {downloadError && (
+                  <div
+                    className="gallery-viewer__download-error"
+                    role="alert"
+                  >
+                    {downloadError}
+                  </div>
+                )}
               </div>
 
               <aside className="gallery-viewer__comments">
