@@ -504,77 +504,55 @@ export function useChallengeEntries({
     ],
   );
 
-  const validateEntry = useCallback(
-    async ({
-      entryId,
-      validatorId,
-      pointsAwarded = 0,
-    }) => {
-      if (!entryId) {
-        throw new Error(
-          "Participation introuvable.",
-        );
+const validateEntry = useCallback(
+  async ({
+    entryId,
+  }) => {
+    if (!entryId) {
+      throw new Error(
+        "Participation introuvable.",
+      );
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      const {
+        data,
+        error: rpcError,
+      } = await supabase.rpc(
+        "validate_challenge_entry",
+        {
+          p_entry_id: entryId,
+        },
+      );
+
+      if (rpcError) {
+        throw rpcError;
       }
 
-      setSaving(true);
-      setError(null);
+      await fetchEntries();
 
-      try {
-        const validatedAt =
-          new Date().toISOString();
+      return data;
+    } catch (validationError) {
+      console.error(
+        "Impossible de valider la participation :",
+        validationError,
+      );
 
-        const {
-          error: updateError,
-        } = await supabase
-          .from(
-            "weekly_challenge_entries",
-          )
-          .update({
-            status: "validated",
+      setError(
+        validationError.message ??
+          "Impossible de valider la participation.",
+      );
 
-            validated_at:
-              validatedAt,
-
-            validated_by:
-              validatorId,
-
-            rejection_reason: null,
-
-            points_awarded:
-              Number(
-                pointsAwarded ?? 0,
-              ),
-
-            points_awarded_at:
-              Number(pointsAwarded) > 0
-                ? validatedAt
-                : null,
-          })
-          .eq("id", entryId);
-
-        if (updateError) {
-          throw updateError;
-        }
-
-        await fetchEntries();
-      } catch (updateError) {
-        console.error(
-          "Impossible de valider la participation :",
-          updateError,
-        );
-
-        setError(
-          updateError.message ??
-            "Impossible de valider la participation.",
-        );
-
-        throw updateError;
-      } finally {
-        setSaving(false);
-      }
-    },
-    [fetchEntries],
-  );
+      throw validationError;
+    } finally {
+      setSaving(false);
+    }
+  },
+  [fetchEntries],
+);
 
   const rejectEntry = useCallback(
     async ({

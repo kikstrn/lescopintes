@@ -427,35 +427,19 @@ function ChallengesSection({
       setModalOpen(false);
     };
 
-  const handleValidateEntry =
-    async (entry) => {
-      if (
-        typeof validateChallengeEntry !==
-        "function"
-      ) {
-        return;
-      }
+const handleValidateEntry =
+  async (entry) => {
+    if (
+      typeof validateChallengeEntry !==
+      "function"
+    ) {
+      return;
+    }
 
-      const rewardPoints =
-        Number(
-          activeChallenge?.points_reward,
-        ) > 0
-          ? Number(
-            activeChallenge.points_reward,
-          )
-          : Number(
-            activeChallenge?.reward ?? 0,
-          );
-
-      await validateChallengeEntry({
-        entryId: entry.id,
-        validatorId:
-          currentProfileId,
-        pointsAwarded: Number.isFinite(rewardPoints)
-          ? rewardPoints
-          : 0,
-      });
-    };
+    await validateChallengeEntry({
+      entryId: entry.id,
+    });
+  };
 
   const handleRejectEntry =
     async (entry) => {
