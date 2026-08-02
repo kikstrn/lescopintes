@@ -10,6 +10,7 @@ import { useActivityFeed } from "../shared/hooks/useActivityFeed";
 import { useChallengeEntries } from "../shared/hooks/useChallengeEntries";
 import { usePointsTotals } from "../shared/hooks/usePointsTotals";
 import { useGageLeaderboard } from "../shared/hooks/useGageLeaderboard";
+import { useTennisLeaderboard } from "../shared/hooks/useTennisLeaderboard";
 
 import useChallenges from "../../hooks/useChallenges";
 import { useBikeRides } from "../../hooks/useBikeRides";
@@ -36,6 +37,8 @@ function AppController() {
     usePointsTotals();
   const gageLeaderboardState =
     useGageLeaderboard();
+  const tennisLeaderboardState =
+    useTennisLeaderboard();
 
   const {
     profiles: members,
@@ -563,6 +566,19 @@ function AppController() {
     refreshGageLeaderboard:
       gageLeaderboardState
         .refreshGageLeaderboard,
+
+    tennisLeaderboard:
+      tennisLeaderboardState.rows,
+
+    tennisLeaderboardLoading:
+      tennisLeaderboardState.loading,
+
+    tennisLeaderboardError:
+      tennisLeaderboardState.error,
+
+    refreshTennisLeaderboard:
+      tennisLeaderboardState
+        .refreshTennisLeaderboard,
 
     createChallenge,
     updateChallenge,

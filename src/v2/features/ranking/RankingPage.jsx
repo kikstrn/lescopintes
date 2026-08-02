@@ -10,6 +10,9 @@ function RankingPage() {
 
     loading = {},
     errors = {},
+
+    pointsTotalsLoading = false,
+    pointsTotalsError = null,
   } = useAppData();
 
   return (
@@ -18,11 +21,14 @@ function RankingPage() {
       events={events}
       gages={gages}
       loading={
-        loading.profiles ??
-        false
+        Boolean(
+          loading.profiles ||
+          pointsTotalsLoading,
+        )
       }
       error={
         errors.profiles ??
+        pointsTotalsError ??
         null
       }
     />

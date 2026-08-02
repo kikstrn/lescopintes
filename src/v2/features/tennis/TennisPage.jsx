@@ -7,6 +7,10 @@ function TennisPage() {
     members = [],
     tennisMatches = [],
 
+    tennisLeaderboard = [],
+    tennisLeaderboardLoading = false,
+    tennisLeaderboardError = null,
+
     loading = {},
     errors = {},
 
@@ -17,6 +21,17 @@ function TennisPage() {
     <TennisSection
       matches={tennisMatches}
       members={members}
+      tennisLeaderboard={
+        tennisLeaderboard
+      }
+
+      tennisLeaderboardLoading={
+        tennisLeaderboardLoading
+      }
+
+      tennisLeaderboardError={
+        tennisLeaderboardError
+      }
       loading={loading.tennis ?? false}
       error={errors.tennis ?? null}
       onAddMatch={openScoreModal}

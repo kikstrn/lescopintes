@@ -9,11 +9,16 @@ import {
   History,
   Medal,
   Plus,
+  Sparkles,
   Target,
   Trophy,
 } from "lucide-react";
 
 function formatMatchDate(value) {
+  if (!value) {
+    return "Date inconnue";
+  }
+
   return new Intl.DateTimeFormat("fr-FR", {
     weekday: "short",
     day: "numeric",
@@ -22,11 +27,45 @@ function formatMatchDate(value) {
   }).format(new Date(value));
 }
 
+function getMemberName(member) {
+  return (
+    member?.nickname ??
+    member?.firstName ??
+    member?.first_name ??
+    "Membre"
+  );
+}
+
+function getMemberAvatarUrl(member) {
+  return (
+    member?.avatarUrl ??
+    member?.avatar_url ??
+    null
+  );
+}
+
+function getMemberInitials(member) {
+  const name = getMemberName(member);
+
+  return (
+    member?.initials ??
+    name
+      .split(/\s+/)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+  );
+}
+
 function TennisSection({
   matches = [],
   members = [],
-  loading,
-  error,
+  tennisLeaderboard = [],
+  tennisLeaderboardLoading = false,
+  tennisLeaderboardError = null,
+  loading = false,
+  error = null,
   onAddMatch,
 }) {
   const [selectedPlayerId, setSelectedPlayerId] =
@@ -35,27 +74,117 @@ function TennisSection({
   const ranking = useMemo(() => {
     return [...members].sort(
       (memberA, memberB) =>
-        memberB.elo - memberA.elo,
+        Number(memberB.elo ?? 0) -
+        Number(memberA.elo ?? 0),
     );
   }, [members]);
+
+  const rankedTennis = useMemo(() => {
+    const membersById = new Map(
+      members.map((member) => [
+        String(member.id),
+        member,
+      ]),
+    );
+
+    return tennisLeaderboard
+      .map((row) => {
+        const profileId =
+          row.profileId ??
+          row.profile_id;
+
+        const matchesPlayed = Number(
+          row.matchesPlayed ??
+            row.matches_played ??
+            0,
+        );
+
+        const matchesWon = Number(
+          row.matchesWon ??
+            row.matches_won ??
+            0,
+        );
+
+        return {
+          ...row,
+          profileId,
+          member:
+            membersById.get(
+              String(profileId),
+            ) ?? null,
+          tennisPoints: Number(
+            row.tennisPoints ??
+              row.tennis_points ??
+              0,
+          ),
+          matchesPlayed,
+          matchesWon,
+          winRate:
+            matchesPlayed > 0
+              ? Math.round(
+                  (matchesWon /
+                    matchesPlayed) *
+                    100,
+                )
+              : 0,
+        };
+      })
+      .sort((rowA, rowB) => {
+        const pointsDifference =
+          rowB.tennisPoints -
+          rowA.tennisPoints;
+
+        if (pointsDifference !== 0) {
+          return pointsDifference;
+        }
+
+        const winsDifference =
+          rowB.matchesWon -
+          rowA.matchesWon;
+
+        if (winsDifference !== 0) {
+          return winsDifference;
+        }
+
+        return getMemberName(
+          rowA.member,
+        ).localeCompare(
+          getMemberName(rowB.member),
+          "fr",
+          {
+            sensitivity: "base",
+          },
+        );
+      });
+  }, [members, tennisLeaderboard]);
 
   const filteredMatches = useMemo(() => {
     if (selectedPlayerId === "all") {
       return matches;
     }
 
-    return matches.filter(
-      (match) =>
-        match.playerOne?.id ===
-          selectedPlayerId ||
-        match.playerTwo?.id ===
-          selectedPlayerId,
-    );
+    return matches.filter((match) => {
+      const participantIds = [
+        match.playerOne?.id,
+        match.playerTwo?.id,
+        match.playerThree?.id,
+        match.playerFour?.id,
+      ]
+        .filter(Boolean)
+        .map(String);
+
+      return participantIds.includes(
+        String(selectedPlayerId),
+      );
+    });
   }, [matches, selectedPlayerId]);
 
   const totalSets = matches.reduce(
     (total, match) =>
-      total + match.sets.length,
+      total +
+      (Array.isArray(match.sets)
+        ? match.sets.length
+        : 0),
     0,
   );
 
@@ -82,7 +211,7 @@ function TennisSection({
           <p>
             Enregistre les résultats, consulte
             l’historique et suis l’évolution du
-            classement ELO.
+            classement ELO et des points tennis.
           </p>
         </div>
 
@@ -136,12 +265,148 @@ function TennisSection({
         </div>
       )}
 
+      <motion.article
+        className="tennis-points-leaderboard glass-panel"
+        initial={{
+          opacity: 0,
+          y: 16,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          delay: 0.08,
+        }}
+      >
+        <div className="tennis-points-leaderboard__header">
+          <div>
+            <span className="section-heading__eyebrow">
+              Points tennis
+            </span>
+
+            <h3>Classement Tennis</h3>
+
+            <p>
+              5 points pour un match joué et
+              15 points supplémentaires pour une victoire.
+            </p>
+          </div>
+
+          <span className="tennis-points-leaderboard__icon">
+            <Sparkles size={21} />
+          </span>
+        </div>
+
+        {tennisLeaderboardLoading ? (
+          <div className="tennis-points-leaderboard__state">
+            Chargement du classement…
+          </div>
+        ) : tennisLeaderboardError ? (
+          <div className="tennis-points-leaderboard__state tennis-points-leaderboard__state--error">
+            {tennisLeaderboardError}
+          </div>
+        ) : rankedTennis.length === 0 ? (
+          <div className="tennis-points-leaderboard__state">
+            Aucun point tennis pour le moment.
+          </div>
+        ) : (
+          <div className="tennis-points-leaderboard__list">
+            {rankedTennis.map(
+              (row, index) => {
+                const member = row.member;
+                const memberName =
+                  getMemberName(member);
+                const avatarUrl =
+                  getMemberAvatarUrl(member);
+
+                return (
+                  <motion.article
+                    key={
+                      row.profileId ?? index
+                    }
+                    className={[
+                      "tennis-points-leaderboard__row",
+                      index === 0
+                        ? "tennis-points-leaderboard__row--leader"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                    initial={{
+                      opacity: 0,
+                      x: 10,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      x: 0,
+                    }}
+                    transition={{
+                      delay:
+                        0.12 +
+                        index * 0.035,
+                    }}
+                  >
+                    <strong className="tennis-points-leaderboard__rank">
+                      #{index + 1}
+                    </strong>
+
+                    <span className="tennis-points-leaderboard__avatar">
+                      {avatarUrl ? (
+                        <img
+                          src={avatarUrl}
+                          alt=""
+                        />
+                      ) : (
+                        getMemberInitials(
+                          member,
+                        )
+                      )}
+                    </span>
+
+                    <div className="tennis-points-leaderboard__identity">
+                      <strong>
+                        {memberName}
+                      </strong>
+
+                      <small>
+                        {row.matchesWon} victoire
+                        {row.matchesWon > 1
+                          ? "s"
+                          : ""}
+                        {" · "}
+                        {row.matchesPlayed} match
+                        {row.matchesPlayed > 1
+                          ? "s"
+                          : ""}
+                        {" · "}
+                        {row.winRate} %
+                      </small>
+                    </div>
+
+                    <div className="tennis-points-leaderboard__points">
+                      <strong>
+                        {row.tennisPoints.toLocaleString(
+                          "fr-FR",
+                        )}
+                      </strong>
+
+                      <small>points</small>
+                    </div>
+                  </motion.article>
+                );
+              },
+            )}
+          </div>
+        )}
+      </motion.article>
+
       <section className="tennis-section__layout">
         <article className="tennis-ranking glass-panel">
           <div className="tennis-card-heading">
             <div>
               <span className="section-heading__eyebrow">
-                Classement
+                Niveau sportif
               </span>
 
               <h3>Classement ELO</h3>
@@ -154,16 +419,23 @@ function TennisSection({
 
           <div className="tennis-ranking__list">
             {ranking.map((member, index) => {
-              const total =
-                member.wins + member.losses;
+              const wins = Number(
+                member.wins ?? 0,
+              );
+              const losses = Number(
+                member.losses ?? 0,
+              );
+              const total = wins + losses;
 
               const rate =
                 total > 0
                   ? Math.round(
-                      (member.wins / total) *
-                        100,
+                      (wins / total) * 100,
                     )
                   : 0;
+
+              const avatarUrl =
+                getMemberAvatarUrl(member);
 
               return (
                 <motion.article
@@ -190,24 +462,31 @@ function TennisSection({
                   </strong>
 
                   <span className="tennis-ranking__avatar">
-                    {member.initials}
+                    {avatarUrl ? (
+                      <img
+                        src={avatarUrl}
+                        alt=""
+                      />
+                    ) : (
+                      getMemberInitials(member)
+                    )}
                   </span>
 
                   <div className="tennis-ranking__identity">
                     <strong>
-                      {member.nickname}
+                      {getMemberName(member)}
                     </strong>
 
                     <small>
-                      {member.wins} V ·{" "}
-                      {member.losses} D ·{" "}
-                      {rate} %
+                      {wins} V · {losses} D · {rate} %
                     </small>
                   </div>
 
                   <div className="tennis-ranking__elo">
                     <strong>
-                      {member.elo}
+                      {Number(
+                        member.elo ?? 1500,
+                      )}
                     </strong>
 
                     <small>ELO</small>
@@ -246,7 +525,7 @@ function TennisSection({
                     key={member.id}
                     value={member.id}
                   >
-                    {member.nickname}
+                    {getMemberName(member)}
                   </option>
                 ))}
               </select>
@@ -329,19 +608,19 @@ function TennisSection({
                   </div>
 
                   <div className="tennis-match-card__sets">
-                    {match.sets.map((set) => (
-                      <span key={set.id}>
-                        {set.playerOne}
-                        {"–"}
-                        {set.playerTwo}
-                      </span>
-                    ))}
+                    {(match.sets ?? []).map(
+                      (set) => (
+                        <span key={set.id}>
+                          {set.playerOne}
+                          {"–"}
+                          {set.playerTwo}
+                        </span>
+                      ),
+                    )}
                   </div>
 
                   {match.notes && (
-                    <p>
-                      {match.notes}
-                    </p>
+                    <p>{match.notes}</p>
                   )}
 
                   <footer>
@@ -380,13 +659,13 @@ function TennisSection({
 
         <div>
           <strong>
-            Le classement est automatique
+            Deux classements complémentaires
           </strong>
 
           <p>
-            Chaque résultat met à jour les
-            victoires, les défaites et le niveau
-            ELO des deux joueurs.
+            Le classement ELO mesure le niveau sportif,
+            tandis que les points tennis récompensent
+            la participation et les victoires.
           </p>
         </div>
 

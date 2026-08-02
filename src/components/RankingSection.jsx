@@ -92,7 +92,7 @@ function getRankingDescription(rankingType) {
 
     case "general":
     default:
-      return "Classement global combinant les activités et les performances.";
+      return "Classement général basé uniquement sur les points réellement attribués et enregistrés.";
   }
 }
 
@@ -132,30 +132,6 @@ function getGageAssignedProfileId(gage) {
     gage?.assigned_profile_id ??
     gage?.assignedProfile?.id ??
     "",
-  );
-}
-
-function calculateGeneralPoints({
-  wins,
-  losses,
-  bikeDistance,
-  eventCount,
-  validatedGages,
-}) {
-  /*
-   * Barème du classement général :
-   * 5 points par victoire
-   * 1 point par défaite / participation tennis
-   * 1 point tous les 10 km à vélo
-   * 3 points par événement
-   * 8 points par gage validé
-   */
-  return (
-    wins * 5 +
-    losses +
-    Math.floor(bikeDistance / 10) +
-    eventCount * 3 +
-    validatedGages * 8
   );
 }
 
@@ -324,14 +300,17 @@ function RankingSection({
             gage.status === "validated",
         ).length;
 
-      const calculatedPoints =
-        calculateGeneralPoints({
-          wins,
-          losses,
-          bikeDistance,
-          eventCount,
-          validatedGages,
-        });
+      /*
+       * Le classement général ne recalcule plus les points.
+       * Il utilise uniquement le total centralisé provenant de
+       * profile_points_totals via AppController.
+       */
+      const calculatedPoints = Number(
+        member.totalPoints ??
+          member.calculatedPoints ??
+          member.points ??
+          0,
+      );
 
       return {
         ...member,
@@ -349,7 +328,10 @@ function RankingSection({
         eventCount,
 
         validatedGages,
+
         calculatedPoints,
+        totalPoints: calculatedPoints,
+        points: calculatedPoints,
       };
     });
   }, [
@@ -436,7 +418,7 @@ function RankingSection({
       >
         <div className="ranking-section__hero-content">
           <span className="section-heading__eyebrow">
-            Saison 2026
+            Saison {new Date().getFullYear()}
           </span>
 
           <h2>Classement des Co’Pintes</h2>
@@ -691,20 +673,11 @@ function RankingSection({
                           {activeTab === "general" && (
                             <>
                               <span>
-                                {wins} victoire
-                                {wins > 1 ? "s" : ""}
+                                Points validés
                               </span>
 
                               <small>
-                                {member.eventCount ?? 0} événement
-                                {(member.eventCount ?? 0) > 1
-                                  ? "s"
-                                  : ""}
-                                {" · "}
-                                {member.validatedGages ?? 0} gage
-                                {(member.validatedGages ?? 0) > 1
-                                  ? "s"
-                                  : ""}
+                                Défis, gages et tennis enregistrés
                               </small>
                             </>
                           )}

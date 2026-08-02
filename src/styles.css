@@ -22808,3 +22808,383 @@ body.modal-is-open {
     font-size: 0.82rem;
   }
 }
+
+.tennis-leaderboard {
+  padding: 22px;
+  border-radius: 24px;
+}
+
+.tennis-leaderboard__header {
+  margin-bottom: 18px;
+}
+
+.tennis-leaderboard__header h2 {
+  margin: 5px 0 0;
+}
+
+.tennis-leaderboard__header p {
+  margin: 7px 0 0;
+
+  color:
+    rgba(220, 235, 226, 0.52);
+
+  font-size: 0.76rem;
+}
+
+.tennis-leaderboard__list {
+  display: grid;
+  gap: 10px;
+}
+
+.tennis-leaderboard__member {
+  display: grid;
+  grid-template-columns:
+    42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+
+  padding: 13px 14px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+
+  border-radius: 15px;
+
+  background:
+    rgba(255, 255, 255, 0.03);
+}
+
+.tennis-leaderboard__rank {
+  font-size: 0.78rem;
+  font-weight: 800;
+
+  color:
+    rgba(226, 238, 230, 0.5);
+}
+
+.tennis-leaderboard__identity {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  min-width: 0;
+}
+
+.tennis-leaderboard__avatar {
+  width: 40px;
+  height: 40px;
+
+  display: grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  border-radius: 13px;
+
+  background:
+    rgba(92, 228, 153, 0.12);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.tennis-leaderboard__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tennis-leaderboard__identity strong,
+.tennis-leaderboard__identity small {
+  display: block;
+}
+
+.tennis-leaderboard__identity strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tennis-leaderboard__identity small {
+  margin-top: 4px;
+
+  color:
+    rgba(220, 235, 226, 0.48);
+
+  font-size: 0.68rem;
+}
+
+.tennis-leaderboard__points {
+  color: #5ce499;
+  white-space: nowrap;
+}
+
+.tennis-leaderboard__state {
+  padding: 24px 12px;
+
+  color:
+    rgba(220, 235, 226, 0.55);
+
+  text-align: center;
+}
+
+.tennis-leaderboard__state--error {
+  color: #ff8294;
+}
+
+@media (max-width: 520px) {
+  .tennis-leaderboard {
+    padding: 17px;
+  }
+
+  .tennis-leaderboard__member {
+    grid-template-columns:
+      34px minmax(0, 1fr) auto;
+
+    padding: 11px;
+  }
+
+  .tennis-leaderboard__avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tennis-leaderboard__points {
+    font-size: 0.82rem;
+  }
+}
+
+/* =========================================================
+   CLASSEMENT TENNIS PAR POINTS
+   ========================================================= */
+
+.tennis-points-leaderboard {
+  padding: 22px;
+  overflow: hidden;
+  border-radius: var(--radius-large);
+}
+
+.tennis-points-leaderboard__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.tennis-points-leaderboard__header h3 {
+  font-size: 1.08rem;
+  letter-spacing: -0.025em;
+}
+
+.tennis-points-leaderboard__header p {
+  max-width: 620px;
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  line-height: 1.65;
+}
+
+.tennis-points-leaderboard__icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(94, 228, 155, 0.17);
+  border-radius: 13px;
+  color: var(--green);
+  background: rgba(94, 228, 155, 0.09);
+}
+
+.tennis-points-leaderboard__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tennis-points-leaderboard__row {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 36px 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 68px;
+  padding: 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.027);
+}
+
+.tennis-points-leaderboard__row--leader {
+  border-color: rgba(94, 228, 155, 0.2);
+  background:
+    linear-gradient(135deg,
+      rgba(94, 228, 155, 0.09),
+      rgba(94, 228, 155, 0.025));
+}
+
+.tennis-points-leaderboard__rank {
+  color: var(--text-muted);
+  font-size: 0.66rem;
+  text-align: center;
+}
+
+.tennis-points-leaderboard__row--leader
+  .tennis-points-leaderboard__rank {
+  color: var(--green);
+}
+
+.tennis-points-leaderboard__avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(94, 228, 155, 0.22);
+  border-radius: 13px;
+  color: #06130c;
+  background:
+    linear-gradient(135deg,
+      #aaffca,
+      #4dd98e);
+  font-size: 0.56rem;
+  font-weight: 900;
+}
+
+.tennis-points-leaderboard__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tennis-points-leaderboard__identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.tennis-points-leaderboard__identity strong {
+  overflow: hidden;
+  font-size: 0.69rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tennis-points-leaderboard__identity small {
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: 0.5rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tennis-points-leaderboard__points {
+  min-width: 62px;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  text-align: right;
+}
+
+.tennis-points-leaderboard__points strong {
+  color: var(--green);
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.tennis-points-leaderboard__points small {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 0.46rem;
+}
+
+.tennis-points-leaderboard__state {
+  min-height: 100px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.65rem;
+  text-align: center;
+}
+
+.tennis-points-leaderboard__state--error {
+  color: var(--red);
+}
+
+.tennis-ranking__avatar {
+  overflow: hidden;
+}
+
+.tennis-ranking__avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 950px) {
+  .tennis-points-leaderboard__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .tennis-points-leaderboard {
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .tennis-points-leaderboard__header {
+    margin-bottom: 15px;
+  }
+
+  .tennis-points-leaderboard__header p {
+    font-size: 0.58rem;
+  }
+
+  .tennis-points-leaderboard__row {
+    grid-template-columns: 28px 38px minmax(0, 1fr) auto;
+    gap: 9px;
+    padding: 10px;
+  }
+
+  .tennis-points-leaderboard__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+  }
+
+  .tennis-points-leaderboard__identity small {
+    max-width: 150px;
+  }
+
+  .tennis-points-leaderboard__points {
+    min-width: 48px;
+  }
+
+  .tennis-points-leaderboard__points strong {
+    font-size: 0.86rem;
+  }
+}
+
+@media (max-width: 390px) {
+  .tennis-points-leaderboard__row {
+    grid-template-columns: 24px 36px minmax(0, 1fr);
+  }
+
+  .tennis-points-leaderboard__points {
+    grid-column: 2 / -1;
+    align-items: flex-start;
+    flex-direction: row;
+    gap: 5px;
+    padding-left: 0;
+    text-align: left;
+  }
+
+  .tennis-points-leaderboard__points small {
+    margin-top: 2px;
+  }
+}
+
