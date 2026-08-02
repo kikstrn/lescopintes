@@ -22442,3 +22442,174 @@ body.modal-is-open {
     height: 58px;
   }
 }
+
+
+/* =========================================================
+   CORRECTION SCROLL ACTIVITÉS — MOBILE
+   ========================================================= */
+
+@media (max-width: 760px) {
+  .live-activity {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .live-activity__content {
+    max-height: none;
+    height: auto;
+
+    overflow: visible;
+    overscroll-behavior: auto;
+    touch-action: pan-y;
+  }
+
+  .live-activity__item {
+    overflow: visible;
+  }
+
+  .dashboard-column,
+  .dashboard-column--side,
+  .dashboard-layout,
+  .home-dashboard {
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  main,
+  .app-main,
+  .app-content,
+  .page-content {
+    height: auto;
+    min-height: 100dvh;
+    max-height: none;
+
+    overflow-x: hidden;
+    overflow-y: visible;
+
+    touch-action: pan-y;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    height: auto;
+    overflow-x: hidden;
+  }
+
+  body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* =========================================================
+   CORRECTION BARRE SUPÉRIEURE — MOBILE
+   ========================================================= */
+
+.app-topbar,
+.topbar,
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 10000;
+
+  width: 100%;
+  min-width: 0;
+
+  padding-top:
+    max(
+      10px,
+      env(safe-area-inset-top)
+    );
+
+  background:
+    rgba(7, 23, 16, 0.96);
+
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.app-topbar__inner,
+.topbar__inner,
+.mobile-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  width: 100%;
+  min-width: 0;
+
+  padding:
+    10px
+    max(
+      12px,
+      env(safe-area-inset-right)
+    )
+    10px
+    max(
+      12px,
+      env(safe-area-inset-left)
+    );
+}
+
+.app-topbar__actions,
+.topbar__actions,
+.header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+
+  flex: 0 0 auto;
+  min-width: max-content;
+}
+
+.notification-center,
+.notification-button {
+  flex: 0 0 auto;
+}
+
+.notification-button {
+  position: relative;
+
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+}
+
+@media (max-width: 390px) {
+  .app-topbar__inner,
+  .topbar__inner,
+  .mobile-header__inner {
+    gap: 6px;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .notification-button {
+    width: 40px;
+    height: 40px;
+  }
+
+  .app-topbar__title,
+  .topbar__title,
+  .header-title {
+    min-width: 0;
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .app-topbar__user-name,
+  .topbar__user-name {
+    display: none;
+  }
+}
