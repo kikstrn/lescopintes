@@ -8,6 +8,8 @@ import { useAppModals } from "../shared/hooks/useAppModals";
 import { useNotifications } from "../shared/hooks/useNotifications";
 import { useActivityFeed } from "../shared/hooks/useActivityFeed";
 import { useChallengeEntries } from "../shared/hooks/useChallengeEntries";
+import { usePointsTotals } from "../shared/hooks/usePointsTotals";
+import { useGageLeaderboard } from "../shared/hooks/useGageLeaderboard";
 
 import useChallenges from "../../hooks/useChallenges";
 import { useBikeRides } from "../../hooks/useBikeRides";
@@ -30,6 +32,10 @@ function AppController() {
 
   const { profile, user, isAdmin } = useAuth();
   const modals = useAppModals();
+  const pointsTotalsState =
+    usePointsTotals();
+  const gageLeaderboardState =
+    useGageLeaderboard();
 
   const {
     profiles: members,
@@ -212,6 +218,81 @@ function AppController() {
     }
   };
 
+  const handleCompleteGage = async (gage) => {
+    if (!gage?.id) {
+      return;
+    }
+
+    const completedAt =
+      new Date().toISOString();
+
+    const updatedGage =
+      await gagesApi.completeGage(gage);
+
+    modals.setSelectedGage((currentGage) => {
+      if (
+        !currentGage ||
+        String(currentGage.id) !==
+        String(gage.id)
+      ) {
+        return currentGage;
+      }
+
+      return {
+        ...currentGage,
+        ...(updatedGage ?? {}),
+        status: "completed",
+        completedAt:
+          updatedGage?.completedAt ??
+          updatedGage?.completed_at ??
+          completedAt,
+        completed_at:
+          updatedGage?.completed_at ??
+          updatedGage?.completedAt ??
+          completedAt,
+      };
+    });
+  };
+
+  const handleValidateGage = async (gage) => {
+    if (!gage?.id) {
+      return;
+    }
+
+    const validatedAt =
+      new Date().toISOString();
+
+    const updatedGage =
+      await gagesApi.validateGage(gage);
+
+    modals.setSelectedGage((currentGage) => {
+      if (
+        !currentGage ||
+        String(currentGage.id) !==
+        String(gage.id)
+      ) {
+        return currentGage;
+      }
+
+      return {
+        ...currentGage,
+        ...(updatedGage ?? {}),
+        status: "validated",
+        validatedAt:
+          updatedGage?.validatedAt ??
+          updatedGage?.validated_at ??
+          validatedAt,
+        validated_at:
+          updatedGage?.validated_at ??
+          updatedGage?.validatedAt ??
+          validatedAt,
+      };
+    });
+
+    await pointsTotalsState
+      .refreshPointsTotals?.();
+  };
+
   const closeEditProfileModal = () => {
     if (!profileSaving) {
       modals.closeEditProfileModal();
@@ -297,8 +378,50 @@ function AppController() {
       challengeEntriesState.error,
   };
 
+  const membersWithPoints =
+    useMemo(() => {
+      const totalsByProfileId =
+        new Map(
+          pointsTotalsState.totals.map(
+            (item) => [
+              String(
+                item.profileId,
+              ),
+              Number(
+                item.totalPoints ?? 0,
+              ),
+            ],
+          ),
+        );
+
+      return members.map(
+        (member) => ({
+          ...member,
+
+          calculatedPoints:
+            totalsByProfileId.get(
+              String(member.id),
+            ) ?? 0,
+
+          totalPoints:
+            totalsByProfileId.get(
+              String(member.id),
+            ) ?? 0,
+
+          points:
+            totalsByProfileId.get(
+              String(member.id),
+            ) ?? 0,
+        }),
+      );
+    }, [
+      members,
+      pointsTotalsState.totals,
+    ]);
+
   const appData = {
-    members,
+    members:
+      membersWithPoints,
     events,
     tennisMatches,
     bikeRides,
@@ -416,6 +539,31 @@ function AppController() {
     deleteChallengeEntry:
       challengeEntriesState.deleteEntry,
 
+    pointsTotals:
+      pointsTotalsState.totals,
+
+    pointsTotalsLoading:
+      pointsTotalsState.loading,
+
+    pointsTotalsError:
+      pointsTotalsState.error,
+
+    refreshPointsTotals:
+      pointsTotalsState.refreshPointsTotals,
+
+    gageLeaderboard:
+      gageLeaderboardState.rows,
+
+    gageLeaderboardLoading:
+      gageLeaderboardState.loading,
+
+    gageLeaderboardError:
+      gageLeaderboardState.error,
+
+    refreshGageLeaderboard:
+      gageLeaderboardState
+        .refreshGageLeaderboard,
+
     createChallenge,
     updateChallenge,
     archiveChallenge,
@@ -426,7 +574,7 @@ function AppController() {
       <AppV2 appData={appData} />
 
       <AppModals
-        members={members}
+        members={membersWithPoints}
         user={user}
         profile={profile}
         isAdmin={isAdmin}
@@ -473,8 +621,8 @@ function AppController() {
         gagesUploading={gagesUploading}
         onCloseGageDetails={closeGageDetails}
         onStartGage={actions.handleStartGage}
-        onCompleteGage={actions.handleCompleteGage}
-        onValidateGage={actions.handleValidateGage}
+        onCompleteGage={handleCompleteGage}
+        onValidateGage={handleValidateGage}
         onCancelGage={actions.handleCancelGage}
         onUploadGageProof={actions.handleUploadGageProof}
         onDeleteGageProof={actions.handleDeleteGageProof}

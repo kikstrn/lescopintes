@@ -79,8 +79,8 @@ function GageDetailsModal({
   const isAssignedMember =
     currentProfileId &&
     currentProfileId ===
-      (assignedMember?.id ??
-        gage.assigned_profile_id);
+    (assignedMember?.id ??
+      gage.assigned_profile_id);
 
   const isAdmin =
     currentProfile?.role === "admin";
@@ -175,7 +175,7 @@ function GageDetailsModal({
                   ].join(" ")}
                 >
                   {status === "validated" ||
-                  status === "completed" ? (
+                    status === "completed" ? (
                     <CheckCircle2 size={16} />
                   ) : status === "in_progress" ? (
                     <Clock3 size={16} />
@@ -195,8 +195,8 @@ function GageDetailsModal({
                   Gage #
                   {String(
                     gage.gageNumber ??
-                      gage.id ??
-                      "",
+                    gage.id ??
+                    "",
                   ).slice(0, 8)}
                 </p>
               </div>
@@ -277,7 +277,7 @@ function GageDetailsModal({
                     <strong>
                       {formatDate(
                         gage.dueDate ??
-                          gage.due_date,
+                        gage.due_date,
                       )}
                     </strong>
                   </div>
@@ -329,23 +329,23 @@ function GageDetailsModal({
 
                       {(isAssignedMember ||
                         isAdmin) && (
-                        <button
-                          type="button"
-                          className="gage-details-modal__delete-proof"
-                          disabled={
-                            saving ||
-                            uploading
-                          }
-                          onClick={() =>
-                            onDeleteProof?.(
-                              gage,
-                            )
-                          }
-                        >
-                          <Trash2 size={17} />
-                          Supprimer
-                        </button>
-                      )}
+                          <button
+                            type="button"
+                            className="gage-details-modal__delete-proof"
+                            disabled={
+                              saving ||
+                              uploading
+                            }
+                            onClick={() =>
+                              onDeleteProof?.(
+                                gage,
+                              )
+                            }
+                          >
+                            <Trash2 size={17} />
+                            Supprimer
+                          </button>
+                        )}
                     </div>
                   </div>
                 ) : (
@@ -415,6 +415,18 @@ function GageDetailsModal({
                     </p>
                   </div>
                 </section>
+              )}
+
+              {Number(gage?.pointsReward ?? 0) > 0 && (
+                <div className="gage-detail__points">
+                  <span>Récompense</span>
+
+                  <strong>
+                    +{Number(
+                      gage.pointsReward,
+                    ).toLocaleString("fr-FR")} points
+                  </strong>
+                </div>
               )}
 
               {status === "cancelled" && (
@@ -488,15 +500,25 @@ function GageDetailsModal({
                 <button
                   type="button"
                   className="primary-button"
-                  disabled={
-                    saving || !proofUrl
-                  }
+                  disabled={saving || uploading}
                   onClick={() =>
                     onComplete?.(gage)
                   }
                 >
-                  <CheckCircle2 size={17} />
-                  Marquer comme réalisé
+                  {saving ? (
+                    <>
+                      <LoaderCircle
+                        size={17}
+                        className="profile-spinner"
+                      />
+                      Mise à jour…
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 size={17} />
+                      Marquer comme réalisé
+                    </>
+                  )}
                 </button>
               )}
 

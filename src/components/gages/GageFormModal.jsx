@@ -16,6 +16,7 @@ function getInitialValues(currentProfileId) {
     title: "",
     description: "",
     dueDate: "",
+    pointsReward: 10,
     createdBy: currentProfileId ?? "",
   };
 }
@@ -154,6 +155,7 @@ function GageFormModal({
         description,
         dueDate:
           form.dueDate || null,
+        pointsReward: Number(form.pointsReward ?? 10),
         status: "pending",
       });
     } catch (submitError) {
@@ -404,6 +406,20 @@ function GageFormModal({
                           event.target.value,
                         )
                       }
+                    />
+                  </div>
+                </label>
+
+
+                <label className="gage-form__field">
+                  <span>Points attribués</span>
+                  <div className="gage-form__control">
+                    <input
+                      type="number"
+                      min="0"
+                      value={form.pointsReward}
+                      disabled={saving}
+                      onChange={(event)=>updateField("pointsReward", event.target.value)}
                     />
                   </div>
                 </label>

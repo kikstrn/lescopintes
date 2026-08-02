@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 const GAGES_TABLE = "gages";
 const GAGE_PROOFS_TABLE = "gage_proofs";
 const GAGE_BUCKET = "gage-proofs";
+const DEFAULT_GAGE_POINTS = 10;
 
 function normalizeProfile(profile) {
   if (!profile) {
@@ -11,10 +12,12 @@ function normalizeProfile(profile) {
 
   return {
     ...profile,
+
     avatarUrl:
       profile.avatarUrl ??
       profile.avatar_url ??
       null,
+
     firstName:
       profile.firstName ??
       profile.first_name ??
@@ -29,28 +32,48 @@ function normalizeProof(proof) {
 
   return {
     ...proof,
+
     gageId:
       proof.gage_id ??
       proof.gageId,
+
     uploadedBy:
       proof.uploaded_by ??
       proof.uploadedBy,
+
     storagePath:
       proof.storage_path ??
       proof.storagePath,
+
     fileName:
       proof.file_name ??
       proof.fileName,
+
     mimeType:
       proof.mime_type ??
       proof.mimeType,
+
     fileSize:
       proof.file_size ??
       proof.fileSize,
+
     createdAt:
       proof.created_at ??
       proof.createdAt,
   };
+}
+
+function normalizePointsReward(value) {
+  const numericValue = Number(value);
+
+  if (!Number.isFinite(numericValue)) {
+    return DEFAULT_GAGE_POINTS;
+  }
+
+  return Math.max(
+    0,
+    Math.round(numericValue),
+  );
 }
 
 function normalizeGage(row) {
@@ -72,6 +95,13 @@ function normalizeGage(row) {
         );
       })[0] ?? null;
 
+  const pointsReward =
+    normalizePointsReward(
+      row.points_reward ??
+        row.pointsReward ??
+        DEFAULT_GAGE_POINTS,
+    );
+
   return {
     ...row,
 
@@ -90,6 +120,10 @@ function normalizeGage(row) {
     dueDate:
       row.due_date ??
       row.dueDate,
+
+    startedAt:
+      row.started_at ??
+      row.startedAt,
 
     completedAt:
       row.completed_at ??
@@ -111,13 +145,20 @@ function normalizeGage(row) {
       row.updated_at ??
       row.updatedAt,
 
-    assignedProfile: normalizeProfile(
-      row.assignedProfile,
-    ),
+    pointsReward,
 
-    createdByProfile: normalizeProfile(
-      row.createdByProfile,
-    ),
+    points_reward:
+      pointsReward,
+
+    assignedProfile:
+      normalizeProfile(
+        row.assignedProfile,
+      ),
+
+    createdByProfile:
+      normalizeProfile(
+        row.createdByProfile,
+      ),
 
     proofs,
 
@@ -145,45 +186,47 @@ async function addSignedUrlsToProofs(rows) {
 
   const signedUrlEntries =
     await Promise.all(
-      allProofs.map(async (proof) => {
-        const storagePath =
-          proof.storage_path ??
-          proof.storagePath;
+      allProofs.map(
+        async (proof) => {
+          const storagePath =
+            proof.storage_path ??
+            proof.storagePath;
 
-        if (!storagePath) {
-          return [
-            proof.id,
-            null,
-          ];
-        }
+          if (!storagePath) {
+            return [
+              proof.id,
+              null,
+            ];
+          }
 
-        const {
-          data,
-          error,
-        } = await supabase.storage
-          .from(GAGE_BUCKET)
-          .createSignedUrl(
-            storagePath,
-            60 * 60,
-          );
-
-        if (error) {
-          console.error(
-            "Impossible de créer l’URL signée de la preuve :",
+          const {
+            data,
             error,
-          );
+          } = await supabase.storage
+            .from(GAGE_BUCKET)
+            .createSignedUrl(
+              storagePath,
+              60 * 60,
+            );
+
+          if (error) {
+            console.error(
+              "Impossible de créer l’URL signée de la preuve :",
+              error,
+            );
+
+            return [
+              proof.id,
+              null,
+            ];
+          }
 
           return [
             proof.id,
-            null,
+            data?.signedUrl ?? null,
           ];
-        }
-
-        return [
-          proof.id,
-          data?.signedUrl ?? null,
-        ];
-      }),
+        },
+      ),
     );
 
   const signedUrlMap =
@@ -195,6 +238,7 @@ async function addSignedUrlsToProofs(rows) {
     proofs: (row.proofs ?? []).map(
       (proof) => ({
         ...proof,
+
         signedUrl:
           signedUrlMap.get(
             proof.id,
@@ -205,18 +249,20 @@ async function addSignedUrlsToProofs(rows) {
 }
 
 export async function getGages() {
-  const { data, error } =
-    await supabase
-      .from(GAGES_TABLE)
-      .select(`
-        *,
-        assignedProfile:profiles!gages_assigned_profile_id_fkey(*),
-        createdByProfile:profiles!gages_created_by_fkey(*),
-        proofs:gage_proofs(*)
-      `)
-      .order("created_at", {
-        ascending: false,
-      });
+  const {
+    data,
+    error,
+  } = await supabase
+    .from(GAGES_TABLE)
+    .select(`
+      *,
+      assignedProfile:profiles!gages_assigned_profile_id_fkey(*),
+      createdByProfile:profiles!gages_created_by_fkey(*),
+      proofs:gage_proofs(*)
+    `)
+    .order("created_at", {
+      ascending: false,
+    });
 
   if (error) {
     throw error;
@@ -235,30 +281,92 @@ export async function getGages() {
 export async function createGage(
   payload,
 ) {
-  const { data, error } =
-    await supabase
-      .from(GAGES_TABLE)
-      .insert({
-        assigned_profile_id:
-          payload.assignedProfileId,
+  const assignedProfileId =
+    payload.assignedProfileId ??
+    payload.assigned_profile_id;
 
-        created_by:
-          payload.createdBy,
+  const createdBy =
+    payload.createdBy ??
+    payload.created_by;
 
-        title:
-          payload.title.trim(),
+  const dueDate =
+    payload.dueDate ??
+    payload.due_date ??
+    null;
 
-        description:
-          payload.description.trim(),
+  const pointsReward =
+    normalizePointsReward(
+      payload.pointsReward ??
+        payload.points_reward ??
+        DEFAULT_GAGE_POINTS,
+    );
 
-        due_date:
-          payload.dueDate || null,
+  if (!assignedProfileId) {
+    throw new Error(
+      "Le membre concerné est introuvable.",
+    );
+  }
 
-        status:
-          payload.status ?? "pending",
-      })
-      .select()
-      .single();
+  if (!createdBy) {
+    throw new Error(
+      "Le créateur du gage est introuvable.",
+    );
+  }
+
+  const title =
+    String(
+      payload.title ?? "",
+    ).trim();
+
+  const description =
+    String(
+      payload.description ?? "",
+    ).trim();
+
+  if (!title) {
+    throw new Error(
+      "Le titre du gage est obligatoire.",
+    );
+  }
+
+  if (!description) {
+    throw new Error(
+      "La description du gage est obligatoire.",
+    );
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from(GAGES_TABLE)
+    .insert({
+      assigned_profile_id:
+        assignedProfileId,
+
+      created_by:
+        createdBy,
+
+      title,
+
+      description,
+
+      due_date:
+        dueDate || null,
+
+      points_reward:
+        pointsReward,
+
+      status:
+        payload.status ?? "pending",
+    })
+    .select(`
+      *,
+      assignedProfile:profiles!gages_assigned_profile_id_fkey(*),
+      createdByProfile:profiles!gages_created_by_fkey(*),
+      proofs:gage_proofs(*)
+    `)
+    .single();
 
   if (error) {
     throw error;
@@ -271,37 +379,65 @@ export async function updateGageStatus(
   gageId,
   status,
 ) {
+  if (!gageId) {
+    throw new Error(
+      "Identifiant du gage manquant.",
+    );
+  }
+
+  const allowedStatuses = [
+    "pending",
+    "in_progress",
+    "completed",
+    "validated",
+    "cancelled",
+  ];
+
+  if (
+    !allowedStatuses.includes(status)
+  ) {
+    throw new Error(
+      "Statut de gage invalide.",
+    );
+  }
+
   const updatePayload = {
     status,
   };
 
+  const now =
+    new Date().toISOString();
+
   if (status === "in_progress") {
-    updatePayload.started_at =
-      new Date().toISOString();
+    updatePayload.started_at = now;
   }
 
   if (status === "completed") {
-    updatePayload.completed_at =
-      new Date().toISOString();
+    updatePayload.completed_at = now;
   }
 
   if (status === "validated") {
-    updatePayload.validated_at =
-      new Date().toISOString();
+    updatePayload.validated_at = now;
   }
 
   if (status === "cancelled") {
-    updatePayload.cancelled_at =
-      new Date().toISOString();
+    updatePayload.cancelled_at = now;
   }
 
-  const { data, error } =
-    await supabase
-      .from(GAGES_TABLE)
-      .update(updatePayload)
-      .eq("id", gageId)
-      .select()
-      .single();
+  const {
+    data,
+    error,
+  } = await supabase
+    .from(GAGES_TABLE)
+    .update(updatePayload)
+    .eq("id", gageId)
+    .select(`
+      *,
+      assignedProfile:profiles!gages_assigned_profile_id_fkey(*),
+      createdByProfile:profiles!gages_created_by_fkey(*),
+      proofs:gage_proofs(*)
+    `)
+    .single();
 
   if (error) {
     throw error;
@@ -339,7 +475,11 @@ export async function uploadGageProof({
     "image/webp",
   ];
 
-  if (!allowedTypes.includes(file.type)) {
+  if (
+    !allowedTypes.includes(
+      file.type,
+    )
+  ) {
     throw new Error(
       "Le fichier doit être une image JPEG, PNG ou WebP.",
     );
@@ -348,7 +488,10 @@ export async function uploadGageProof({
   const maxFileSize =
     10 * 1024 * 1024;
 
-  if (file.size > maxFileSize) {
+  if (
+    file.size >
+    maxFileSize
+  ) {
     throw new Error(
       "L’image ne doit pas dépasser 10 Mo.",
     );
@@ -358,7 +501,8 @@ export async function uploadGageProof({
     file.name
       .split(".")
       .pop()
-      ?.toLowerCase() || "jpg";
+      ?.toLowerCase() ||
+    "jpg";
 
   const storagePath = [
     gageId,
@@ -376,7 +520,8 @@ export async function uploadGageProof({
       {
         cacheControl: "3600",
         upsert: false,
-        contentType: file.type,
+        contentType:
+          file.type,
       },
     );
 
@@ -390,12 +535,23 @@ export async function uploadGageProof({
   } = await supabase
     .from(GAGE_PROOFS_TABLE)
     .insert({
-      gage_id: gageId,
-      uploaded_by: profileId,
-      storage_path: storagePath,
-      file_name: file.name,
-      mime_type: file.type,
-      file_size: file.size,
+      gage_id:
+        gageId,
+
+      uploaded_by:
+        profileId,
+
+      storage_path:
+        storagePath,
+
+      file_name:
+        file.name,
+
+      mime_type:
+        file.type,
+
+      file_size:
+        file.size,
     })
     .select()
     .single();
@@ -403,7 +559,9 @@ export async function uploadGageProof({
   if (insertError) {
     await supabase.storage
       .from(GAGE_BUCKET)
-      .remove([storagePath]);
+      .remove([
+        storagePath,
+      ]);
 
     throw insertError;
   }
@@ -457,18 +615,24 @@ export async function deleteGageProof(
       error: storageError,
     } = await supabase.storage
       .from(GAGE_BUCKET)
-      .remove([storagePath]);
+      .remove([
+        storagePath,
+      ]);
 
     if (storageError) {
       throw storageError;
     }
   }
 
-  const { error } =
-    await supabase
-      .from(GAGE_PROOFS_TABLE)
-      .delete()
-      .eq("id", proofId);
+  const {
+    error,
+  } = await supabase
+    .from(GAGE_PROOFS_TABLE)
+    .delete()
+    .eq(
+      "id",
+      proofId,
+    );
 
   if (error) {
     throw error;
@@ -478,13 +642,28 @@ export async function deleteGageProof(
 export async function deleteGage(
   gageId,
 ) {
-  const { data: proofs } =
-    await supabase
-      .from(GAGE_PROOFS_TABLE)
-      .select(
-        "storage_path",
-      )
-      .eq("gage_id", gageId);
+  if (!gageId) {
+    throw new Error(
+      "Identifiant du gage manquant.",
+    );
+  }
+
+  const {
+    data: proofs,
+    error: proofsError,
+  } = await supabase
+    .from(GAGE_PROOFS_TABLE)
+    .select(
+      "storage_path",
+    )
+    .eq(
+      "gage_id",
+      gageId,
+    );
+
+  if (proofsError) {
+    throw proofsError;
+  }
 
   const storagePaths =
     (proofs ?? [])
@@ -494,23 +673,32 @@ export async function deleteGage(
       )
       .filter(Boolean);
 
-  if (storagePaths.length > 0) {
+  if (
+    storagePaths.length >
+    0
+  ) {
     const {
       error: storageError,
     } = await supabase.storage
       .from(GAGE_BUCKET)
-      .remove(storagePaths);
+      .remove(
+        storagePaths,
+      );
 
     if (storageError) {
       throw storageError;
     }
   }
 
-  const { error } =
-    await supabase
-      .from(GAGES_TABLE)
-      .delete()
-      .eq("id", gageId);
+  const {
+    error,
+  } = await supabase
+    .from(GAGES_TABLE)
+    .delete()
+    .eq(
+      "id",
+      gageId,
+    );
 
   if (error) {
     throw error;

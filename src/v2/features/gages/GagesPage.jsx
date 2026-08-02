@@ -11,6 +11,12 @@ function GagesPage() {
 
     openGageForm,
     openGageDetails,
+
+    members,
+
+    gageLeaderboard,
+    gageLeaderboardLoading,
+    gageLeaderboardError,
   } = useAppData();
 
   return (
@@ -20,6 +26,16 @@ function GagesPage() {
       error={errors.gages ?? null}
       onCreate={openGageForm}
       onOpen={openGageDetails}
+      members={members}
+      gageLeaderboard={
+        gageLeaderboard
+      }
+      gageLeaderboardLoading={
+        gageLeaderboardLoading
+      }
+      gageLeaderboardError={
+        gageLeaderboardError
+      }
     />
   );
 }
