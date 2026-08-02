@@ -4,6 +4,7 @@ import {
 
 import ProfileActivity from "./ProfileActivity";
 import ProfileHeader from "./ProfileHeader";
+import ProfilePointsHistory from "./ProfilePointsHistory";
 import ProfileStats from "./ProfileStats";
 
 function ProfileSection({
@@ -80,6 +81,10 @@ function ProfileSection({
 
       <ProfileStats
         statistics={statistics}
+      />
+
+      <ProfilePointsHistory
+        profileId={profile.id}
       />
 
       <ProfileActivity
