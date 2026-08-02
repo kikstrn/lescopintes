@@ -7,6 +7,7 @@ import {
   PartyPopper,
   Scale,
   Trophy,
+  Award,
 } from "lucide-react";
 
 const activityIcons = {
@@ -16,6 +17,7 @@ const activityIcons = {
   trophy: Trophy,
   gage: Dices,
   tribunal: Scale,
+  badge_unlocked: Award,
 };
 
 function ActivityFeed({

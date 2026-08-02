@@ -3,9 +3,12 @@ import {
 } from "lucide-react";
 
 import ProfileActivity from "./ProfileActivity";
+import ProfileBadges from "./ProfileBadges";
 import ProfileHeader from "./ProfileHeader";
 import ProfilePointsHistory from "./ProfilePointsHistory";
 import ProfileStats from "./ProfileStats";
+
+import useProfileBadges from "../../v2/shared/hooks/useProfileBadges";
 
 function ProfileSection({
   profile,
@@ -28,6 +31,17 @@ function ProfileSection({
   onDeleteAvatar,
   onNavigate,
 }) {
+  const profileId =
+    profile?.id ?? null;
+
+  const {
+    allBadges = [],
+    loading: badgesLoading,
+    error: badgesError,
+  } = useProfileBadges(
+    profileId,
+  );
+
   if (loading) {
     return (
       <section className="profile-section">
@@ -56,7 +70,9 @@ function ProfileSection({
             <UserRound size={35} />
           </span>
 
-          <h2>Profil introuvable</h2>
+          <h2>
+            Profil introuvable
+          </h2>
 
           <p>
             Impossible de charger les informations de ton compte.
@@ -71,12 +87,22 @@ function ProfileSection({
       <ProfileHeader
         profile={profile}
         saving={saving}
-        uploadingAvatar={uploadingAvatar}
+        uploadingAvatar={
+          uploadingAvatar
+        }
         error={error}
-        onEditProfile={onEditProfile}
-        onChangePassword={onChangePassword}
-        onUploadAvatar={onUploadAvatar}
-        onDeleteAvatar={onDeleteAvatar}
+        onEditProfile={
+          onEditProfile
+        }
+        onChangePassword={
+          onChangePassword
+        }
+        onUploadAvatar={
+          onUploadAvatar
+        }
+        onDeleteAvatar={
+          onDeleteAvatar
+        }
       />
 
       <ProfileStats
@@ -87,14 +113,32 @@ function ProfileSection({
         profileId={profile.id}
       />
 
+      <ProfileBadges
+        badges={allBadges}
+        loading={badgesLoading}
+        error={badgesError}
+      />
+
       <ProfileActivity
-        tennisMatches={tennisMatches}
+        tennisMatches={
+          tennisMatches
+        }
         bikeRides={bikeRides}
-        galleryPhotos={galleryPhotos}
-        galleryComments={galleryComments}
-        currentProfileId={profile.id}
-        loading={activityLoading}
-        onNavigate={onNavigate}
+        galleryPhotos={
+          galleryPhotos
+        }
+        galleryComments={
+          galleryComments
+        }
+        currentProfileId={
+          profile.id
+        }
+        loading={
+          activityLoading
+        }
+        onNavigate={
+          onNavigate
+        }
       />
     </section>
   );

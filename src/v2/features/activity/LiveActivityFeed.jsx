@@ -12,6 +12,7 @@ import {
     CheckCircle2,
     Target,
     XCircle,
+    Award,
 } from "lucide-react";
 
 const activityIcons = {
@@ -27,6 +28,7 @@ const activityIcons = {
     tribunal_vote_opened: Gavel,
 
     challenge_created: Flame,
+    badge_unlocked: Award,
 
     gage_assigned: Target,
     gage_completed: CheckCircle2,
