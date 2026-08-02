@@ -153,6 +153,14 @@ function Sidebar({
                     <span className="sidebar__nav-label">
                       {item.label}
                     </span>
+
+                    {Number(item.badge) > 0 && (
+                      <span className="sidebar__nav-badge">
+                        {Number(item.badge) > 99
+                          ? "99+"
+                          : item.badge}
+                      </span>
+                    )}
                   </button>
                 );
               })}

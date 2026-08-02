@@ -11,6 +11,7 @@ import {
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -58,10 +59,24 @@ function AppLayout({
     markAllNotificationsAsRead,
     deleteNotification,
     clearReadNotifications,
+
+    chatUnreadCount = 0,
   } = useAppData();
 
   const currentNavigationItem =
     getNavigationItem(activePage);
+
+  const navigationItems = useMemo(
+    () =>
+      navigation.map((item) => ({
+        ...item,
+        badge:
+          item.id === "chat"
+            ? chatUnreadCount
+            : item.badge,
+      })),
+    [chatUnreadCount],
+  );
 
   const pageTitle =
     currentNavigationItem?.label ??
@@ -147,7 +162,7 @@ function AppLayout({
       <div className="background-grid" />
 
       <Sidebar
-        items={navigation}
+        items={navigationItems}
         activePage={activePage}
         onNavigate={handleNavigate}
         onLogout={logout}
@@ -404,7 +419,7 @@ function AppLayout({
       </div>
 
       <MobileNavigation
-        items={navigation}
+        items={navigationItems}
         activePage={activePage}
         onNavigate={handleNavigate}
         onLogout={logout}

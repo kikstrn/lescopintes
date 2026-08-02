@@ -9,6 +9,7 @@ import {
   Images,
   LogOut,
   Medal,
+  MessageCircle,
   Scale,
   Trophy,
 } from "lucide-react";
@@ -68,6 +69,11 @@ export const navigation = [
     id: "challenges",
     label: "Défis",
     icon: Flame,
+  },
+  {
+    id: "chat",
+    label: "Chat",
+    icon: MessageCircle,
   },
   {
     id: "logout",

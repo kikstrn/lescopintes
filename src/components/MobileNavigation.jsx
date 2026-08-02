@@ -90,6 +90,14 @@ function MobileNavigation({
                     isActive ? 2.4 : 2
                   }
                 />
+
+                {Number(item.badge) > 0 && (
+                  <span className="mobile-bottom-nav__badge">
+                    {Number(item.badge) > 99
+                      ? "99+"
+                      : item.badge}
+                  </span>
+                )}
               </span>
 
               <span>{item.label}</span>
@@ -228,6 +236,14 @@ function MobileNavigation({
                       <span>
                         {item.label}
                       </span>
+
+                      {Number(item.badge) > 0 && (
+                        <span className="mobile-drawer__badge">
+                          {Number(item.badge) > 99
+                            ? "99+"
+                            : item.badge}
+                        </span>
+                      )}
                     </button>
                   );
                 })}

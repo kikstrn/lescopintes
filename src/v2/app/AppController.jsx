@@ -13,6 +13,9 @@ import { useChallengeEntries } from "../shared/hooks/useChallengeEntries";
 import { usePointsTotals } from "../shared/hooks/usePointsTotals";
 import { useGageLeaderboard } from "../shared/hooks/useGageLeaderboard";
 import { useTennisLeaderboard } from "../shared/hooks/useTennisLeaderboard";
+import { useChatMessages } from "../shared/hooks/useChatMessages";
+import { useChatPresence } from "../shared/hooks/useChatPresence";
+import { useChatUnreadCount } from "../shared/hooks/useChatUnreadCount";
 
 import useChallenges from "../../hooks/useChallenges";
 import { useBikeRides } from "../../hooks/useBikeRides";
@@ -57,6 +60,7 @@ function AppController() {
   const profileApi = useProfile(user?.id);
   const challengesApi = useChallenges();
   const notificationsState = useNotifications();
+  const chatApi = useChatMessages(user?.id);
 
   const badgeCelebration =
     useBadgeCelebration({
@@ -121,6 +125,14 @@ function AppController() {
     changingPassword,
     error: profileError,
   } = profileApi;
+
+  const chatPresenceState =
+    useChatPresence(
+      personalProfile ?? profile,
+    );
+
+  const chatUnreadState =
+    useChatUnreadCount(user?.id);
 
   const {
     challenges,
@@ -589,6 +601,54 @@ function AppController() {
     refreshTennisLeaderboard:
       tennisLeaderboardState
         .refreshTennisLeaderboard,
+
+    chatMessages:
+      chatApi.messages,
+
+    chatLoading:
+      chatApi.loading,
+
+    chatSending:
+      chatApi.sending,
+
+    chatError:
+      chatApi.error,
+
+    sendChatMessage:
+      chatApi.sendMessage,
+
+    editChatMessage:
+      chatApi.editMessage,
+
+    deleteChatMessage:
+      chatApi.removeMessage,
+
+    refreshChatMessages:
+      chatApi.refreshMessages,
+
+    chatOnlineMembers:
+      chatPresenceState.onlineMembers,
+
+    chatOnlineProfileIds:
+      chatPresenceState.onlineProfileIds,
+
+    chatOnlineCount:
+      chatPresenceState.onlineCount,
+
+    chatUnreadCount:
+      chatUnreadState.unreadCount,
+
+    chatUnreadLoading:
+      chatUnreadState.loading,
+
+    chatUnreadError:
+      chatUnreadState.error,
+
+    markChatAsRead:
+      chatUnreadState.markChatAsRead,
+
+    refreshChatUnreadCount:
+      chatUnreadState.refreshUnreadCount,
 
     createChallenge,
     updateChallenge,

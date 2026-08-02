@@ -10,6 +10,7 @@ import GagesPage from "../features/gages/GagesPage";
 import TribunalPage from "../features/tribunal/TribunalPage";
 import ProfilePage from "../features/profile/ProfilePage";
 import ChallengesPage from "../features/challenges/ChallengesPage";
+import ChatPage from "../pages/ChatPage";
 
 export const v2Pages = {
   home: HomePage,
@@ -25,4 +26,5 @@ export const v2Pages = {
   members: MembersPage,
   challenges: ChallengesPage,
   profile: ProfilePage,
+  chat: ChatPage,
 };
