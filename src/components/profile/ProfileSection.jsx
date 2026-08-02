@@ -7,7 +7,9 @@ import ProfileBadges from "./ProfileBadges";
 import ProfileHeader from "./ProfileHeader";
 import ProfilePointsHistory from "./ProfilePointsHistory";
 import ProfileStats from "./ProfileStats";
+import ProfileXp from "./ProfileXp";
 
+import useProfileXp from "../../v2/shared/hooks/useProfileXp";
 import useProfileBadges from "../../v2/shared/hooks/useProfileBadges";
 
 function ProfileSection({
@@ -39,6 +41,27 @@ function ProfileSection({
     loading: badgesLoading,
     error: badgesError,
   } = useProfileBadges(
+    profileId,
+  );
+
+  const {
+    level,
+    totalXp,
+
+    xpInLevel,
+    xpRequired,
+    remainingXp,
+    progressPercent,
+
+    transactions:
+    xpTransactions,
+
+    loading:
+    xpLoading,
+
+    error:
+    xpError,
+  } = useProfileXp(
     profileId,
   );
 
@@ -107,6 +130,25 @@ function ProfileSection({
 
       <ProfileStats
         statistics={statistics}
+      />
+
+      <ProfileXp
+        level={level}
+        totalXp={totalXp}
+
+        xpInLevel={xpInLevel}
+        xpRequired={xpRequired}
+        remainingXp={remainingXp}
+        progressPercent={
+          progressPercent
+        }
+
+        transactions={
+          xpTransactions
+        }
+
+        loading={xpLoading}
+        error={xpError}
       />
 
       <ProfilePointsHistory
