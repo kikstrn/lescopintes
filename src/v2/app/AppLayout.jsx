@@ -18,6 +18,10 @@ import {
 
 import Sidebar from "../../components/Sidebar";
 import MobileNavigation from "../../components/MobileNavigation";
+import PwaInstallBanner from "../../components/pwa/PwaInstallBanner";
+import PwaOfflineBanner from "../../components/pwa/PwaOfflineBanner";
+import PushNotificationControl from "../../components/pwa/PushNotificationControl";
+import PwaUpdatePrompt from "../../components/pwa/PwaUpdatePrompt";
 
 import { useAuth } from "../../context/AuthContext";
 import { useAppData } from "../context/AppDataContext";
@@ -195,6 +199,13 @@ function AppLayout({
           </div>
 
           <div className="topbar__actions">
+            <PushNotificationControl
+              profileId={
+                profile?.id ??
+                user?.id
+              }
+            />
+
             <div
               className="notification-center"
               ref={notificationsRef}
@@ -427,6 +438,10 @@ function AppLayout({
         menuOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
       />
+
+      <PwaInstallBanner />
+      <PwaOfflineBanner />
+      <PwaUpdatePrompt />
     </div>
   );
 }

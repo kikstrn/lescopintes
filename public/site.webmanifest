@@ -1,13 +1,26 @@
 {
+  "id": "/",
   "name": "Les Co'Pintes",
   "short_name": "Co'Pintes",
-  "description": "L'application privée de la bande Les Co'Pintes.",
-  "start_url": "/",
+  "description": "L'application privée de la bande Les Co'Pintes : chat, tennis, vélo, événements et défis.",
+  "lang": "fr-FR",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#0f1d17",
   "theme_color": "#183c2b",
   "orientation": "portrait-primary",
+  "categories": [
+    "social",
+    "sports",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -26,6 +39,27 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ouvrir l'application",
+      "short_name": "Accueil",
+      "description": "Ouvrir Les Co'Pintes",
+      "url": "/?source=shortcut",
+      "icons": [
+        {
+          "src": "/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

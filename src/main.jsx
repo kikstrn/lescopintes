@@ -5,7 +5,10 @@ import "leaflet/dist/leaflet.css";
 import App from "./App";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { registerServiceWorker } from "./pwa/registerServiceWorker";
 import "./styles.css";
+
+registerServiceWorker();
 
 ReactDOM.createRoot(
   document.getElementById("root"),
