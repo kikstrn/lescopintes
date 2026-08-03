@@ -31606,3 +31606,146 @@ button:focus-visible {
 .push-control__test-message svg {
   flex: 0 0 auto;
 }
+
+/* =========================================================
+   CORRECTIF MOBILE — MODALE PUSH VIA PORTAL
+   À ajouter tout à la fin de src/styles.css
+   ========================================================= */
+
+.push-control__backdrop {
+  position: fixed;
+  z-index: 30000;
+  inset: 0;
+  display: grid;
+  place-items: start end;
+  padding:
+    72px
+    18px
+    18px;
+  background:
+    rgba(2, 10, 6, 0.34);
+  backdrop-filter: blur(5px);
+}
+
+.push-control__backdrop
+.push-control__panel {
+  position: relative;
+  z-index: 1;
+  top: auto;
+  right: auto;
+  bottom: auto;
+  left: auto;
+  width: min(
+    380px,
+    calc(100vw - 36px)
+  );
+  max-height:
+    calc(100dvh - 96px);
+  overflow-y: auto;
+}
+
+@media (max-width: 620px) {
+  .push-control__backdrop {
+    place-items: center;
+    padding:
+      calc(
+        14px +
+        env(
+          safe-area-inset-top
+        )
+      )
+      12px
+      calc(
+        14px +
+        env(
+          safe-area-inset-bottom
+        )
+      );
+    background:
+      rgba(1, 8, 5, 0.72);
+    backdrop-filter:
+      blur(12px);
+  }
+
+  .push-control__backdrop
+  .push-control__panel {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    max-width: 430px;
+    max-height:
+      calc(
+        100dvh -
+        28px -
+        env(
+          safe-area-inset-top
+        ) -
+        env(
+          safe-area-inset-bottom
+        )
+      );
+    padding: 16px;
+    overflow-y: auto;
+    border-radius: 20px;
+    box-shadow:
+      0 28px 80px
+        rgba(0, 0, 0, 0.58);
+    animation:
+      push-mobile-modal-in
+      190ms
+      ease-out;
+  }
+
+  @keyframes push-mobile-modal-in {
+    from {
+      opacity: 0;
+      transform:
+        translateY(14px)
+        scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform:
+        translateY(0)
+        scale(1);
+    }
+  }
+
+  .push-control__panel > header {
+    position: sticky;
+    z-index: 2;
+    top: -16px;
+    margin:
+      -16px
+      -16px
+      0;
+    padding: 16px;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(16, 43, 29, 1),
+        rgba(16, 43, 29, 0.96)
+      );
+  }
+
+  .push-control__enable,
+  .push-control__disable,
+  .push-control__test {
+    min-height: 48px;
+    font-size: 0.66rem;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .push-control__backdrop
+  .push-control__panel {
+    animation: none;
+  }
+}
