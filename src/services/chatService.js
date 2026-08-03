@@ -133,55 +133,6 @@ export async function getChatMessageById(
 }
 
 
-async function notifyChatMessage(
-  messageId,
-) {
-  if (!messageId) {
-    return;
-  }
-
-  const {
-    error,
-  } = await supabase
-    .functions
-    .invoke(
-      "notify-chat-message",
-      {
-        body: {
-          messageId,
-        },
-      },
-    );
-
-  if (error) {
-    let message =
-      error.message ??
-      "Impossible d’envoyer la notification du chat.";
-
-    try {
-      const response =
-        error.context;
-
-      if (
-        response &&
-        typeof response.json ===
-          "function"
-      ) {
-        const payload =
-          await response.json();
-
-        message =
-          payload?.error ??
-          payload?.message ??
-          message;
-      }
-    } catch {
-      // Le message d’origine reste utilisé.
-    }
-
-    throw new Error(message);
-  }
-}
 
 export async function sendChatMessage({
   profileId,
@@ -221,25 +172,13 @@ export async function sendChatMessage({
     throw error;
   }
 
-  const message =
-    normalizeChatMessage(data);
-
   /*
-   * Le message reste envoyé même si la notification push
-   * rencontre une erreur côté serveur.
+   * La notification est désormais créée automatiquement
+   * par le trigger SQL sur public.chat_messages.
    */
-  try {
-    await notifyChatMessage(
-      message.id,
-    );
-  } catch (notificationError) {
-    console.warn(
-      "Le message a été envoyé, mais la notification push a échoué :",
-      notificationError,
-    );
-  }
-
-  return message;
+  return normalizeChatMessage(
+    data,
+  );
 }
 
 export async function updateChatMessage({
