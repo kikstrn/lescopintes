@@ -623,6 +623,9 @@ function AppController() {
     deleteChatMessage:
       chatApi.removeMessage,
 
+    toggleChatReaction:
+      chatApi.reactToMessage,
+
     refreshChatMessages:
       chatApi.refreshMessages,
 

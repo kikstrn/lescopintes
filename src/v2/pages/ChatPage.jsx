@@ -18,6 +18,7 @@ function ChatPage() {
     sendChatMessage,
     editChatMessage,
     deleteChatMessage,
+    toggleChatReaction,
   } = useAppData();
 
   useEffect(() => {
@@ -41,6 +42,9 @@ function ChatPage() {
       onSend={sendChatMessage}
       onEdit={editChatMessage}
       onDelete={deleteChatMessage}
+      onToggleReaction={
+        toggleChatReaction
+      }
     />
   );
 }

@@ -11,6 +11,7 @@ import {
   getChatMessageById,
   getChatMessages,
   sendChatMessage,
+  toggleChatReaction,
   updateChatMessage,
 } from "../../../services/chatService";
 
@@ -188,8 +189,61 @@ export function useChatMessages(
           );
         },
       )
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table:
+            "chat_message_reactions",
+        },
+        async (payload) => {
+          const messageId =
+            payload.new?.message_id ??
+            payload.old?.message_id;
+
+          if (!messageId) {
+            return;
+          }
+
+          try {
+            const refreshedMessage =
+              await getChatMessageById(
+                messageId,
+              );
+
+            if (!refreshedMessage) {
+              return;
+            }
+
+            setMessages(
+              (currentMessages) =>
+                currentMessages.map(
+                  (message) =>
+                    String(
+                      message.id,
+                    ) ===
+                    String(
+                      refreshedMessage.id,
+                    )
+                      ? refreshedMessage
+                      : message,
+                ),
+            );
+          } catch (requestError) {
+            console.error(
+              "Impossible de mettre à jour les réactions :",
+              requestError,
+            );
+          }
+        },
+      )
       .subscribe((status) => {
-        if (status === "CHANNEL_ERROR") {
+        if (
+          status ===
+          "CHANNEL_ERROR"
+        ) {
           console.error(
             "Erreur Realtime du chat.",
           );
@@ -233,7 +287,9 @@ export function useChatMessages(
                 const alreadyExists =
                   currentMessages.some(
                     (message) =>
-                      String(message.id) ===
+                      String(
+                        message.id,
+                      ) ===
                       String(
                         createdMessage.id,
                       ),
@@ -276,28 +332,10 @@ export function useChatMessages(
         setError(null);
 
         try {
-          const updatedMessage =
-            await updateChatMessage({
-              messageId,
-              content,
-            });
-
-          if (updatedMessage) {
-            setMessages(
-              (currentMessages) =>
-                currentMessages.map(
-                  (message) =>
-                    String(message.id) ===
-                    String(
-                      updatedMessage.id,
-                    )
-                      ? updatedMessage
-                      : message,
-                ),
-            );
-          }
-
-          return updatedMessage;
+          return await updateChatMessage({
+            messageId,
+            content,
+          });
         } catch (requestError) {
           setError(
             requestError?.message ??
@@ -322,15 +360,6 @@ export function useChatMessages(
           await deleteChatMessage(
             messageId,
           );
-
-          setMessages(
-            (currentMessages) =>
-              currentMessages.filter(
-                (message) =>
-                  String(message.id) !==
-                  String(messageId),
-              ),
-          );
         } catch (requestError) {
           setError(
             requestError?.message ??
@@ -345,6 +374,69 @@ export function useChatMessages(
       [],
     );
 
+
+  const reactToMessage =
+    useCallback(
+      async ({
+        messageId,
+        emoji,
+      }) => {
+        if (!currentProfileId) {
+          throw new Error(
+            "Utilisateur connecté introuvable.",
+          );
+        }
+
+        setError(null);
+
+        try {
+          await toggleChatReaction({
+            messageId,
+            profileId:
+              currentProfileId,
+            emoji,
+          });
+
+          /*
+           * Mise à jour immédiate sur l’appareil
+           * qui a ajouté ou retiré la réaction.
+           * Realtime synchronise les autres membres.
+           */
+          const refreshedMessage =
+            await getChatMessageById(
+              messageId,
+            );
+
+          if (refreshedMessage) {
+            setMessages(
+              (currentMessages) =>
+                currentMessages.map(
+                  (message) =>
+                    String(
+                      message.id,
+                    ) ===
+                    String(
+                      messageId,
+                    )
+                      ? refreshedMessage
+                      : message,
+                ),
+            );
+          }
+
+          return refreshedMessage;
+        } catch (requestError) {
+          setError(
+            requestError?.message ??
+              "Impossible de modifier la réaction.",
+          );
+
+          throw requestError;
+        }
+      },
+      [currentProfileId],
+    );
+
   return {
     messages,
     loading,
@@ -354,6 +446,7 @@ export function useChatMessages(
     sendMessage,
     editMessage,
     removeMessage,
+    reactToMessage,
 
     refreshMessages:
       fetchMessages,

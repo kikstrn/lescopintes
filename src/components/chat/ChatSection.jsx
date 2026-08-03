@@ -11,10 +11,22 @@ import {
   MessageCircle,
   MoreHorizontal,
   Send,
+  Smile,
+  SmilePlus,
   Trash2,
   Users,
   X,
 } from "lucide-react";
+
+import EmojiPicker from "./EmojiPicker";
+
+const QUICK_REACTIONS = [
+  "👍",
+  "❤️",
+  "😂",
+  "🔥",
+  "🎾",
+];
 
 function formatMessageDate(value) {
   if (!value) {
@@ -41,6 +53,7 @@ function ChatSection({
   onSend,
   onEdit,
   onDelete,
+  onToggleReaction,
 }) {
   const [content, setContent] =
     useState("");
@@ -53,8 +66,15 @@ function ChatSection({
   const [messageToDelete, setMessageToDelete] =
     useState(null);
 
+  const [composerEmojiOpen, setComposerEmojiOpen] =
+    useState(false);
+
+  const [reactionPickerMessageId, setReactionPickerMessageId] =
+    useState(null);
+
   const messagesEndRef = useRef(null);
   const menuRef = useRef(null);
+  const composerTextareaRef = useRef(null);
 
   const sortedMessages = useMemo(
     () =>
@@ -154,6 +174,114 @@ function ChatSection({
       messageToDelete.id,
     );
     setMessageToDelete(null);
+  };
+
+  const insertEmojiInComposer = (
+    emoji,
+  ) => {
+    const textarea =
+      composerTextareaRef.current;
+
+    const selectionStart =
+      textarea?.selectionStart ??
+      content.length;
+
+    const selectionEnd =
+      textarea?.selectionEnd ??
+      selectionStart;
+
+    const nextContent = [
+      content.slice(
+        0,
+        selectionStart,
+      ),
+      emoji,
+      content.slice(
+        selectionEnd,
+      ),
+    ].join("");
+
+    setContent(nextContent);
+    setComposerEmojiOpen(false);
+
+    window.requestAnimationFrame(
+      () => {
+        textarea?.focus();
+
+        const nextPosition =
+          selectionStart +
+          emoji.length;
+
+        textarea?.setSelectionRange(
+          nextPosition,
+          nextPosition,
+        );
+      },
+    );
+  };
+
+  const getReactionGroups = (
+    message,
+  ) => {
+    const groups =
+      new Map();
+
+    for (
+      const reaction
+      of message.reactions ?? []
+    ) {
+      const emoji =
+        reaction.emoji;
+
+      if (!emoji) {
+        continue;
+      }
+
+      const current =
+        groups.get(emoji) ?? {
+          emoji,
+          count: 0,
+          reactedByCurrentUser:
+            false,
+        };
+
+      current.count += 1;
+
+      if (
+        String(
+          reaction.profileId,
+        ) ===
+        String(
+          currentProfile?.id,
+        )
+      ) {
+        current.reactedByCurrentUser =
+          true;
+      }
+
+      groups.set(
+        emoji,
+        current,
+      );
+    }
+
+    return Array.from(
+      groups.values(),
+    );
+  };
+
+  const handleReaction = async (
+    messageId,
+    emoji,
+  ) => {
+    await onToggleReaction?.({
+      messageId,
+      emoji,
+    });
+
+    setReactionPickerMessageId(
+      null,
+    );
   };
 
   return (
@@ -438,6 +566,112 @@ function ChatSection({
                       <p>{message.content}</p>
                     )}
 
+                    {!isEditing && (
+                      <div className="chat-message__reactions-area">
+                        {getReactionGroups(
+                          message,
+                        ).length > 0 && (
+                          <div className="chat-message__reactions">
+                            {getReactionGroups(
+                              message,
+                            ).map(
+                              (reaction) => (
+                                <button
+                                  key={
+                                    reaction.emoji
+                                  }
+                                  type="button"
+                                  className={
+                                    reaction.reactedByCurrentUser
+                                      ? "chat-reaction chat-reaction--mine"
+                                      : "chat-reaction"
+                                  }
+                                  aria-label={`${reaction.emoji} ${reaction.count} réaction${reaction.count > 1 ? "s" : ""}`}
+                                  onClick={() =>
+                                    handleReaction(
+                                      message.id,
+                                      reaction.emoji,
+                                    )
+                                  }
+                                >
+                                  <span>
+                                    {reaction.emoji}
+                                  </span>
+
+                                  <strong>
+                                    {reaction.count}
+                                  </strong>
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        )}
+
+                        <div className="chat-message__reaction-add">
+                          <button
+                            type="button"
+                            className="chat-message__reaction-button"
+                            aria-label="Ajouter une réaction"
+                            aria-expanded={
+                              reactionPickerMessageId ===
+                              message.id
+                            }
+                            onClick={() =>
+                              setReactionPickerMessageId(
+                                (current) =>
+                                  current ===
+                                  message.id
+                                    ? null
+                                    : message.id,
+                              )
+                            }
+                          >
+                            <SmilePlus size={15} />
+                          </button>
+
+                          {reactionPickerMessageId ===
+                            message.id && (
+                            <div className="chat-message__reaction-popover">
+                              <div className="chat-message__quick-reactions">
+                                {QUICK_REACTIONS.map(
+                                  (emoji) => (
+                                    <button
+                                      key={emoji}
+                                      type="button"
+                                      onClick={() =>
+                                        handleReaction(
+                                          message.id,
+                                          emoji,
+                                        )
+                                      }
+                                    >
+                                      {emoji}
+                                    </button>
+                                  ),
+                                )}
+                              </div>
+
+                              <EmojiPicker
+                                open
+                                compact
+                                title="Réagir au message"
+                                onClose={() =>
+                                  setReactionPickerMessageId(
+                                    null,
+                                  )
+                                }
+                                onSelect={(emoji) =>
+                                  handleReaction(
+                                    message.id,
+                                    emoji,
+                                  )
+                                }
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </article>
               );
@@ -447,10 +681,47 @@ function ChatSection({
         </div>
 
         <form
-          className="chat-composer"
+          className="chat-composer chat-composer--with-emoji"
           onSubmit={handleSubmit}
         >
+          <div className="chat-composer__emoji-wrap">
+            <button
+              type="button"
+              className="chat-composer__emoji-button"
+              aria-label="Ajouter un emoji"
+              aria-expanded={
+                composerEmojiOpen
+              }
+              onClick={() =>
+                setComposerEmojiOpen(
+                  (current) =>
+                    !current,
+                )
+              }
+            >
+              <Smile size={20} />
+            </button>
+
+            <EmojiPicker
+              open={
+                composerEmojiOpen
+              }
+              title="Ajouter un emoji"
+              onClose={() =>
+                setComposerEmojiOpen(
+                  false,
+                )
+              }
+              onSelect={
+                insertEmojiInComposer
+              }
+            />
+          </div>
+
           <textarea
+            ref={
+              composerTextareaRef
+            }
             placeholder="Écrire un message…"
             value={content}
             maxLength={1000}

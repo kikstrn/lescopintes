@@ -8,6 +8,13 @@ const CHAT_MESSAGE_SELECT = `
   edited_at,
   created_at,
 
+reactions:chat_message_reactions!chat_message_reactions_message_id_fkey (
+  id,
+  profile_id,
+  emoji,
+  created_at
+),
+
   author:profiles!chat_messages_profile_id_fkey (
     id,
     first_name,
@@ -59,6 +66,23 @@ export function normalizeChatMessage(row) {
       row.edited_at ?? null,
     createdAt:
       row.created_at,
+
+    reactions:
+      Array.isArray(row.reactions)
+        ? row.reactions.map(
+          (reaction) => ({
+            id:
+              reaction.id,
+            profileId:
+              reaction.profile_id,
+            emoji:
+              reaction.emoji,
+            createdAt:
+              reaction.created_at,
+          }),
+        )
+        : [],
+
     author:
       normalizeAuthor(
         row.author,
@@ -206,4 +230,123 @@ export async function deleteChatMessage(
   if (error) {
     throw error;
   }
+}
+
+export async function toggleChatReaction({
+  messageId,
+  profileId,
+  emoji,
+}) {
+  if (!messageId) {
+    throw new Error(
+      "Message introuvable.",
+    );
+  }
+
+  if (!profileId) {
+    throw new Error(
+      "Profil utilisateur introuvable.",
+    );
+  }
+
+  const normalizedEmoji =
+    emoji?.trim();
+
+  if (!normalizedEmoji) {
+    throw new Error(
+      "Emoji introuvable.",
+    );
+  }
+
+  const {
+    data: existingReaction,
+    error: existingError,
+  } = await supabase
+    .from(
+      "chat_message_reactions",
+    )
+    .select("id")
+    .eq(
+      "message_id",
+      messageId,
+    )
+    .eq(
+      "profile_id",
+      profileId,
+    )
+    .eq(
+      "emoji",
+      normalizedEmoji,
+    )
+    .maybeSingle();
+
+  if (existingError) {
+    throw existingError;
+  }
+
+  if (existingReaction?.id) {
+    const { error: deleteError } =
+      await supabase
+        .from(
+          "chat_message_reactions",
+        )
+        .delete()
+        .eq(
+          "id",
+          existingReaction.id,
+        );
+
+    if (deleteError) {
+      throw deleteError;
+    }
+
+    return {
+      action: "removed",
+      messageId,
+      emoji:
+        normalizedEmoji,
+    };
+  }
+
+  const {
+    data,
+    error: insertError,
+  } = await supabase
+    .from(
+      "chat_message_reactions",
+    )
+    .insert({
+      message_id:
+        messageId,
+      profile_id:
+        profileId,
+      emoji:
+        normalizedEmoji,
+    })
+    .select(`
+      id,
+      message_id,
+      profile_id,
+      emoji,
+      created_at
+    `)
+    .single();
+
+  if (insertError) {
+    throw insertError;
+  }
+
+  return {
+    action: "added",
+    messageId,
+    reaction: {
+      id: data.id,
+      profileId:
+        data.profile_id,
+      emoji:
+        data.emoji,
+      createdAt:
+        data.created_at,
+    },
+  };
 }
