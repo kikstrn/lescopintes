@@ -291,7 +291,7 @@ self.addEventListener(
 
       badge:
         payload.badge ??
-        "/favicon-48x48.png",
+        "/notification-badge-96x96.png",
 
       image:
         payload.image ??

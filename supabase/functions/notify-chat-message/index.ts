@@ -386,7 +386,7 @@ Deno.serve(
             "/android-chrome-192x192.png",
 
           badge:
-            "/favicon-48x48.png",
+            "/notification-badge-96x96.png",
 
           tag:
             `chat-message-${message.id}`,
