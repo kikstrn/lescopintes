@@ -143,6 +143,14 @@ function ScoreModal({
   open,
   members = [],
   saving = false,
+
+  initialValues = null,
+  lockMatchType = false,
+  lockPlayers = false,
+
+  eyebrow = "Tennis",
+  title = "Ajouter un résultat",
+
   onClose,
   onSave,
 }) {
@@ -175,21 +183,72 @@ function ScoreModal({
 }, [open]);
 
   const resetForm = () => {
-    const initialPlayers = getInitialPlayers(members);
+    const initialPlayers =
+      getInitialPlayers(members);
 
-    setMatchType("single");
-    setPlayerOneId(initialPlayers.playerOneId);
-    setPlayerTwoId(initialPlayers.playerTwoId);
-    setPlayerThreeId(initialPlayers.playerThreeId);
-    setPlayerFourId(initialPlayers.playerFourId);
+    const initialMatchType =
+      initialValues?.matchType ??
+      "single";
+
+    setMatchType(
+      initialMatchType,
+    );
+
+    setPlayerOneId(
+      initialValues?.playerOneId ??
+      initialPlayers.playerOneId,
+    );
+
+    setPlayerTwoId(
+      initialValues?.playerTwoId ??
+      initialPlayers.playerTwoId,
+    );
+
+    setPlayerThreeId(
+      initialValues?.playerThreeId ??
+      initialPlayers.playerThreeId,
+    );
+
+    setPlayerFourId(
+      initialValues?.playerFourId ??
+      initialPlayers.playerFourId,
+    );
 
     /*
-     * Un nouveau tableau est créé à chaque fois.
-     * React détecte donc correctement la réinitialisation.
+     * Un nouveau tableau est créé à chaque ouverture.
      */
-    setSets(createDefaultSets());
-    setPlayedDate(getTodayValue());
-    setNotes("");
+    setSets(
+      Array.isArray(
+        initialValues?.sets,
+      ) &&
+      initialValues.sets.length >= 2
+        ? initialValues.sets.map(
+            (set) => ({
+              teamOne:
+                Number(
+                  set.teamOne ??
+                  0,
+                ),
+              teamTwo:
+                Number(
+                  set.teamTwo ??
+                  0,
+                ),
+            }),
+          )
+        : createDefaultSets(),
+    );
+
+    setPlayedDate(
+      initialValues?.playedDate ??
+      getTodayValue(),
+    );
+
+    setNotes(
+      initialValues?.notes ??
+      "",
+    );
+
     setErrorMessage("");
   };
 
@@ -197,7 +256,11 @@ function ScoreModal({
     if (open) {
       resetForm();
     }
-  }, [open, members]);
+  }, [
+    open,
+    members,
+    initialValues,
+  ]);
 
   const allSelectedIds = [
     playerOneId,
@@ -417,11 +480,11 @@ function ScoreModal({
 
                 <div>
                   <span className="section-heading__eyebrow">
-                    Tennis
+                    {eyebrow}
                   </span>
 
                   <h2 id="score-modal-title">
-                    Ajouter un résultat
+                    {title}
                   </h2>
                 </div>
               </div>
@@ -456,7 +519,10 @@ function ScoreModal({
                         ? "score-modal__match-type score-modal__match-type--active"
                         : "score-modal__match-type"
                     }
-                    disabled={saving}
+                    disabled={
+                      saving ||
+                      lockMatchType
+                    }
                     onClick={() => handleMatchTypeChange("single")}
                   >
                     <span className="score-modal__match-type-icon">
@@ -482,7 +548,10 @@ function ScoreModal({
                         ? "score-modal__match-type score-modal__match-type--active"
                         : "score-modal__match-type"
                     }
-                    disabled={saving}
+                    disabled={
+                      saving ||
+                      lockMatchType
+                    }
                     onClick={() => handleMatchTypeChange("double")}
                   >
                     <span className="score-modal__match-type-icon">
@@ -542,7 +611,10 @@ function ScoreModal({
                         value={playerOneId}
                         members={members}
                         excludedIds={allSelectedIds}
-                        disabled={saving}
+                        disabled={
+                          saving ||
+                          lockPlayers
+                        }
                         onChange={setPlayerOneId}
                       />
                     </section>
@@ -566,7 +638,10 @@ function ScoreModal({
                         value={playerTwoId}
                         members={members}
                         excludedIds={allSelectedIds}
-                        disabled={saving}
+                        disabled={
+                          saving ||
+                          lockPlayers
+                        }
                         onChange={setPlayerTwoId}
                       />
                     </section>
@@ -586,7 +661,10 @@ function ScoreModal({
                         value={playerOneId}
                         members={members}
                         excludedIds={allSelectedIds}
-                        disabled={saving}
+                        disabled={
+                          saving ||
+                          lockPlayers
+                        }
                         onChange={setPlayerOneId}
                       />
 
@@ -595,7 +673,10 @@ function ScoreModal({
                         value={playerTwoId}
                         members={members}
                         excludedIds={allSelectedIds}
-                        disabled={saving}
+                        disabled={
+                          saving ||
+                          lockPlayers
+                        }
                         onChange={setPlayerTwoId}
                       />
                     </section>
@@ -619,7 +700,10 @@ function ScoreModal({
                         value={playerThreeId}
                         members={members}
                         excludedIds={allSelectedIds}
-                        disabled={saving}
+                        disabled={
+                          saving ||
+                          lockPlayers
+                        }
                         onChange={setPlayerThreeId}
                       />
 
@@ -628,7 +712,10 @@ function ScoreModal({
                         value={playerFourId}
                         members={members}
                         excludedIds={allSelectedIds}
-                        disabled={saving}
+                        disabled={
+                          saving ||
+                          lockPlayers
+                        }
                         onChange={setPlayerFourId}
                       />
                     </section>
