@@ -132,6 +132,57 @@ export async function getChatMessageById(
   return normalizeChatMessage(data);
 }
 
+
+async function notifyChatMessage(
+  messageId,
+) {
+  if (!messageId) {
+    return;
+  }
+
+  const {
+    error,
+  } = await supabase
+    .functions
+    .invoke(
+      "notify-chat-message",
+      {
+        body: {
+          messageId,
+        },
+      },
+    );
+
+  if (error) {
+    let message =
+      error.message ??
+      "Impossible d’envoyer la notification du chat.";
+
+    try {
+      const response =
+        error.context;
+
+      if (
+        response &&
+        typeof response.json ===
+          "function"
+      ) {
+        const payload =
+          await response.json();
+
+        message =
+          payload?.error ??
+          payload?.message ??
+          message;
+      }
+    } catch {
+      // Le message d’origine reste utilisé.
+    }
+
+    throw new Error(message);
+  }
+}
+
 export async function sendChatMessage({
   profileId,
   content,
@@ -170,7 +221,25 @@ export async function sendChatMessage({
     throw error;
   }
 
-  return normalizeChatMessage(data);
+  const message =
+    normalizeChatMessage(data);
+
+  /*
+   * Le message reste envoyé même si la notification push
+   * rencontre une erreur côté serveur.
+   */
+  try {
+    await notifyChatMessage(
+      message.id,
+    );
+  } catch (notificationError) {
+    console.warn(
+      "Le message a été envoyé, mais la notification push a échoué :",
+      notificationError,
+    );
+  }
+
+  return message;
 }
 
 export async function updateChatMessage({

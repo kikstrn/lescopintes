@@ -144,6 +144,75 @@ function AppLayout({
     };
   }, []);
 
+
+  useEffect(() => {
+    const navigateFromPush = (
+      pageId,
+    ) => {
+      if (!pageId) {
+        return;
+      }
+
+      navigateTo(pageId);
+
+      const url =
+        new URL(
+          window.location.href,
+        );
+
+      url.searchParams.delete(
+        "page",
+      );
+
+      window.history.replaceState(
+        {},
+        "",
+        `${url.pathname}${url.search}${url.hash}`,
+      );
+    };
+
+    const initialPage =
+      new URLSearchParams(
+        window.location.search,
+      ).get("page");
+
+    if (initialPage) {
+      navigateFromPush(
+        initialPage,
+      );
+    }
+
+    const handleServiceWorkerMessage =
+      (event) => {
+        if (
+          event.data?.type !==
+          "PUSH_NOTIFICATION_CLICKED"
+        ) {
+          return;
+        }
+
+        navigateFromPush(
+          event.data.pageId,
+        );
+      };
+
+    navigator.serviceWorker
+      ?.addEventListener(
+        "message",
+        handleServiceWorkerMessage,
+      );
+
+    return () => {
+      navigator.serviceWorker
+        ?.removeEventListener(
+          "message",
+          handleServiceWorkerMessage,
+        );
+    };
+  }, [
+    navigateTo,
+  ]);
+
   const handleNotificationClick =
     async (notification) => {
       if (!notification.read_at) {

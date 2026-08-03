@@ -31749,3 +31749,25 @@ button:focus-visible {
     animation: none;
   }
 }
+
+/* =========================================================
+   PUSH — PHASE 3.1 : CHAT AUTOMATIQUE
+   ========================================================= */
+
+/*
+ * Le bouton de test a été supprimé.
+ * Ce fichier harmonise le panneau après son retrait.
+ */
+
+.push-control__panel
+.push-control__disable,
+.push-control__panel
+.push-control__enable {
+  margin-top: 13px;
+}
+
+.push-control__status--enabled {
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.025);
+}

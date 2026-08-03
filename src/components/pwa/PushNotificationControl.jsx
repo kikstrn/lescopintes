@@ -2,7 +2,6 @@ import {
   BellOff,
   BellRing,
   CheckCircle2,
-  Send,
   Smartphone,
   X,
 } from "lucide-react";
@@ -16,9 +15,6 @@ import {
 } from "react-dom";
 
 import usePushNotifications from "../../pwa/usePushNotifications";
-import {
-  sendTestPushNotification,
-} from "../../services/pushService";
 
 function PushNotificationControl({
   profileId,
@@ -32,21 +28,6 @@ function PushNotificationControl({
     usePushNotifications(
       profileId,
     );
-
-  const [
-    testSending,
-    setTestSending,
-  ] = useState(false);
-
-  const [
-    testMessage,
-    setTestMessage,
-  ] = useState(null);
-
-  const [
-    testError,
-    setTestError,
-  ] = useState(null);
 
 
   const handleEnable =
@@ -71,42 +52,6 @@ function PushNotificationControl({
       }
     };
 
-  const handleTestPush =
-    async () => {
-      setTestSending(true);
-      setTestMessage(null);
-      setTestError(null);
-
-      try {
-        const result =
-          await sendTestPushNotification();
-
-        const delivered =
-          Number(
-            result?.delivered ??
-            0,
-          );
-
-        const failed =
-          Number(
-            result?.failed ??
-            0,
-          );
-
-        setTestMessage(
-          delivered > 0
-            ? `Notification envoyée sur ${delivered} appareil(s).`
-            : `Aucune notification livrée${failed > 0 ? ` (${failed} échec(s))` : ""}.`,
-        );
-      } catch (requestError) {
-        setTestError(
-          requestError?.message ??
-            "Impossible d’envoyer la notification de test.",
-        );
-      } finally {
-        setTestSending(false);
-      }
-    };
 
   return (
     <div className="push-control">
@@ -260,42 +205,6 @@ function PushNotificationControl({
                     </p>
                   )}
 
-                  {push.subscribed && (
-                    <button
-                      type="button"
-                      className="push-control__test"
-                      disabled={
-                        push.loading ||
-                        push.saving ||
-                        testSending
-                      }
-                      onClick={
-                        handleTestPush
-                      }
-                    >
-                      <Send size={16} />
-
-                      {testSending
-                        ? "Envoi en cours…"
-                        : "Envoyer une notification de test"}
-                    </button>
-                  )}
-
-                  {testMessage && (
-                    <p className="push-control__test-message">
-                      <CheckCircle2
-                        size={16}
-                      />
-                      {testMessage}
-                    </p>
-                  )}
-
-                  {testError && (
-                    <p className="push-control__warning push-control__warning--error">
-                      {testError}
-                    </p>
-                  )}
-
                   <button
                     type="button"
                     className={
@@ -306,7 +215,6 @@ function PushNotificationControl({
                     disabled={
                       push.loading ||
                       push.saving ||
-                      testSending ||
                       (
                         !push.subscribed &&
                         (
