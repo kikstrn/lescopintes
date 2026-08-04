@@ -31771,3 +31771,1460 @@ button:focus-visible {
     inset 0 1px 0
       rgba(255, 255, 255, 0.025);
 }
+
+/* =========================================================
+   PUSH 6.1 — CLOCHE UNIQUE
+   ========================================================= */
+
+.unified-notifications {
+  position: relative;
+}
+
+.unified-notifications__trigger {
+  position: relative;
+}
+
+.unified-notifications__trigger--push-active {
+  border-color:
+    rgba(94, 228, 155, 0.17);
+}
+
+.unified-notifications__push-dot {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid
+    rgba(7, 24, 15, 1);
+  border-radius: 50%;
+  background: var(--green);
+}
+
+.unified-notifications__backdrop {
+  position: fixed;
+  z-index: 31000;
+  inset: 0;
+  display: grid;
+  place-items: start end;
+  padding:
+    72px
+    18px
+    18px;
+  background:
+    rgba(2, 10, 6, 0.34);
+  backdrop-filter: blur(5px);
+}
+
+.unified-notifications__panel {
+  width: min(
+    450px,
+    calc(100vw - 36px)
+  );
+  max-height:
+    calc(100dvh - 96px);
+  display: grid;
+  grid-template-rows:
+    auto
+    auto
+    minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid
+    rgba(255, 255, 255, 0.09);
+  border-radius: 21px;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(16, 43, 29, 0.995),
+      rgba(5, 20, 13, 0.995)
+    );
+  box-shadow:
+    0 28px 80px
+      rgba(0, 0, 0, 0.56);
+  animation:
+    unified-notifications-in
+    180ms
+    ease-out;
+}
+
+@keyframes unified-notifications-in {
+  from {
+    opacity: 0;
+    transform:
+      translateY(-8px)
+      scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+.unified-notifications__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding:
+    17px
+    18px
+    13px;
+}
+
+.unified-notifications__header h2 {
+  margin-top: 3px;
+  font-size: 1rem;
+}
+
+.unified-notifications__close {
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 11px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.04);
+}
+
+.unified-notifications__tabs {
+  display: grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap: 7px;
+  padding:
+    0
+    14px
+    13px;
+  border-bottom: 1px solid
+    rgba(255, 255, 255, 0.06);
+}
+
+.unified-notifications__tabs button {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.025);
+  font-size: 0.59rem;
+  font-weight: 850;
+}
+
+.unified-notifications__tabs button.is-active {
+  border-color:
+    rgba(94, 228, 155, 0.18);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.075);
+}
+
+.unified-notifications__tabs button > span:not(
+  .unified-notifications__tab-state
+) {
+  min-width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: #06130d;
+  background: var(--green);
+  font-size: 0.49rem;
+}
+
+.unified-notifications__tab-state {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background:
+    rgba(255, 255, 255, 0.18);
+}
+
+.unified-notifications__tab-state.is-enabled {
+  background: var(--green);
+  box-shadow:
+    0 0 0 3px
+      rgba(94, 228, 155, 0.08);
+}
+
+.unified-notifications__activity,
+.unified-notifications__push {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.unified-notifications__actions {
+  display: flex;
+  gap: 7px;
+  padding:
+    11px
+    14px;
+}
+
+.unified-notifications__actions button {
+  min-height: 35px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  color: var(--text-soft);
+  background:
+    rgba(255, 255, 255, 0.025);
+  font-size: 0.52rem;
+  font-weight: 800;
+}
+
+.unified-notifications__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.unified-notifications__list {
+  max-height:
+    calc(100dvh - 240px);
+  padding:
+    0
+    10px
+    11px;
+  overflow-y: auto;
+}
+
+.unified-notification-item {
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    34px;
+  gap: 4px;
+  margin-top: 5px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+}
+
+.unified-notification-item.is-unread {
+  border-color:
+    rgba(94, 228, 155, 0.11);
+  background:
+    rgba(94, 228, 155, 0.045);
+}
+
+.unified-notification-item.is-read {
+  opacity: 0.69;
+}
+
+.unified-notification-item__main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    8px
+    minmax(0, 1fr);
+  gap: 10px;
+  padding:
+    11px
+    5px
+    11px
+    12px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.unified-notification-item__dot {
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background:
+    rgba(255, 255, 255, 0.17);
+}
+
+.unified-notification-item.is-unread
+.unified-notification-item__dot {
+  background: var(--green);
+  box-shadow:
+    0 0 0 4px
+      rgba(94, 228, 155, 0.07);
+}
+
+.unified-notification-item__content {
+  min-width: 0;
+}
+
+.unified-notification-item__content strong,
+.unified-notification-item__content > span,
+.unified-notification-item__content small {
+  display: block;
+}
+
+.unified-notification-item__content strong {
+  color: var(--text);
+  font-size: 0.61rem;
+  line-height: 1.35;
+}
+
+.unified-notification-item__content > span {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.54rem;
+  line-height: 1.5;
+}
+
+.unified-notification-item__content small {
+  margin-top: 6px;
+  color:
+    rgba(255, 255, 255, 0.36);
+  font-size: 0.48rem;
+}
+
+.unified-notification-item__delete {
+  width: 31px;
+  height: 31px;
+  align-self: center;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 9px;
+  color:
+    rgba(255, 255, 255, 0.38);
+  background: transparent;
+}
+
+.unified-notification-item__delete:hover {
+  color: #ffadb4;
+  background:
+    rgba(255, 111, 120, 0.07);
+}
+
+.unified-notifications__empty {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 24px;
+  color: var(--text-muted);
+  text-align: center;
+  font-size: 0.57rem;
+}
+
+.unified-notifications__empty strong {
+  color: var(--text);
+  font-size: 0.66rem;
+}
+
+.unified-notifications__empty--error {
+  color: #ffadb4;
+}
+
+.unified-notifications__push {
+  padding: 14px;
+  overflow-y: auto;
+}
+
+.unified-notifications__push-status {
+  display: grid;
+  grid-template-columns:
+    39px
+    minmax(0, 1fr);
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.unified-notifications__push-status.is-enabled {
+  border-color:
+    rgba(94, 228, 155, 0.16);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.05);
+}
+
+.unified-notifications__push-status strong,
+.unified-notifications__push-status p {
+  display: block;
+}
+
+.unified-notifications__push-status strong {
+  color: var(--text);
+  font-size: 0.64rem;
+}
+
+.unified-notifications__push-status p {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.55rem;
+  line-height: 1.5;
+}
+
+.unified-notifications__warning {
+  margin-top: 9px;
+  padding: 9px 10px;
+  border: 1px solid
+    rgba(255, 197, 107, 0.15);
+  border-radius: 11px;
+  color: var(--amber);
+  background:
+    rgba(255, 197, 107, 0.05);
+  font-size: 0.53rem;
+  line-height: 1.5;
+}
+
+.unified-notifications__warning--error {
+  border-color:
+    rgba(255, 111, 120, 0.16);
+  color: #ffabb2;
+  background:
+    rgba(255, 111, 120, 0.055);
+}
+
+.unified-notifications__push-enable,
+.unified-notifications__push-disable {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 12px;
+  border-radius: 12px;
+  font-size: 0.61rem;
+  font-weight: 900;
+}
+
+.unified-notifications__push-enable {
+  border: 1px solid
+    rgba(94, 228, 155, 0.24);
+  color: #06130d;
+  background:
+    linear-gradient(
+      135deg,
+      #88f4bd,
+      var(--green)
+    );
+}
+
+.unified-notifications__push-disable {
+  border: 1px solid
+    rgba(255, 111, 120, 0.18);
+  color: #ffb7bd;
+  background:
+    rgba(255, 111, 120, 0.07);
+}
+
+.unified-notifications__push-enable:disabled,
+.unified-notifications__push-disable:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.unified-notifications__preferences-preview {
+  display: grid;
+  grid-template-columns:
+    30px
+    minmax(0, 1fr);
+  gap: 9px;
+  margin-top: 11px;
+  padding: 11px;
+  border: 1px dashed
+    rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: var(--text-muted);
+}
+
+.unified-notifications__preferences-preview strong,
+.unified-notifications__preferences-preview p {
+  display: block;
+}
+
+.unified-notifications__preferences-preview strong {
+  color: var(--text-soft);
+  font-size: 0.57rem;
+}
+
+.unified-notifications__preferences-preview p {
+  margin-top: 3px;
+  font-size: 0.51rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 620px) {
+  .unified-notifications__backdrop {
+    place-items: center;
+    padding:
+      calc(
+        10px +
+        env(
+          safe-area-inset-top
+        )
+      )
+      10px
+      calc(
+        10px +
+        env(
+          safe-area-inset-bottom
+        )
+      );
+    background:
+      rgba(1, 8, 5, 0.76);
+    backdrop-filter:
+      blur(12px);
+  }
+
+  .unified-notifications__panel {
+    width: 100%;
+    max-width: 450px;
+    max-height:
+      calc(
+        100dvh -
+        20px -
+        env(
+          safe-area-inset-top
+        ) -
+        env(
+          safe-area-inset-bottom
+        )
+      );
+    border-radius: 20px;
+  }
+
+  .unified-notifications__header {
+    padding: 15px;
+  }
+
+  .unified-notifications__tabs {
+    padding:
+      0
+      11px
+      11px;
+  }
+
+  .unified-notifications__tabs button {
+    min-height: 45px;
+    font-size: 0.62rem;
+  }
+
+  .unified-notifications__actions {
+    display: grid;
+    grid-template-columns:
+      1fr 1fr;
+    padding:
+      10px
+      11px;
+  }
+
+  .unified-notifications__actions button {
+    min-height: 39px;
+  }
+
+  .unified-notifications__list {
+    max-height:
+      calc(100dvh - 218px);
+    padding:
+      0
+      7px
+      9px;
+  }
+
+  .unified-notification-item__main {
+    padding:
+      12px
+      4px
+      12px
+      10px;
+  }
+
+  .unified-notification-item__content strong {
+    font-size: 0.65rem;
+  }
+
+  .unified-notification-item__content > span {
+    font-size: 0.58rem;
+  }
+
+  .unified-notifications__push {
+    padding: 12px;
+  }
+
+  .unified-notifications__push-enable,
+  .unified-notifications__push-disable {
+    min-height: 48px;
+    font-size: 0.66rem;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .unified-notifications__panel {
+    animation: none;
+  }
+}
+
+/* =========================================================
+   PUSH 6.2 — PRÉFÉRENCES
+   ========================================================= */
+
+.unified-notifications__tabs {
+  grid-template-columns:
+    1fr
+    1fr
+    1fr;
+}
+
+.unified-notifications__preferences {
+  min-height: 0;
+  padding: 13px;
+  overflow-y: auto;
+}
+
+.unified-notifications__preferences-header {
+  display: grid;
+  gap: 10px;
+  padding: 2px 2px 12px;
+}
+
+.unified-notifications__preferences-header strong,
+.unified-notifications__preferences-header p {
+  display: block;
+}
+
+.unified-notifications__preferences-header strong {
+  color: var(--text);
+  font-size: 0.65rem;
+}
+
+.unified-notifications__preferences-header p {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.54rem;
+  line-height: 1.5;
+}
+
+.unified-notifications__preferences-global-actions {
+  display: grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap: 7px;
+}
+
+.unified-notifications__preferences-global-actions button {
+  min-height: 36px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  color: var(--text-soft);
+  background:
+    rgba(255, 255, 255, 0.025);
+  font-size: 0.52rem;
+  font-weight: 800;
+}
+
+.unified-notifications__preferences-global-actions
+button:hover:not(:disabled) {
+  border-color:
+    rgba(94, 228, 155, 0.16);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.055);
+}
+
+.unified-notifications__preferences-global-actions
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.unified-notifications__preferences-list {
+  display: grid;
+  gap: 7px;
+}
+
+.unified-notifications__preference-item {
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    43px;
+  align-items: center;
+  gap: 12px;
+  min-height: 61px;
+  padding: 11px 12px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.06);
+  border-radius: 13px;
+  background:
+    rgba(255, 255, 255, 0.022);
+  cursor: pointer;
+}
+
+.unified-notifications__preference-item:hover {
+  border-color:
+    rgba(94, 228, 155, 0.13);
+  background:
+    rgba(94, 228, 155, 0.035);
+}
+
+.unified-notifications__preference-item
+> span:first-child {
+  min-width: 0;
+}
+
+.unified-notifications__preference-item strong,
+.unified-notifications__preference-item small {
+  display: block;
+}
+
+.unified-notifications__preference-item strong {
+  color: var(--text);
+  font-size: 0.61rem;
+}
+
+.unified-notifications__preference-item small {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.51rem;
+  line-height: 1.45;
+}
+
+.unified-notifications__preference-item input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.unified-notifications__switch {
+  position: relative;
+  width: 43px;
+  height: 24px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  background:
+    rgba(255, 255, 255, 0.07);
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.unified-notifications__switch span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background:
+    rgba(255, 255, 255, 0.52);
+  transition:
+    transform 150ms ease,
+    background 150ms ease;
+}
+
+.unified-notifications__preference-item
+input:checked
++ .unified-notifications__switch {
+  border-color:
+    rgba(94, 228, 155, 0.3);
+  background:
+    rgba(94, 228, 155, 0.16);
+}
+
+.unified-notifications__preference-item
+input:checked
++ .unified-notifications__switch
+span {
+  background: var(--green);
+  transform:
+    translateX(19px);
+}
+
+.unified-notifications__preference-item
+input:focus-visible
++ .unified-notifications__switch {
+  outline: 2px solid
+    var(--green);
+  outline-offset: 2px;
+}
+
+.unified-notifications__preference-item
+input:disabled
++ .unified-notifications__switch {
+  opacity: 0.55;
+}
+
+@media (max-width: 620px) {
+  .unified-notifications__tabs {
+    gap: 5px;
+  }
+
+  .unified-notifications__tabs button {
+    gap: 5px;
+    padding: 0 7px;
+    font-size: 0.56rem;
+  }
+
+  .unified-notifications__preferences {
+    padding: 11px;
+  }
+
+  .unified-notifications__preference-item {
+    min-height: 65px;
+    padding: 11px;
+  }
+}
+
+/* =========================================================
+   PUSH 6.3 — GESTION DES APPAREILS
+   ========================================================= */
+
+.unified-notifications__tabs {
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+}
+
+.unified-notifications__devices {
+  min-height: 0;
+  padding: 13px;
+  overflow-y: auto;
+}
+
+.unified-notifications__devices-header {
+  padding: 2px 2px 12px;
+}
+
+.unified-notifications__devices-header strong,
+.unified-notifications__devices-header p {
+  display: block;
+}
+
+.unified-notifications__devices-header strong {
+  color: var(--text);
+  font-size: 0.65rem;
+}
+
+.unified-notifications__devices-header p {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.54rem;
+  line-height: 1.5;
+}
+
+.unified-notifications__devices-list {
+  display: grid;
+  gap: 8px;
+}
+
+.unified-notifications__device {
+  display: grid;
+  grid-template-columns:
+    42px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  background:
+    rgba(255, 255, 255, 0.024);
+}
+
+.unified-notifications__device.is-current {
+  border-color:
+    rgba(94, 228, 155, 0.17);
+  background:
+    rgba(94, 228, 155, 0.045);
+}
+
+.unified-notifications__device.is-inactive {
+  opacity: 0.58;
+}
+
+.unified-notifications__device-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.07);
+}
+
+.unified-notifications__device-content {
+  min-width: 0;
+}
+
+.unified-notifications__device-content strong,
+.unified-notifications__device-content span,
+.unified-notifications__device-content small {
+  display: block;
+}
+
+.unified-notifications__device-content strong {
+  color: var(--text);
+  font-size: 0.61rem;
+}
+
+.unified-notifications__device-content span {
+  margin-top: 3px;
+  color: var(--green);
+  font-size: 0.52rem;
+}
+
+.unified-notifications__device.is-inactive
+.unified-notifications__device-content span {
+  color: var(--text-muted);
+}
+
+.unified-notifications__device-content small {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+.unified-notifications__device-remove {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid
+    rgba(255, 111, 120, 0.15);
+  border-radius: 10px;
+  color: #ffb2b9;
+  background:
+    rgba(255, 111, 120, 0.055);
+  font-size: 0.51rem;
+  font-weight: 800;
+}
+
+.unified-notifications__device-remove:hover:not(:disabled) {
+  background:
+    rgba(255, 111, 120, 0.1);
+}
+
+.unified-notifications__device-remove:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (max-width: 620px) {
+  .unified-notifications__tabs {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .unified-notifications__tabs button {
+    min-height: 42px;
+  }
+
+  .unified-notifications__device {
+    grid-template-columns:
+      40px
+      minmax(0, 1fr);
+  }
+
+  .unified-notifications__device-remove {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 42px;
+  }
+}
+
+/* =========================================================
+   CORRECTIF VISUEL — CENTRE DE NOTIFICATIONS
+   À ajouter tout à la fin de src/styles.css
+   ========================================================= */
+
+/* Fenêtre principale */
+
+.unified-notifications__panel {
+  width: min(
+    520px,
+    calc(100vw - 32px)
+  );
+  border:
+    1px solid
+    rgba(94, 228, 155, 0.12);
+  border-radius: 24px;
+  background:
+    linear-gradient(
+      160deg,
+      rgba(12, 42, 27, 0.99),
+      rgba(5, 20, 13, 0.995)
+    );
+  box-shadow:
+    0 28px 80px
+      rgba(0, 0, 0, 0.58),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.045);
+}
+
+.unified-notifications__header {
+  padding:
+    18px
+    20px
+    14px;
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.05);
+}
+
+.unified-notifications__header h2 {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.unified-notifications__close {
+  width: 38px;
+  height: 38px;
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background:
+    rgba(255, 255, 255, 0.035);
+}
+
+.unified-notifications__close:hover {
+  color: var(--text);
+  border-color:
+    rgba(94, 228, 155, 0.18);
+  background:
+    rgba(94, 228, 155, 0.07);
+}
+
+/* Onglets */
+
+.unified-notifications__tabs {
+  gap: 8px;
+  padding:
+    12px
+    14px
+    14px;
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.055);
+}
+
+.unified-notifications__tabs button {
+  min-height: 46px;
+  padding: 0 12px;
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.045);
+  border-radius: 13px;
+  color:
+    rgba(239, 255, 246, 0.58);
+  background:
+    rgba(255, 255, 255, 0.018);
+  transition:
+    color 150ms ease,
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.unified-notifications__tabs button:hover {
+  color: var(--text-soft);
+  border-color:
+    rgba(94, 228, 155, 0.11);
+  background:
+    rgba(94, 228, 155, 0.035);
+}
+
+.unified-notifications__tabs button.is-active {
+  color: var(--green);
+  border-color:
+    rgba(94, 228, 155, 0.22);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(94, 228, 155, 0.12),
+      rgba(94, 228, 155, 0.055)
+    );
+  box-shadow:
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035);
+}
+
+.unified-notifications__tabs button > span:not(
+  .unified-notifications__tab-state
+) {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  color: #06130d;
+  background: var(--green);
+  font-weight: 900;
+}
+
+/* Barre d’actions */
+
+.unified-notifications__actions {
+  gap: 8px;
+  padding:
+    12px
+    14px
+    8px;
+}
+
+.unified-notifications__actions button {
+  min-height: 37px;
+  padding: 0 12px;
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.065);
+  border-radius: 11px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.02);
+}
+
+.unified-notifications__actions button:hover:not(:disabled) {
+  color: var(--green);
+  border-color:
+    rgba(94, 228, 155, 0.14);
+  background:
+    rgba(94, 228, 155, 0.055);
+}
+
+/* Liste */
+
+.unified-notifications__list {
+  padding:
+    4px
+    12px
+    14px;
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(94, 228, 155, 0.22)
+    transparent;
+}
+
+.unified-notifications__list::-webkit-scrollbar {
+  width: 7px;
+}
+
+.unified-notifications__list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background:
+    rgba(94, 228, 155, 0.2);
+}
+
+.unified-notification-item {
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+  gap: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 15px;
+  background:
+    rgba(255, 255, 255, 0.018);
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+
+.unified-notification-item:hover {
+  border-color:
+    rgba(94, 228, 155, 0.14);
+  background:
+    rgba(94, 228, 155, 0.035);
+  transform:
+    translateY(-1px);
+}
+
+.unified-notification-item.is-unread {
+  border-color:
+    rgba(94, 228, 155, 0.16);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(94, 228, 155, 0.075),
+      rgba(94, 228, 155, 0.025)
+    );
+  box-shadow:
+    inset 3px 0 0
+      rgba(94, 228, 155, 0.75);
+}
+
+.unified-notification-item.is-read {
+  opacity: 0.68;
+}
+
+.unified-notification-item__main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns:
+    9px
+    minmax(0, 1fr);
+  gap: 11px;
+  padding:
+    13px
+    4px
+    13px
+    14px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.unified-notification-item__dot {
+  width: 7px;
+  height: 7px;
+  margin-top: 5px;
+  border-radius: 999px;
+  background:
+    rgba(255, 255, 255, 0.17);
+}
+
+.unified-notification-item.is-unread
+.unified-notification-item__dot {
+  background: var(--green);
+  box-shadow:
+    0 0 0 4px
+      rgba(94, 228, 155, 0.08);
+}
+
+.unified-notification-item__content {
+  min-width: 0;
+}
+
+.unified-notification-item__content strong {
+  color: var(--text);
+  font-size: 0.64rem;
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+.unified-notification-item__content > span {
+  margin-top: 4px;
+  color:
+    rgba(239, 255, 246, 0.58);
+  font-size: 0.55rem;
+  line-height: 1.55;
+}
+
+.unified-notification-item__content small {
+  margin-top: 7px;
+  color:
+    rgba(239, 255, 246, 0.33);
+  font-size: 0.48rem;
+}
+
+.unified-notification-item__delete {
+  width: 34px;
+  height: 34px;
+  align-self: center;
+  margin-right: 10px;
+  border:
+    1px solid
+    transparent;
+  border-radius: 10px;
+  color:
+    rgba(255, 255, 255, 0.34);
+  background: transparent;
+}
+
+.unified-notification-item__delete:hover {
+  color: #ffb1b8;
+  border-color:
+    rgba(255, 111, 120, 0.13);
+  background:
+    rgba(255, 111, 120, 0.065);
+}
+
+/* État vide */
+
+.unified-notifications__empty {
+  min-height: 180px;
+  padding: 28px;
+  border:
+    1px dashed
+    rgba(255, 255, 255, 0.055);
+  border-radius: 15px;
+  background:
+    rgba(255, 255, 255, 0.012);
+}
+
+/* Onglets Push / Appareils / Préférences */
+
+.unified-notifications__push,
+.unified-notifications__devices,
+.unified-notifications__preferences {
+  padding: 15px;
+}
+
+.unified-notifications__push-status,
+.unified-notifications__device,
+.unified-notifications__preference-item {
+  border-color:
+    rgba(255, 255, 255, 0.055);
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.unified-notifications__push-status.is-enabled,
+.unified-notifications__device.is-current {
+  border-color:
+    rgba(94, 228, 155, 0.16);
+  background:
+    rgba(94, 228, 155, 0.045);
+}
+
+/* Mobile */
+
+@media (max-width: 620px) {
+  .unified-notifications__backdrop {
+    padding:
+      calc(
+        8px +
+        env(
+          safe-area-inset-top
+        )
+      )
+      8px
+      calc(
+        8px +
+        env(
+          safe-area-inset-bottom
+        )
+      );
+  }
+
+  .unified-notifications__panel {
+    max-height:
+      calc(
+        100dvh -
+        16px -
+        env(
+          safe-area-inset-top
+        ) -
+        env(
+          safe-area-inset-bottom
+        )
+      );
+    border-radius: 20px;
+  }
+
+  .unified-notifications__header {
+    padding:
+      15px
+      15px
+      12px;
+  }
+
+  .unified-notifications__tabs {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 6px;
+    padding:
+      10px
+      10px
+      11px;
+  }
+
+  .unified-notifications__tabs button {
+    min-height: 43px;
+    font-size: 0.57rem;
+  }
+
+  .unified-notifications__actions {
+    display: grid;
+    grid-template-columns:
+      1fr
+      1fr;
+    padding:
+      10px
+      10px
+      6px;
+  }
+
+  .unified-notifications__list {
+    padding:
+      2px
+      8px
+      10px;
+  }
+
+  .unified-notification-item {
+    grid-template-columns:
+      minmax(0, 1fr)
+      36px;
+    border-radius: 14px;
+  }
+
+  .unified-notification-item__main {
+    padding:
+      12px
+      4px
+      12px
+      11px;
+  }
+
+  .unified-notification-item__delete {
+    width: 32px;
+    height: 32px;
+    margin-right: 7px;
+  }
+
+  .unified-notification-item__content strong {
+    font-size: 0.66rem;
+  }
+
+  .unified-notification-item__content > span {
+    font-size: 0.57rem;
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .unified-notification-item,
+  .unified-notifications__tabs button {
+    transition: none;
+  }
+}
