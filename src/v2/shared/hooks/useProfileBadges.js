@@ -121,6 +121,24 @@ function getBadgeCurrentValue(
 
     challenge_5:
       progress.validated_challenges,
+
+    walking_first_day:
+      progress.walking_days,
+
+    walking_100k:
+      progress.walking_total_steps,
+
+    walking_500k:
+      progress.walking_total_steps,
+
+    walking_1m:
+      progress.walking_total_steps,
+
+    walking_10k_day:
+      progress.walking_best_day,
+
+    walking_20k_day:
+      progress.walking_best_day,
   };
 
   return Number(
@@ -164,6 +182,7 @@ export function useProfileBadges(
           awardedResult,
           progressResult,
           allResult,
+          walkingProgressResult,
         ] = await Promise.all([
           supabase
             .from(
@@ -224,6 +243,13 @@ export function useProfileBadges(
                 ascending: true,
               },
             ),
+          supabase.rpc(
+            "get_profile_walking_badge_progress",
+            {
+              p_profile_id:
+                profileId,
+            },
+          ),
         ]);
 
         if (
@@ -240,6 +266,12 @@ export function useProfileBadges(
           throw allResult.error;
         }
 
+        if (
+          walkingProgressResult.error
+        ) {
+          throw walkingProgressResult.error;
+        }
+
         setBadges(
           (
             awardedResult.data ??
@@ -247,9 +279,44 @@ export function useProfileBadges(
           ).map(normalizeBadge),
         );
 
-        setProgress(
-          progressResult.data ?? null,
-        );
+        const walkingProgress =
+          Array.isArray(
+            walkingProgressResult.data,
+          )
+            ? walkingProgressResult
+                .data[0] ??
+              {}
+            : walkingProgressResult
+                .data ??
+              {};
+
+        setProgress({
+          ...(
+            progressResult.data ??
+            {}
+          ),
+
+          walking_days:
+            Number(
+              walkingProgress
+                .walking_days ??
+              0,
+            ),
+
+          walking_total_steps:
+            Number(
+              walkingProgress
+                .walking_total_steps ??
+              0,
+            ),
+
+          walking_best_day:
+            Number(
+              walkingProgress
+                .walking_best_day ??
+              0,
+            ),
+        });
 
         setAllBadges(
           (

@@ -10,6 +10,7 @@ import {
   LogOut,
   Medal,
   MessageCircle,
+  Footprints,
   Scale,
   Trophy,
 } from "lucide-react";
@@ -34,6 +35,11 @@ export const navigation = [
     id: "bike",
     label: "Cyclisme",
     icon: Bike,
+  },
+  {
+    id: "walking",
+    label: "Marche",
+    icon: Footprints,
   },
   {
     id: "ranking",

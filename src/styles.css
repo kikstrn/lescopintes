@@ -34850,3 +34850,1034 @@ input {
       1 / -1;
   }
 }
+
+/* =========================================================
+   MARCHE 1.1 — PAS QUOTIDIENS
+   À ajouter à la fin de src/styles.css
+   ========================================================= */
+
+.walking-page {
+  display: grid;
+  gap: 18px;
+}
+
+.walking-hero,
+.walking-today,
+.walking-entry,
+.walking-week,
+.walking-state {
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(18, 45, 31, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+  box-shadow:
+    0 24px 60px
+      rgba(0, 0, 0, 0.26),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035);
+}
+
+.walking-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border-color:
+    rgba(94, 228, 155, 0.14);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(94, 228, 155, 0.11),
+      transparent 34%
+    ),
+    linear-gradient(
+      150deg,
+      rgba(18, 48, 32, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+}
+
+.walking-hero__content {
+  display: grid;
+  grid-template-columns:
+    52px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+}
+
+.walking-hero__icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 1px solid
+    rgba(94, 228, 155, 0.2);
+  border-radius: 16px;
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.075);
+}
+
+.walking-hero h2,
+.walking-today h2,
+.walking-entry h2,
+.walking-week h2 {
+  margin-top: 4px;
+  color: var(--text);
+}
+
+.walking-hero h2 {
+  font-size: 1.08rem;
+}
+
+.walking-hero p {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.58rem;
+  line-height: 1.55;
+}
+
+.walking-hero__source {
+  flex: 0 0 auto;
+  padding: 8px 11px;
+  border: 1px solid
+    rgba(94, 228, 155, 0.18);
+  border-radius: 999px;
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.055);
+  font-size: 0.51rem;
+  font-weight: 850;
+}
+
+.walking-state {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: var(--text-muted);
+  font-size: 0.6rem;
+}
+
+.walking-today,
+.walking-entry,
+.walking-week {
+  padding: 19px;
+}
+
+.walking-today__header,
+.walking-entry > header,
+.walking-week__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.walking-today__header > strong {
+  color: var(--green);
+  font-size: 1.15rem;
+}
+
+.walking-progress {
+  height: 13px;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    rgba(255, 255, 255, 0.065);
+}
+
+.walking-progress > span,
+.walking-day__bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    linear-gradient(
+      90deg,
+      #42d98d,
+      #8bf4bd
+    );
+  box-shadow:
+    0 0 18px
+      rgba(94, 228, 155, 0.18);
+  transition:
+    width 200ms ease;
+}
+
+.walking-today__goal {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 0.53rem;
+}
+
+.walking-today__goal strong {
+  color: var(--text-soft);
+}
+
+.walking-metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.walking-metrics article {
+  padding: 13px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 15px;
+  color: var(--green);
+  background:
+    rgba(255, 255, 255, 0.022);
+}
+
+.walking-metrics small,
+.walking-metrics strong {
+  display: block;
+}
+
+.walking-metrics small {
+  min-height: 2.5em;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.5rem;
+  line-height: 1.25;
+}
+
+.walking-metrics strong {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.walking-entry > header,
+.walking-week__header {
+  margin-bottom: 15px;
+  color: var(--green);
+}
+
+.walking-entry form {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 11px;
+}
+
+.walking-entry label,
+.walking-entry label > span {
+  display: block;
+}
+
+.walking-entry label > span {
+  margin-bottom: 6px;
+  color: var(--text-soft);
+  font-size: 0.53rem;
+  font-weight: 800;
+}
+
+.walking-entry__control {
+  min-height: 47px;
+  display: grid;
+  grid-template-columns:
+    28px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 13px;
+  color: var(--green);
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.walking-entry__control:focus-within {
+  border-color:
+    rgba(94, 228, 155, 0.25);
+  box-shadow:
+    0 0 0 3px
+      rgba(94, 228, 155, 0.06);
+}
+
+.walking-entry__control input {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  background: transparent;
+  font: inherit;
+}
+
+.walking-entry form > button {
+  grid-column: 1 / -1;
+  min-height: 47px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid
+    rgba(94, 228, 155, 0.26);
+  border-radius: 13px;
+  color: #06130d;
+  background:
+    linear-gradient(
+      135deg,
+      #8bf4bd,
+      var(--green)
+    );
+  box-shadow:
+    0 12px 28px
+      rgba(94, 228, 155, 0.15);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.walking-entry form > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.walking-message {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 10px 11px;
+  border-radius: 11px;
+  font-size: 0.54rem;
+}
+
+.walking-message--success {
+  border: 1px solid
+    rgba(94, 228, 155, 0.16);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.05);
+}
+
+.walking-message--error {
+  border: 1px solid
+    rgba(255, 111, 120, 0.16);
+  color: #ffb2b9;
+  background:
+    rgba(255, 111, 120, 0.055);
+}
+
+.walking-week__summary {
+  display: grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.walking-week__summary article {
+  padding: 12px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background:
+    rgba(255, 255, 255, 0.02);
+}
+
+.walking-week__summary small,
+.walking-week__summary strong {
+  display: block;
+}
+
+.walking-week__summary small {
+  color: var(--text-muted);
+  font-size: 0.5rem;
+}
+
+.walking-week__summary strong {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: 0.68rem;
+}
+
+.walking-week__list {
+  display: grid;
+  gap: 7px;
+}
+
+.walking-day {
+  display: grid;
+  grid-template-columns:
+    minmax(105px, 0.8fr)
+    minmax(100px, 1.5fr)
+    minmax(70px, auto);
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.walking-day strong,
+.walking-day span {
+  display: block;
+}
+
+.walking-day > div:first-child strong {
+  color: var(--text);
+  font-size: 0.58rem;
+  text-transform: capitalize;
+}
+
+.walking-day > div:first-child span {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+.walking-day__bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background:
+    rgba(255, 255, 255, 0.06);
+}
+
+.walking-day__steps {
+  color: var(--green);
+  font-size: 0.62rem;
+  text-align: right;
+}
+
+.walking-week__empty {
+  min-height: 110px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border: 1px dashed
+    rgba(255, 255, 255, 0.065);
+  border-radius: 14px;
+  color: var(--text-muted);
+  font-size: 0.55rem;
+  text-align: center;
+}
+
+.walking-week__disclaimer {
+  margin-top: 11px;
+  color:
+    rgba(255, 255, 255, 0.36);
+  font-size: 0.48rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 820px) {
+  .walking-metrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 620px) {
+  .walking-page {
+    gap: 13px;
+  }
+
+  .walking-hero,
+  .walking-today,
+  .walking-entry,
+  .walking-week {
+    padding: 14px;
+    border-radius: 19px;
+  }
+
+  .walking-hero {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .walking-hero__content {
+    grid-template-columns:
+      45px
+      minmax(0, 1fr);
+  }
+
+  .walking-hero__icon {
+    width: 45px;
+    height: 45px;
+  }
+
+  .walking-today__goal {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .walking-entry form {
+    grid-template-columns:
+      1fr;
+  }
+
+  .walking-entry form > button {
+    grid-column: auto;
+    min-height: 49px;
+  }
+
+  .walking-week__summary {
+    grid-template-columns:
+      1fr;
+  }
+
+  .walking-day {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .walking-day__bar {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+/* =========================================================
+   MARCHE 1.2 — CLASSEMENT, CALENDRIER ET SÉRIES
+   À ajouter à la fin de src/styles.css
+   ========================================================= */
+
+.walking-insights,
+.walking-calendar,
+.walking-ranking {
+  padding: 19px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(18, 45, 31, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+  box-shadow:
+    0 24px 60px
+      rgba(0, 0, 0, 0.26),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035);
+}
+
+.walking-insights__grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+  gap: 9px;
+}
+
+.walking-insights__grid article {
+  min-height: 115px;
+  padding: 13px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 15px;
+  color: var(--green);
+  background:
+    rgba(255, 255, 255, 0.022);
+}
+
+.walking-insights__grid small,
+.walking-insights__grid strong {
+  display: block;
+}
+
+.walking-insights__grid small {
+  min-height: 2.5em;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.49rem;
+  line-height: 1.25;
+}
+
+.walking-insights__grid strong {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: 0.67rem;
+}
+
+.walking-calendar__weekdays,
+.walking-calendar__grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      7,
+      minmax(0, 1fr)
+    );
+  gap: 7px;
+}
+
+.walking-calendar__weekdays {
+  margin-bottom: 7px;
+}
+
+.walking-calendar__weekdays span {
+  color: var(--text-muted);
+  font-size: 0.48rem;
+  font-weight: 850;
+  text-align: center;
+}
+
+.walking-calendar__day {
+  min-height: 57px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.045);
+  border-radius: 11px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.02);
+}
+
+.walking-calendar__day small {
+  font-size: 0.43rem;
+}
+
+.walking-calendar__day strong {
+  font-size: 0.54rem;
+}
+
+.walking-calendar__day.level-1,
+.walking-calendar__legend i.level-1 {
+  color: #baf8d8;
+  background:
+    rgba(94, 228, 155, 0.1);
+}
+
+.walking-calendar__day.level-2,
+.walking-calendar__legend i.level-2 {
+  color: #9cf2c6;
+  background:
+    rgba(94, 228, 155, 0.2);
+}
+
+.walking-calendar__day.level-3,
+.walking-calendar__legend i.level-3 {
+  color: #06130d;
+  background:
+    rgba(94, 228, 155, 0.58);
+}
+
+.walking-calendar__day.level-4,
+.walking-calendar__legend i.level-4 {
+  color: #06130d;
+  background:
+    var(--green);
+  box-shadow:
+    0 0 15px
+      rgba(94, 228, 155, 0.14);
+}
+
+.walking-calendar__legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.46rem;
+}
+
+.walking-calendar__legend i {
+  width: 13px;
+  height: 13px;
+  border-radius: 4px;
+  background:
+    rgba(255, 255, 255, 0.03);
+}
+
+.walking-ranking__list {
+  display: grid;
+  gap: 7px;
+}
+
+.walking-ranking__item {
+  display: grid;
+  grid-template-columns:
+    34px
+    42px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 14px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.walking-ranking__item.is-current {
+  border-color:
+    rgba(94, 228, 155, 0.18);
+  background:
+    rgba(94, 228, 155, 0.05);
+}
+
+.walking-ranking__rank {
+  color: var(--text-soft);
+  font-size: 0.66rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.walking-ranking__item img,
+.walking-ranking__avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  object-fit: cover;
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.075);
+}
+
+.walking-ranking__item > div strong,
+.walking-ranking__item > div small {
+  display: block;
+}
+
+.walking-ranking__item > div strong {
+  color: var(--text);
+  font-size: 0.6rem;
+}
+
+.walking-ranking__item > div small {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.48rem;
+}
+
+.walking-ranking__score {
+  min-width: 90px;
+  text-align: right;
+}
+
+.walking-ranking__score strong {
+  color: var(--green) !important;
+  font-size: 0.66rem !important;
+}
+
+@media (max-width: 1100px) {
+  .walking-insights__grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 620px) {
+  .walking-insights,
+  .walking-calendar,
+  .walking-ranking {
+    padding: 14px;
+    border-radius: 19px;
+  }
+
+  .walking-insights__grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 7px;
+  }
+
+  .walking-calendar__weekdays,
+  .walking-calendar__grid {
+    gap: 4px;
+  }
+
+  .walking-calendar__day {
+    min-height: 46px;
+    border-radius: 9px;
+  }
+
+  .walking-calendar__day strong {
+    font-size: 0.49rem;
+  }
+
+  .walking-calendar__legend {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .walking-ranking__item {
+    grid-template-columns:
+      30px
+      38px
+      minmax(0, 1fr);
+  }
+
+  .walking-ranking__item img,
+  .walking-ranking__avatar {
+    width: 38px;
+    height: 38px;
+  }
+
+  .walking-ranking__score {
+    grid-column:
+      2 / -1;
+    min-width: 0;
+    text-align: left;
+  }
+}
+
+/* =========================================================
+   MARCHE 1.3 — XP ET BADGES
+   À ajouter à la fin de src/styles.css
+   ========================================================= */
+
+.walking-rewards {
+  padding: 19px;
+  border: 1px solid
+    rgba(255, 197, 107, 0.15);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(255, 197, 107, 0.09),
+      transparent 32%
+    ),
+    linear-gradient(
+      150deg,
+      rgba(18, 45, 31, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+  box-shadow:
+    0 24px 60px
+      rgba(0, 0, 0, 0.26);
+}
+
+.walking-rewards__summary {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 9px;
+}
+
+.walking-rewards__summary article {
+  min-height: 110px;
+  padding: 13px;
+  border: 1px solid
+    rgba(255, 197, 107, 0.12);
+  border-radius: 15px;
+  color: var(--amber);
+  background:
+    rgba(255, 197, 107, 0.035);
+}
+
+.walking-rewards__summary small,
+.walking-rewards__summary strong {
+  display: block;
+}
+
+.walking-rewards__summary small {
+  min-height: 2.4em;
+  margin-top: 9px;
+  color: var(--text-muted);
+  font-size: 0.5rem;
+}
+
+.walking-rewards__summary strong {
+  margin-top: 5px;
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.walking-rewards__next {
+  display: grid;
+  grid-template-columns:
+    32px
+    minmax(0, 1fr)
+    auto;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid
+    rgba(94, 228, 155, 0.12);
+  border-radius: 13px;
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.04);
+}
+
+.walking-rewards__next strong,
+.walking-rewards__next span {
+  display: block;
+}
+
+.walking-rewards__next strong {
+  color: var(--text);
+  font-size: 0.58rem;
+}
+
+.walking-rewards__next span {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.5rem;
+}
+
+.walking-rewards__next b {
+  color: var(--green);
+  font-size: 0.56rem;
+}
+
+.walking-rewards__badges {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.walking-rewards__badges article {
+  display: grid;
+  grid-template-columns:
+    38px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.walking-rewards__badges article > span {
+  font-size: 1.25rem;
+}
+
+.walking-rewards__badges strong,
+.walking-rewards__badges small {
+  display: block;
+}
+
+.walking-rewards__badges strong {
+  color: var(--text);
+  font-size: 0.57rem;
+}
+
+.walking-rewards__badges small {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.48rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 820px) {
+  .walking-rewards__badges {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 620px) {
+  .walking-rewards {
+    padding: 14px;
+    border-radius: 19px;
+  }
+
+  .walking-rewards__summary {
+    grid-template-columns:
+      1fr;
+  }
+
+  .walking-rewards__badges {
+    grid-template-columns:
+      1fr;
+  }
+
+  .walking-rewards__next {
+    grid-template-columns:
+      30px
+      minmax(0, 1fr);
+  }
+
+  .walking-rewards__next b {
+    grid-column:
+      2;
+  }
+}
+
+/* =========================================================
+   MARCHE 1.4 — BADGES DÉPLACÉS VERS LE PROFIL
+   ========================================================= */
+
+.walking-rewards__summary--xp-only {
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+}
+
+.walking-rewards__profile-hint {
+  margin-top: 11px;
+  padding: 10px 11px;
+  border: 1px dashed
+    rgba(255, 255, 255, 0.07);
+  border-radius: 11px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.015);
+  font-size: 0.51rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 620px) {
+  .walking-rewards__summary--xp-only {
+    grid-template-columns:
+      1fr;
+  }
+}
