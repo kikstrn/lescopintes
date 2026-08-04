@@ -33228,3 +33228,1625 @@ input:disabled
     transition: none;
   }
 }
+
+/* =========================================================
+   STRAVA 1.1 — CONNEXION DES MEMBRES
+   ========================================================= */
+
+.cycling-page {
+  display: grid;
+  gap: 18px;
+}
+
+.strava-connection-card {
+  position: relative;
+  display: grid;
+  gap: 15px;
+  padding: 20px;
+  overflow: hidden;
+  border: 1px solid
+    rgba(252, 76, 2, 0.2);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(252, 76, 2, 0.13),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(20, 43, 30, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+  box-shadow:
+    0 22px 55px
+      rgba(0, 0, 0, 0.28),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.04);
+}
+
+.strava-connection-card::after {
+  content: "";
+  position: absolute;
+  top: -55px;
+  right: -45px;
+  width: 150px;
+  height: 150px;
+  border: 24px solid
+    rgba(252, 76, 2, 0.045);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.strava-connection-card--connected {
+  border-color:
+    rgba(94, 228, 155, 0.18);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(94, 228, 155, 0.1),
+      transparent 35%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(20, 49, 33, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+}
+
+.strava-connection-card--loading {
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+}
+
+.strava-connection-card__spinner {
+  animation:
+    strava-spinner
+    850ms
+    linear
+    infinite;
+}
+
+@keyframes strava-spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.strava-connection-card__brand {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns:
+    49px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.strava-connection-card__brand-icon {
+  width: 49px;
+  height: 49px;
+  display: grid;
+  place-items: center;
+  border: 1px solid
+    rgba(252, 76, 2, 0.22);
+  border-radius: 15px;
+  color: #fc4c02;
+  background:
+    rgba(252, 76, 2, 0.08);
+}
+
+.strava-connection-card--connected
+.strava-connection-card__brand-icon {
+  border-color:
+    rgba(94, 228, 155, 0.2);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.07);
+}
+
+.strava-connection-card__brand h2 {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.strava-connection-card__description {
+  position: relative;
+  z-index: 1;
+  max-width: 720px;
+  color: var(--text-muted);
+  font-size: 0.61rem;
+  line-height: 1.65;
+}
+
+.strava-connection-card__privacy,
+.strava-connection-card__scope {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns:
+    30px
+    minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  color: var(--green);
+  background:
+    rgba(255, 255, 255, 0.02);
+}
+
+.strava-connection-card__privacy strong,
+.strava-connection-card__privacy span,
+.strava-connection-card__scope strong,
+.strava-connection-card__scope span {
+  display: block;
+}
+
+.strava-connection-card__privacy strong,
+.strava-connection-card__scope strong {
+  color: var(--text-soft);
+  font-size: 0.59rem;
+}
+
+.strava-connection-card__privacy span,
+.strava-connection-card__scope span {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.53rem;
+  line-height: 1.5;
+}
+
+.strava-connection-card__connect {
+  position: relative;
+  z-index: 1;
+  width: fit-content;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 18px;
+  border: 1px solid
+    rgba(252, 76, 2, 0.32);
+  border-radius: 13px;
+  color: #fff;
+  background:
+    linear-gradient(
+      135deg,
+      #ff6b2b,
+      #fc4c02
+    );
+  box-shadow:
+    0 12px 26px
+      rgba(252, 76, 2, 0.18);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.strava-connection-card__connect:hover:not(:disabled) {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.strava-connection-card__connect:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.strava-connection-card__athlete {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns:
+    52px
+    minmax(0, 1fr)
+    28px;
+  align-items: center;
+  gap: 12px;
+  padding: 13px;
+  border: 1px solid
+    rgba(94, 228, 155, 0.13);
+  border-radius: 15px;
+  background:
+    rgba(94, 228, 155, 0.04);
+}
+
+.strava-connection-card__athlete img,
+.strava-connection-card__athlete-placeholder {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  object-fit: cover;
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.08);
+}
+
+.strava-connection-card__athlete strong,
+.strava-connection-card__athlete span,
+.strava-connection-card__athlete small {
+  display: block;
+}
+
+.strava-connection-card__athlete strong {
+  color: var(--text);
+  font-size: 0.68rem;
+}
+
+.strava-connection-card__athlete span {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.53rem;
+}
+
+.strava-connection-card__athlete small {
+  margin-top: 4px;
+  color:
+    rgba(255, 255, 255, 0.38);
+  font-size: 0.49rem;
+}
+
+.strava-connection-card__connected-icon {
+  color: var(--green);
+}
+
+.strava-connection-card__actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.strava-connection-card__actions a,
+.strava-connection-card__actions button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border-radius: 11px;
+  font-size: 0.56rem;
+  font-weight: 850;
+}
+
+.strava-connection-card__actions a {
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  color: var(--text-soft);
+  background:
+    rgba(255, 255, 255, 0.025);
+  text-decoration: none;
+}
+
+.strava-connection-card__disconnect {
+  border: 1px solid
+    rgba(255, 111, 120, 0.16);
+  color: #ffb2b9;
+  background:
+    rgba(255, 111, 120, 0.055);
+}
+
+.strava-connection-card__notice,
+.strava-connection-card__error {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 11px;
+  border-radius: 11px;
+  font-size: 0.54rem;
+  line-height: 1.45;
+}
+
+.strava-connection-card__notice {
+  border: 1px solid
+    rgba(94, 228, 155, 0.15);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.05);
+}
+
+.strava-connection-card__error {
+  border: 1px solid
+    rgba(255, 111, 120, 0.16);
+  color: #ffb2b9;
+  background:
+    rgba(255, 111, 120, 0.055);
+}
+
+@media (max-width: 620px) {
+  .cycling-page {
+    gap: 13px;
+  }
+
+  .strava-connection-card {
+    gap: 13px;
+    padding: 15px;
+    border-radius: 19px;
+  }
+
+  .strava-connection-card__brand {
+    grid-template-columns:
+      44px
+      minmax(0, 1fr);
+  }
+
+  .strava-connection-card__brand-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .strava-connection-card__connect {
+    width: 100%;
+    min-height: 49px;
+    font-size: 0.66rem;
+  }
+
+  .strava-connection-card__athlete {
+    grid-template-columns:
+      46px
+      minmax(0, 1fr)
+      22px;
+    padding: 11px;
+  }
+
+  .strava-connection-card__athlete img,
+  .strava-connection-card__athlete-placeholder {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+  }
+
+  .strava-connection-card__actions {
+    display: grid;
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+  .strava-connection-card__actions a,
+  .strava-connection-card__actions button {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+/* =========================================================
+   CYCLISME GPX — PHASE 1
+   Tableau inspiré de Strava + import GPX
+   ========================================================= */
+
+.cycling-gpx-page {
+  display: grid;
+  gap: 18px;
+}
+
+.cycling-performance,
+.gpx-import {
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 22px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(18, 45, 31, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+  box-shadow:
+    0 24px 60px
+      rgba(0, 0, 0, 0.28),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.035);
+}
+
+.cycling-performance {
+  padding: 19px;
+}
+
+.cycling-performance__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.cycling-performance__header h2 {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.cycling-performance__period {
+  padding: 7px 10px;
+  border: 1px solid
+    rgba(252, 76, 2, 0.16);
+  border-radius: 999px;
+  color: #ff8551;
+  background:
+    rgba(252, 76, 2, 0.055);
+  font-size: 0.51rem;
+  font-weight: 800;
+}
+
+.cycling-performance__grid {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+  gap: 9px;
+}
+
+.cycling-performance__card {
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 15px;
+  background:
+    rgba(255, 255, 255, 0.022);
+}
+
+.cycling-performance__icon {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+  border-radius: 11px;
+  color: #fc4c02;
+  background:
+    rgba(252, 76, 2, 0.08);
+}
+
+.cycling-performance__card small,
+.cycling-performance__card strong {
+  display: block;
+}
+
+.cycling-performance__card small {
+  color: var(--text-muted);
+  font-size: 0.51rem;
+}
+
+.cycling-performance__card strong {
+  margin-top: 5px;
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.76rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gpx-import {
+  position: relative;
+  padding: 19px;
+  overflow: hidden;
+  border-color:
+    rgba(252, 76, 2, 0.16);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(252, 76, 2, 0.11),
+      transparent 35%
+    ),
+    linear-gradient(
+      150deg,
+      rgba(20, 43, 30, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+}
+
+.gpx-import__header {
+  display: grid;
+  grid-template-columns:
+    48px
+    minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.gpx-import__logo {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 1px solid
+    rgba(252, 76, 2, 0.21);
+  border-radius: 15px;
+  color: #fc4c02;
+  background:
+    rgba(252, 76, 2, 0.075);
+}
+
+.gpx-import__header h2 {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 0.98rem;
+}
+
+.gpx-import__header p {
+  margin-top: 5px;
+  color: var(--text-muted);
+  font-size: 0.55rem;
+  line-height: 1.5;
+}
+
+.gpx-import__dropzone {
+  width: 100%;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px dashed
+    rgba(252, 76, 2, 0.3);
+  border-radius: 17px;
+  color: #ff8b59;
+  background:
+    rgba(252, 76, 2, 0.035);
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    transform 150ms ease;
+}
+
+.gpx-import__dropzone:hover:not(:disabled) {
+  border-color:
+    rgba(252, 76, 2, 0.52);
+  background:
+    rgba(252, 76, 2, 0.07);
+  transform:
+    translateY(-1px);
+}
+
+.gpx-import__dropzone strong {
+  color: var(--text);
+  font-size: 0.66rem;
+}
+
+.gpx-import__dropzone span {
+  color: var(--text-muted);
+  font-size: 0.52rem;
+}
+
+.gpx-import__preview {
+  position: relative;
+  display: grid;
+  gap: 13px;
+}
+
+.gpx-import__close {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.gpx-import__fields {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 0.85fr)
+    minmax(0, 1.15fr);
+  gap: 10px;
+  padding-right: 44px;
+}
+
+.gpx-import__fields label,
+.gpx-import__fields label > span {
+  display: block;
+}
+
+.gpx-import__fields label > span {
+  margin-bottom: 6px;
+  color: var(--text-soft);
+  font-size: 0.53rem;
+  font-weight: 800;
+}
+
+.gpx-import__fields input,
+.gpx-import__fields textarea {
+  width: 100%;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  color: var(--text);
+  background:
+    rgba(255, 255, 255, 0.025);
+  font: inherit;
+}
+
+.gpx-import__fields input {
+  min-height: 43px;
+  padding: 0 12px;
+}
+
+.gpx-import__fields textarea {
+  min-height: 82px;
+  padding: 11px 12px;
+  resize: vertical;
+}
+
+.gpx-import__metrics {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      4,
+      minmax(0, 1fr)
+    );
+  gap: 8px;
+}
+
+.gpx-import__metrics article {
+  padding: 11px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 13px;
+  color: #fc4c02;
+  background:
+    rgba(255, 255, 255, 0.02);
+}
+
+.gpx-import__metrics small,
+.gpx-import__metrics strong {
+  display: block;
+}
+
+.gpx-import__metrics small {
+  margin-top: 8px;
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+.gpx-import__metrics strong {
+  margin-top: 4px;
+  color: var(--text);
+  font-size: 0.67rem;
+}
+
+.gpx-import__file {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 11px;
+  color: var(--text-soft);
+  background:
+    rgba(255, 255, 255, 0.025);
+  font-size: 0.53rem;
+}
+
+.gpx-import__file small {
+  color: var(--text-muted);
+}
+
+.gpx-import__submit {
+  width: 100%;
+  min-height: 47px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid
+    rgba(252, 76, 2, 0.3);
+  border-radius: 13px;
+  color: #fff;
+  background:
+    linear-gradient(
+      135deg,
+      #ff6b2b,
+      #fc4c02
+    );
+  box-shadow:
+    0 12px 28px
+      rgba(252, 76, 2, 0.16);
+  font-size: 0.62rem;
+  font-weight: 900;
+}
+
+.gpx-import__submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.gpx-import__notice,
+.gpx-import__error {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 11px;
+  padding: 10px 11px;
+  border-radius: 11px;
+  font-size: 0.54rem;
+}
+
+.gpx-import__notice {
+  border: 1px solid
+    rgba(94, 228, 155, 0.16);
+  color: var(--green);
+  background:
+    rgba(94, 228, 155, 0.05);
+}
+
+.gpx-import__error {
+  border: 1px solid
+    rgba(255, 111, 120, 0.16);
+  color: #ffb1b8;
+  background:
+    rgba(255, 111, 120, 0.055);
+}
+
+@media (max-width: 1050px) {
+  .cycling-performance__grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 620px) {
+  .cycling-gpx-page {
+    gap: 13px;
+  }
+
+  .cycling-performance,
+  .gpx-import {
+    padding: 14px;
+    border-radius: 19px;
+  }
+
+  .cycling-performance__header {
+    align-items: start;
+  }
+
+  .cycling-performance__grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 7px;
+  }
+
+  .cycling-performance__card {
+    padding: 11px;
+  }
+
+  .gpx-import__header {
+    grid-template-columns:
+      43px
+      minmax(0, 1fr);
+  }
+
+  .gpx-import__logo {
+    width: 43px;
+    height: 43px;
+  }
+
+  .gpx-import__dropzone {
+    min-height: 135px;
+    padding: 18px;
+  }
+
+  .gpx-import__fields {
+    grid-template-columns:
+      1fr;
+    padding-right: 0;
+    padding-top: 42px;
+  }
+
+  .gpx-import__metrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+
+  .gpx-import__file {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .gpx-import__submit {
+    min-height: 49px;
+    font-size: 0.66rem;
+  }
+}
+
+/* =========================================================
+   CYCLISME GPX — PHASE 2 : CARTE DU PARCOURS
+   À ajouter tout à la fin de src/styles.css
+   ========================================================= */
+
+/* Les libellés sont maintenant plus longs. */
+
+.cycling-performance__card strong {
+  white-space: normal;
+}
+
+.cycling-performance__card small {
+  min-height: 2.5em;
+  line-height: 1.3;
+}
+
+/* Bloc de carte dans l’aperçu d’import */
+
+.gpx-import__route-section {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.055);
+  border-radius: 16px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.gpx-import__route-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.gpx-import__route-heading h3 {
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.gpx-import__route-heading > small {
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+/* Carte Leaflet */
+
+.gpx-route-map {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid
+    rgba(252, 76, 2, 0.16);
+  border-radius: 15px;
+  background:
+    rgba(5, 18, 12, 0.9);
+}
+
+.gpx-route-map__canvas {
+  width: 100%;
+  height: 380px;
+  background:
+    #122219;
+}
+
+.gpx-route-map .leaflet-control-zoom {
+  overflow: hidden;
+  border: 0;
+  border-radius: 11px;
+  box-shadow:
+    0 7px 22px
+      rgba(0, 0, 0, 0.26);
+}
+
+.gpx-route-map .leaflet-control-zoom a {
+  border: 0;
+  color: var(--text);
+  background:
+    rgba(8, 29, 19, 0.94);
+}
+
+.gpx-route-map .leaflet-control-zoom a:hover {
+  color: #fc4c02;
+  background:
+    rgba(15, 47, 31, 0.98);
+}
+
+.gpx-route-map .leaflet-control-attribution {
+  color:
+    rgba(255, 255, 255, 0.5);
+  background:
+    rgba(4, 15, 10, 0.76);
+  font-size: 0.48rem;
+}
+
+.gpx-route-map .leaflet-control-attribution a {
+  color: #ff8b59;
+}
+
+/* Départ et arrivée */
+
+.gpx-route-map__marker {
+  border: 0;
+  background: transparent;
+}
+
+.gpx-route-map__marker span {
+  width: 29px;
+  height: 29px;
+  display: grid;
+  place-items: center;
+  border: 3px solid
+    #fff;
+  border-radius: 999px;
+  color: #fff;
+  box-shadow:
+    0 7px 18px
+      rgba(0, 0, 0, 0.34);
+  font-size: 0.54rem;
+  font-weight: 950;
+}
+
+.gpx-route-map__marker--start span {
+  background:
+    #2fbd72;
+}
+
+.gpx-route-map__marker--finish span {
+  background:
+    #fc4c02;
+}
+
+.gpx-route-map__legend {
+  position: absolute;
+  z-index: 500;
+  left: 12px;
+  bottom: 12px;
+  display: flex;
+  gap: 7px;
+  padding: 7px 8px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background:
+    rgba(5, 20, 13, 0.88);
+  box-shadow:
+    0 8px 24px
+      rgba(0, 0, 0, 0.28);
+  backdrop-filter:
+    blur(8px);
+}
+
+.gpx-route-map__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-soft);
+  font-size: 0.49rem;
+  font-weight: 750;
+}
+
+.gpx-route-map__legend i {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 0.42rem;
+  font-style: normal;
+  font-weight: 950;
+}
+
+.gpx-route-map__legend i.is-start {
+  background:
+    #2fbd72;
+}
+
+.gpx-route-map__legend i.is-finish {
+  background:
+    #fc4c02;
+}
+
+.gpx-route-map__empty {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  border: 1px dashed
+    rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.015);
+  font-size: 0.55rem;
+  text-align: center;
+}
+
+/* Valeurs de l’aperçu */
+
+.gpx-import__metrics small {
+  min-height: 2.5em;
+  line-height: 1.25;
+}
+
+@media (max-width: 760px) {
+  .gpx-route-map__canvas {
+    height: 310px;
+  }
+
+  .gpx-import__route-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+@media (max-width: 620px) {
+  .gpx-import__route-section {
+    padding: 8px;
+    border-radius: 14px;
+  }
+
+  .gpx-route-map {
+    border-radius: 13px;
+  }
+
+  .gpx-route-map__canvas {
+    height: 265px;
+  }
+
+  .gpx-route-map__legend {
+    left: 8px;
+    bottom: 8px;
+  }
+}
+
+/* =========================================================
+   CYCLISME GPX — PHASE 3
+   Import intégré + cartes façon application sportive
+   À ajouter à la fin de src/styles.css
+   ========================================================= */
+
+.cycling-redesign-page {
+  display: grid;
+  gap: 18px;
+}
+
+/* Import GPX intégré à la modale */
+
+.bike-form__source-tabs {
+  display: grid;
+  grid-template-columns:
+    1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.bike-form__source-tabs button {
+  min-height: 45px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.07);
+  border-radius: 13px;
+  color: var(--text-muted);
+  background:
+    rgba(255, 255, 255, 0.025);
+  font-size: 0.58rem;
+  font-weight: 850;
+}
+
+.bike-form__source-tabs button.is-active {
+  border-color:
+    rgba(252, 76, 2, 0.28);
+  color: #ff8150;
+  background:
+    rgba(252, 76, 2, 0.075);
+}
+
+.bike-form__gpx-dropzone {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  padding: 18px;
+  border: 1px dashed
+    rgba(252, 76, 2, 0.34);
+  border-radius: 15px;
+  color: #fc4c02;
+  background:
+    rgba(252, 76, 2, 0.035);
+  cursor: pointer;
+}
+
+.bike-form__gpx-dropzone:hover {
+  border-color:
+    rgba(252, 76, 2, 0.56);
+  background:
+    rgba(252, 76, 2, 0.065);
+}
+
+.bike-form__gpx-dropzone strong {
+  color: var(--text);
+  font-size: 0.65rem;
+}
+
+.bike-form__gpx-dropzone span {
+  color: var(--text-muted);
+  font-size: 0.52rem;
+}
+
+.bike-form__gpx-preview {
+  display: grid;
+  gap: 9px;
+  margin-bottom: 14px;
+  padding: 10px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.06);
+  border-radius: 15px;
+  background:
+    rgba(255, 255, 255, 0.018);
+}
+
+.bike-form__gpx-preview-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 2px 3px;
+}
+
+.bike-form__gpx-preview-heading small,
+.bike-form__gpx-preview-heading strong {
+  display: block;
+}
+
+.bike-form__gpx-preview-heading small {
+  color: #fc4c02;
+  font-size: 0.49rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.bike-form__gpx-preview-heading strong {
+  margin-top: 3px;
+  color: var(--text);
+  font-size: 0.6rem;
+}
+
+.bike-form__gpx-preview-heading > span {
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+/* Carte réutilisable */
+
+.cycling-route-map {
+  overflow: hidden;
+  border: 1px solid
+    rgba(252, 76, 2, 0.16);
+  border-radius: 14px;
+  background: #102218;
+}
+
+.cycling-route-map__canvas {
+  width: 100%;
+  height: 320px;
+}
+
+.cycling-route-map--compact {
+  border: 0;
+  border-radius: 0;
+}
+
+.cycling-route-map--compact
+.cycling-route-map__canvas {
+  height: 205px;
+}
+
+.cycling-route-map__marker {
+  border: 0;
+  background: transparent;
+}
+
+.cycling-route-map__marker span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 999px;
+  color: #fff;
+  box-shadow:
+    0 6px 16px
+      rgba(0, 0, 0, 0.34);
+  font-size: 0.5rem;
+  font-weight: 950;
+}
+
+.cycling-route-map__marker--start span {
+  background: #2fbd72;
+}
+
+.cycling-route-map__marker--finish span {
+  background: #fc4c02;
+}
+
+/* Cartes des sorties */
+
+.cycling-ride-card {
+  overflow: hidden;
+  border-color:
+    rgba(255, 255, 255, 0.07);
+  border-radius: 20px;
+  background:
+    linear-gradient(
+      150deg,
+      rgba(18, 45, 31, 0.98),
+      rgba(7, 25, 16, 0.99)
+    );
+}
+
+.cycling-ride-card__map {
+  position: relative;
+  margin:
+    12px
+    -1px
+    15px;
+  overflow: hidden;
+  border-top:
+    1px solid
+    rgba(255, 255, 255, 0.055);
+  border-bottom:
+    1px solid
+    rgba(255, 255, 255, 0.055);
+}
+
+.cycling-ride-card__source {
+  position: absolute;
+  z-index: 500;
+  top: 10px;
+  right: 10px;
+  padding: 6px 9px;
+  border: 1px solid
+    rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: #fff;
+  background:
+    rgba(252, 76, 2, 0.9);
+  box-shadow:
+    0 7px 20px
+      rgba(0, 0, 0, 0.22);
+  font-size: 0.46rem;
+  font-weight: 950;
+  letter-spacing: 0.08em;
+}
+
+.cycling-ride-card__metrics {
+  gap: 8px;
+}
+
+.cycling-ride-card__metrics > div {
+  min-height: 58px;
+  border-color:
+    rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  background:
+    rgba(255, 255, 255, 0.02);
+}
+
+.cycling-ride-card__metrics small {
+  line-height: 1.25;
+}
+
+.cycling-ride-card__metrics strong {
+  font-size: 0.63rem;
+}
+
+/* Statistiques globales avec intitulés longs */
+
+.cycling-performance__card small {
+  min-height: 2.5em;
+  line-height: 1.25;
+}
+
+.cycling-performance__card strong {
+  white-space: normal;
+}
+
+@media (max-width: 620px) {
+  .cycling-redesign-page {
+    gap: 13px;
+  }
+
+  .bike-form__source-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .bike-form__source-tabs button {
+    min-height: 47px;
+  }
+
+  .bike-form__gpx-preview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cycling-route-map__canvas {
+    height: 250px;
+  }
+
+  .cycling-route-map--compact
+  .cycling-route-map__canvas {
+    height: 185px;
+  }
+
+  .cycling-ride-card__metrics {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+/* =========================================================
+   CYCLISME — DURÉE HEURES/MINUTES + DISTANCE ARRONDIE
+   ========================================================= */
+
+.bike-form__duration-field {
+  align-content: start;
+}
+
+.bike-form__duration-controls {
+  display: grid;
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  gap: 8px;
+}
+
+.bike-form__duration-controls
+.bike-form__control {
+  margin: 0;
+}
+
+.bike-form__duration-controls
+.bike-form__control
+input {
+  min-width: 0;
+}
+
+.bike-form__duration-summary {
+  display: block;
+  margin-top: 6px;
+  color: #fc4c02;
+  font-size: 0.5rem;
+  font-weight: 850;
+}
+
+@media (max-width: 620px) {
+  .bike-form__duration-controls {
+    gap: 7px;
+  }
+}
+
+
+/* =========================================================
+   CYCLISME — DASHBOARD PERSONNEL INTÉGRÉ
+   À ajouter à la fin de src/styles.css
+   ========================================================= */
+
+/*
+ * Le tableau personnel se trouve désormais à l’intérieur de
+ * CyclingSection, juste après le bloc titre et avant les données
+ * globales de la communauté.
+ */
+
+.cycling-section
+.cycling-performance {
+  margin:
+    18px
+    0;
+  border-color:
+    rgba(252, 76, 2, 0.14);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(252, 76, 2, 0.075),
+      transparent 32%
+    ),
+    linear-gradient(
+      150deg,
+      rgba(16, 43, 29, 0.98),
+      rgba(6, 22, 14, 0.99)
+    );
+}
+
+.cycling-section
+.cycling-performance__header {
+  margin-bottom: 14px;
+}
+
+.cycling-section
+.cycling-performance__period {
+  color: #ff8551;
+  border-color:
+    rgba(252, 76, 2, 0.18);
+  background:
+    rgba(252, 76, 2, 0.055);
+}
+
+.cycling-section
+.cycling-performance__grid {
+  grid-template-columns:
+    repeat(
+      6,
+      minmax(0, 1fr)
+    );
+}
+
+.cycling-section
+.cycling-performance__card {
+  min-height: 116px;
+}
+
+.cycling-section
+.cycling-performance__card small {
+  min-height: 2.5em;
+  line-height: 1.3;
+}
+
+.cycling-section
+.cycling-performance__card strong {
+  white-space: normal;
+}
+
+/* Évite un espace supplémentaire laissé par l’ancien wrapper. */
+
+.cycling-page {
+  display: block;
+}
+
+@media (max-width: 1100px) {
+  .cycling-section
+  .cycling-performance__grid {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 620px) {
+  .cycling-section
+  .cycling-performance {
+    margin:
+      13px
+      0;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .cycling-section
+  .cycling-performance__grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    gap: 7px;
+  }
+
+  .cycling-section
+  .cycling-performance__card {
+    min-height: 105px;
+  }
+}
+
+/* =========================================================
+   CYCLISME — SUPPRESSION VISIBLE ET ACTIONS DE CARTE
+   À ajouter tout à la fin de src/styles.css
+   ========================================================= */
+
+.cycling-ride-card__footer {
+  gap: 12px;
+}
+
+.cycling-ride-card__footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cycling-ride-card__visible-delete {
+  min-height: 39px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding:
+    0
+    13px;
+  border: 1px solid
+    rgba(255, 111, 120, 0.2);
+  border-radius: 11px;
+  color: #ffb3ba;
+  background:
+    rgba(255, 111, 120, 0.065);
+  font-size: 0.55rem;
+  font-weight: 850;
+}
+
+.cycling-ride-card__visible-delete:hover:not(:disabled) {
+  border-color:
+    rgba(255, 111, 120, 0.35);
+  color: #ffd0d4;
+  background:
+    rgba(255, 111, 120, 0.12);
+}
+
+.cycling-ride-card__visible-delete:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (max-width: 620px) {
+  .cycling-ride-card__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .cycling-ride-card__footer-actions {
+    display: grid;
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+    width: 100%;
+  }
+
+  .cycling-ride-card__footer-actions
+  > button {
+    width: 100%;
+    min-height: 44px;
+  }
+
+  .cycling-ride-card__footer-actions
+  > button:only-child {
+    grid-column:
+      1 / -1;
+  }
+}

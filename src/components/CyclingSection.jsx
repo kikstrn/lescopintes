@@ -3,6 +3,9 @@ import {
   AnimatePresence,
   motion,
 } from "framer-motion";
+import CyclingRouteMap from "./cycling/CyclingRouteMap";
+import CyclingPerformanceDashboard from "./cycling/CyclingPerformanceDashboard";
+
 import {
   Bike,
   CalendarDays,
@@ -98,6 +101,33 @@ function getStatusIcon(status) {
   return CheckCircle2;
 }
 
+
+function roundCyclingSpeed(
+  value,
+) {
+  const numericValue =
+    Number(value);
+
+  if (
+    !Number.isFinite(
+      numericValue,
+    )
+  ) {
+    return 0;
+  }
+
+  return (
+    Math.round(
+      (
+        numericValue +
+        Number.EPSILON
+      ) *
+      10,
+    ) /
+    10
+  );
+}
+
 function CyclingSection({
   rides = [],
   members = [],
@@ -130,15 +160,46 @@ function CyclingSection({
   }, [rides]);
 
   const filteredRides = useMemo(() => {
-    if (activeFilter === "all") {
-      return rides;
-    }
+    const matchingRides =
+      activeFilter === "all"
+        ? rides
+        : rides.filter(
+            (ride) =>
+              ride.status ===
+              activeFilter,
+          );
 
-    return rides.filter(
-      (ride) =>
-        ride.status === activeFilter,
+    return [
+      ...matchingRides,
+    ].sort(
+      (
+        rideA,
+        rideB,
+      ) => {
+        const createdAtA =
+          new Date(
+            rideA.createdAt ??
+            rideA.rideDate ??
+            0,
+          ).getTime();
+
+        const createdAtB =
+          new Date(
+            rideB.createdAt ??
+            rideB.rideDate ??
+            0,
+          ).getTime();
+
+        return (
+          createdAtB -
+          createdAtA
+        );
+      },
     );
-  }, [rides, activeFilter]);
+  }, [
+    rides,
+    activeFilter,
+  ]);
 
   const totalDistance = useMemo(() => {
     return completedRides.reduce(
@@ -163,29 +224,47 @@ function CyclingSection({
   }, [completedRides]);
 
   const averageSpeed = useMemo(() => {
-    const speeds = completedRides
-      .map((ride) =>
-        Number(
-          ride.averageSpeed ?? 0,
-        ),
-      )
-      .filter(
-        (speed) =>
-          Number.isFinite(speed) &&
-          speed > 0,
+    const totals =
+      completedRides.reduce(
+        (
+          result,
+          ride,
+        ) => {
+          const distance =
+            Number(
+              ride.distanceKm ??
+              0,
+            );
+
+          const minutes =
+            Number(
+              ride.durationMinutes ??
+              0,
+            );
+
+          if (
+            distance > 0 &&
+            minutes > 0
+          ) {
+            result.distance +=
+              distance;
+
+            result.hours +=
+              minutes / 60;
+          }
+
+          return result;
+        },
+        {
+          distance: 0,
+          hours: 0,
+        },
       );
 
-    if (speeds.length === 0) {
-      return 0;
-    }
-
-    return (
-      speeds.reduce(
-        (total, speed) =>
-          total + speed,
-        0,
-      ) / speeds.length
-    );
+    return totals.hours > 0
+      ? totals.distance /
+        totals.hours
+      : 0;
   }, [completedRides]);
 
   const memberRanking =
@@ -381,6 +460,14 @@ function CyclingSection({
         </div>
       </motion.header>
 
+      <CyclingPerformanceDashboard
+        rides={rides}
+        profileId={
+          currentProfile?.id
+        }
+      />
+
+
       <section className="cycling-summary-grid">
         <article className="cycling-summary-card glass-panel">
           <span className="cycling-summary-card__icon">
@@ -411,7 +498,7 @@ function CyclingSection({
 
           <div>
             <small>
-              Dénivelé cumulé
+              Ascension totale
             </small>
 
             <strong>
@@ -693,6 +780,36 @@ function CyclingSection({
                         )}
                       </header>
 
+                      {ride.routeData
+                        ?.coordinates
+                        ?.length >
+                        1 && (
+                        <div className="cycling-ride-card__map">
+                          <CyclingRouteMap
+                            routeData={
+                              ride.routeData
+                            }
+                            startPoint={
+                              ride.startPoint
+                            }
+                            endPoint={
+                              ride.endPoint
+                            }
+                            compact
+                            interactive={
+                              false
+                            }
+                          />
+
+                          {ride.source ===
+                            "gpx" && (
+                            <span className="cycling-ride-card__source">
+                              GPX
+                            </span>
+                          )}
+                        </div>
+                      )}
+
                       <div className="cycling-ride-card__icon">
                         <Bike size={29} />
                       </div>
@@ -763,7 +880,7 @@ function CyclingSection({
                           />
 
                           <small>
-                            Dénivelé
+                            Ascension totale
                           </small>
 
                           <strong>
@@ -778,7 +895,7 @@ function CyclingSection({
                           <Clock3 size={17} />
 
                           <small>
-                            Durée
+                            Temps de parcours
                           </small>
 
                           <strong>
@@ -792,7 +909,7 @@ function CyclingSection({
                           <Gauge size={17} />
 
                           <small>
-                            Vitesse
+                            Vitesse moyenne
                           </small>
 
                           <strong>
@@ -869,45 +986,68 @@ function CyclingSection({
                           </strong>
                         </span>
 
-                        {joined ? (
-                          <button
-                            type="button"
-                            className="secondary-button secondary-button--compact"
-                            disabled={
-                              saving
-                            }
-                            onClick={() =>
-                              handleLeave(
-                                ride.id,
-                              )
-                            }
-                          >
-                            <XCircle
-                              size={16}
-                            />
+                        <div className="cycling-ride-card__footer-actions">
+                          {manageable && (
+                            <button
+                              type="button"
+                              className="cycling-ride-card__visible-delete"
+                              disabled={
+                                saving
+                              }
+                              onClick={() =>
+                                handleDelete(
+                                  ride,
+                                )
+                              }
+                            >
+                              <Trash2
+                                size={16}
+                              />
 
-                            Quitter
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="primary-button primary-button--compact"
-                            disabled={
-                              saving
-                            }
-                            onClick={() =>
-                              handleJoin(
-                                ride.id,
-                              )
-                            }
-                          >
-                            <UserPlus
-                              size={16}
-                            />
+                              Supprimer
+                            </button>
+                          )}
 
-                            Participer
-                          </button>
-                        )}
+                          {joined ? (
+                            <button
+                              type="button"
+                              className="secondary-button secondary-button--compact"
+                              disabled={
+                                saving
+                              }
+                              onClick={() =>
+                                handleLeave(
+                                  ride.id,
+                                )
+                              }
+                            >
+                              <XCircle
+                                size={16}
+                              />
+
+                              Quitter
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="primary-button primary-button--compact"
+                              disabled={
+                                saving
+                              }
+                              onClick={() =>
+                                handleJoin(
+                                  ride.id,
+                                )
+                              }
+                            >
+                              <UserPlus
+                                size={16}
+                              />
+
+                              Participer
+                            </button>
+                          )}
+                        </div>
                       </footer>
                     </motion.article>
                   );

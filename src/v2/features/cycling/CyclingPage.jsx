@@ -24,20 +24,22 @@ function CyclingPage() {
   } = useAppData();
 
   return (
-    <CyclingSection
-      rides={bikeRides}
-      members={members}
-      loading={loading.bike ?? false}
-      saving={loading.bikeSaving ?? false}
-      error={errors.bike ?? null}
-      currentProfile={profile}
-      isAdmin={isAdmin}
-      onCreate={openCreateBikeRide}
-      onEdit={openEditBikeRide}
-      onDelete={deleteBikeRide}
-      onJoin={joinBikeRide}
-      onLeave={leaveBikeRide}
-    />
+    <div className="cycling-page">
+<CyclingSection
+        rides={bikeRides}
+        members={members}
+        loading={loading.bike ?? false}
+        saving={loading.bikeSaving ?? false}
+        error={errors.bike ?? null}
+        currentProfile={profile}
+        isAdmin={isAdmin}
+        onCreate={openCreateBikeRide}
+        onEdit={openEditBikeRide}
+        onDelete={deleteBikeRide}
+        onJoin={joinBikeRide}
+        onLeave={leaveBikeRide}
+      />
+    </div>
   );
 }
 

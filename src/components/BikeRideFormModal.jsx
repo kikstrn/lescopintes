@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import CyclingRouteMap from "./cycling/CyclingRouteMap";
+import { parseGpxFile } from "../utils/gpxParser";
+
 import {
   AlertCircle,
   Bike,
+  FileUp,
   CalendarDays,
   Check,
   Clock3,
@@ -12,6 +16,7 @@ import {
   Mountain,
   Route,
   Save,
+  Upload,
   Users,
   X,
 } from "lucide-react";
@@ -56,6 +61,84 @@ function createIsoDate(dateValue, timeValue) {
   return date.toISOString();
 }
 
+
+function roundToTenth(
+  value,
+) {
+  const numericValue =
+    Number(value);
+
+  if (
+    !Number.isFinite(
+      numericValue,
+    )
+  ) {
+    return null;
+  }
+
+  return (
+    Math.round(
+      (
+        numericValue +
+        Number.EPSILON
+      ) *
+      10,
+    ) /
+    10
+  );
+}
+
+function splitDurationMinutes(
+  value,
+) {
+  const totalMinutes =
+    Math.max(
+      0,
+      Math.round(
+        Number(value) ||
+        0,
+      ),
+    );
+
+  return {
+    hours:
+      String(
+        Math.floor(
+          totalMinutes /
+          60,
+        ),
+      ),
+
+    minutes:
+      String(
+        totalMinutes %
+        60,
+      ),
+  };
+}
+
+function combineDurationMinutes(
+  hours,
+  minutes,
+) {
+  return Math.round(
+    Math.max(
+      0,
+      Number(hours) ||
+      0,
+    ) *
+      60 +
+      Math.min(
+        59,
+        Math.max(
+          0,
+          Number(minutes) ||
+          0,
+        ),
+      ),
+  );
+}
+
 function createInitialValues(
   ride,
   currentProfileId,
@@ -63,6 +146,11 @@ function createInitialValues(
   const dateParts = getDateParts(
     ride?.rideDate,
   );
+
+  const duration =
+    splitDurationMinutes(
+      ride?.durationMinutes,
+    );
 
   return {
     title: ride?.title ?? "",
@@ -83,17 +171,71 @@ function createInitialValues(
       ride?.durationMinutes === undefined
         ? ""
         : String(ride.durationMinutes),
+
+    durationHours:
+      duration.hours,
+
+    durationRemainingMinutes:
+      duration.minutes,
     averageSpeed:
       ride?.averageSpeed === null ||
       ride?.averageSpeed === undefined
         ? ""
-        : String(ride.averageSpeed),
+        : String(
+            roundToTenth(
+              ride.averageSpeed,
+            ),
+          ),
     status: ride?.status ?? "completed",
     participantIds:
       ride?.participantIds ??
       (currentProfileId
         ? [currentProfileId]
         : []),
+
+    routeData:
+      ride?.routeData ??
+      null,
+
+    source:
+      ride?.source ??
+      "manual",
+
+    gpxHash:
+      ride?.gpxHash ??
+      null,
+
+    gpxFileName:
+      ride?.gpxFileName ??
+      null,
+
+    gpxPointCount:
+      ride?.gpxPointCount ??
+      null,
+
+    movingTimeSeconds:
+      ride?.movingTimeSeconds ??
+      null,
+
+    startedAt:
+      ride?.startedAt ??
+      null,
+
+    endedAt:
+      ride?.endedAt ??
+      null,
+
+    startPoint:
+      ride?.startPoint ??
+      null,
+
+    endPoint:
+      ride?.endPoint ??
+      null,
+
+    boundingBox:
+      ride?.boundingBox ??
+      null,
   };
 }
 
@@ -117,6 +259,44 @@ function BikeRideFormModal({
     errorMessage,
     setErrorMessage,
   ] = useState("");
+
+  const [
+    inputMode,
+    setInputMode,
+  ] = useState(
+    ride?.source === "gpx"
+      ? "gpx"
+      : "manual",
+  );
+
+  const [
+    analyzingGpx,
+    setAnalyzingGpx,
+  ] = useState(false);
+
+  const [
+    gpxActivity,
+    setGpxActivity,
+  ] = useState(
+    ride?.routeData
+      ? {
+          routeData:
+            ride.routeData,
+
+          startPoint:
+            ride.startPoint,
+
+          endPoint:
+            ride.endPoint,
+
+          pointCount:
+            ride.gpxPointCount,
+
+          fileName:
+            ride.gpxFileName,
+        }
+      : null,
+  );
 
   useEffect(() => {
   if (!open) {
@@ -144,6 +324,33 @@ function BikeRideFormModal({
         ride,
         currentProfileId,
       ),
+    );
+
+    setInputMode(
+      ride?.source === "gpx"
+        ? "gpx"
+        : "manual",
+    );
+
+    setGpxActivity(
+      ride?.routeData
+        ? {
+            routeData:
+              ride.routeData,
+
+            startPoint:
+              ride.startPoint,
+
+            endPoint:
+              ride.endPoint,
+
+            pointCount:
+              ride.gpxPointCount,
+
+            fileName:
+              ride.gpxFileName,
+          }
+        : null,
     );
 
     setErrorMessage("");
@@ -190,6 +397,154 @@ function BikeRideFormModal({
     setErrorMessage("");
   };
 
+  const handleGpxFile =
+    async (file) => {
+      if (!file) {
+        return;
+      }
+
+      setAnalyzingGpx(true);
+      setErrorMessage("");
+
+      try {
+        const activity =
+          await parseGpxFile(
+            file,
+          );
+
+        const dateParts =
+          getDateParts(
+            activity.rideDate,
+          );
+
+        setGpxActivity(
+          activity,
+        );
+
+        setForm(
+          (
+            currentForm,
+          ) => ({
+            ...currentForm,
+
+            title:
+              activity.title ||
+              currentForm.title,
+
+            description:
+              activity.description ??
+              currentForm.description,
+
+            date:
+              dateParts.date,
+
+            time:
+              dateParts.time,
+
+            distanceKm:
+              String(
+                Math.ceil(
+                  Number(
+                    activity.distanceKm,
+                  ) ||
+                  0,
+                ),
+              ),
+
+            elevationM:
+              String(
+                activity.elevationGainM,
+              ),
+
+            durationMinutes:
+              activity.durationMinutes ===
+                null
+                ? ""
+                : String(
+                    activity.durationMinutes,
+                  ),
+
+            durationHours:
+              activity.durationMinutes ===
+                null
+                ? "0"
+                : String(
+                    Math.floor(
+                      activity.durationMinutes /
+                      60,
+                    ),
+                  ),
+
+            durationRemainingMinutes:
+              activity.durationMinutes ===
+                null
+                ? "0"
+                : String(
+                    activity.durationMinutes %
+                    60,
+                  ),
+
+            averageSpeed:
+              activity.averageSpeedKmh ===
+                null
+                ? ""
+                : String(
+                    roundToTenth(
+                      activity.averageSpeedKmh,
+                    ),
+                  ),
+
+            status:
+              "completed",
+
+            routeData:
+              activity.routeData,
+
+            source:
+              "gpx",
+
+            gpxHash:
+              activity.gpxHash,
+
+            gpxFileName:
+              activity.fileName,
+
+            gpxPointCount:
+              activity.pointCount,
+
+            movingTimeSeconds:
+              activity.durationSeconds,
+
+            startedAt:
+              activity.startTime
+                ?.toISOString() ??
+              activity.rideDate,
+
+            endedAt:
+              activity.endTime
+                ?.toISOString() ??
+              null,
+
+            startPoint:
+              activity.startPoint,
+
+            endPoint:
+              activity.endPoint,
+
+            boundingBox:
+              activity.boundingBox,
+          }),
+        );
+      } catch (error) {
+        setErrorMessage(
+          error?.message ??
+            "Impossible d’analyser ce fichier GPX.",
+        );
+      } finally {
+        setAnalyzingGpx(false);
+      }
+    };
+
   const handleSubmit = async (
     event,
   ) => {
@@ -218,7 +573,10 @@ function BikeRideFormModal({
     const numericFields = [
       form.distanceKm,
       form.elevationM,
-      form.durationMinutes,
+      combineDurationMinutes(
+        form.durationHours,
+        form.durationRemainingMinutes,
+      ),
       form.averageSpeed,
     ];
 
@@ -248,13 +606,53 @@ function BikeRideFormModal({
         elevationM:
           form.elevationM || 0,
         durationMinutes:
-          form.durationMinutes ||
+          combineDurationMinutes(
+            form.durationHours,
+            form.durationRemainingMinutes,
+          ) ||
           null,
         averageSpeed:
-          form.averageSpeed || null,
+          form.averageSpeed === ""
+            ? null
+            : roundToTenth(
+                form.averageSpeed,
+              ),
         status: form.status,
         participantIds:
           form.participantIds,
+
+        routeData:
+          form.routeData,
+
+        source:
+          form.source,
+
+        gpxHash:
+          form.gpxHash,
+
+        gpxFileName:
+          form.gpxFileName,
+
+        gpxPointCount:
+          form.gpxPointCount,
+
+        movingTimeSeconds:
+          form.movingTimeSeconds,
+
+        startedAt:
+          form.startedAt,
+
+        endedAt:
+          form.endedAt,
+
+        startPoint:
+          form.startPoint,
+
+        endPoint:
+          form.endPoint,
+
+        boundingBox:
+          form.boundingBox,
       });
     } catch (error) {
       setErrorMessage(
@@ -337,6 +735,126 @@ function BikeRideFormModal({
               onSubmit={handleSubmit}
             >
               <div className="bike-form__body">
+                {!ride && (
+                  <div className="bike-form__source-tabs">
+                    <button
+                      type="button"
+                      className={
+                        inputMode ===
+                        "manual"
+                          ? "is-active"
+                          : ""
+                      }
+                      onClick={() =>
+                        setInputMode(
+                          "manual",
+                        )
+                      }
+                    >
+                      <Bike size={17} />
+                      Saisie manuelle
+                    </button>
+
+                    <button
+                      type="button"
+                      className={
+                        inputMode ===
+                        "gpx"
+                          ? "is-active"
+                          : ""
+                      }
+                      onClick={() =>
+                        setInputMode(
+                          "gpx",
+                        )
+                      }
+                    >
+                      <FileUp size={17} />
+                      Importer un GPX
+                    </button>
+                  </div>
+                )}
+
+                {inputMode ===
+                  "gpx" &&
+                  !ride && (
+                    <label className="bike-form__gpx-dropzone">
+                      <Upload size={25} />
+
+                      <strong>
+                        {analyzingGpx
+                          ? "Analyse du parcours…"
+                          : gpxActivity
+                            ? "Choisir un autre fichier GPX"
+                            : "Choisir un fichier GPX"}
+                      </strong>
+
+                      <span>
+                        Export Strava, Garmin, Wahoo, Komoot, Polar…
+                      </span>
+
+                      <input
+                        type="file"
+                        accept=".gpx,application/gpx+xml"
+                        hidden
+                        disabled={
+                          saving ||
+                          analyzingGpx
+                        }
+                        onChange={(
+                          event,
+                        ) =>
+                          handleGpxFile(
+                            event.target
+                              .files?.[0],
+                          )
+                        }
+                      />
+                    </label>
+                  )}
+
+                {inputMode ===
+                  "gpx" &&
+                  gpxActivity
+                    ?.routeData && (
+                    <div className="bike-form__gpx-preview">
+                      <div className="bike-form__gpx-preview-heading">
+                        <div>
+                          <small>
+                            Tracé importé
+                          </small>
+
+                          <strong>
+                            {gpxActivity.fileName ??
+                              form.gpxFileName}
+                          </strong>
+                        </div>
+
+                        <span>
+                          {Number(
+                            gpxActivity.pointCount ??
+                            form.gpxPointCount ??
+                            0,
+                          ).toLocaleString(
+                            "fr-FR",
+                          )}{" "}
+                          points GPS
+                        </span>
+                      </div>
+
+                      <CyclingRouteMap
+                        routeData={
+                          gpxActivity.routeData
+                        }
+                        startPoint={
+                          gpxActivity.startPoint
+                        }
+                        endPoint={
+                          gpxActivity.endPoint
+                        }
+                      />
+                    </div>
+                  )}
                 <label className="bike-form__field bike-form__field--wide">
                   <span>
                     Titre *
@@ -477,6 +995,28 @@ function BikeRideFormModal({
                             event.target.value,
                           )
                         }
+                        onBlur={() =>
+                          setForm(
+                            (
+                              currentForm,
+                            ) => ({
+                              ...currentForm,
+
+                              distanceKm:
+                                currentForm.distanceKm ===
+                                ""
+                                  ? ""
+                                  : String(
+                                      Math.ceil(
+                                        Number(
+                                          currentForm.distanceKm,
+                                        ) ||
+                                        0,
+                                      ),
+                                    ),
+                            }),
+                          )
+                        }
                       />
 
                       <small>
@@ -487,7 +1027,7 @@ function BikeRideFormModal({
 
                   <label className="bike-form__field">
                     <span>
-                      Dénivelé
+                      Ascension totale
                     </span>
 
                     <div className="bike-form__control">
@@ -516,36 +1056,125 @@ function BikeRideFormModal({
                     </div>
                   </label>
 
-                  <label className="bike-form__field">
+                  <div className="bike-form__field bike-form__duration-field">
                     <span>
-                      Durée
+                      Temps de parcours
                     </span>
 
-                    <div className="bike-form__control">
-                      <Clock3 size={18} />
+                    <div className="bike-form__duration-controls">
+                      <label className="bike-form__control">
+                        <Clock3 size={18} />
 
-                      <input
-                        type="number"
-                        min="0"
-                        step="1"
-                        value={
-                          form.durationMinutes
-                        }
-                        placeholder="180"
-                        disabled={saving}
-                        onChange={(event) =>
-                          updateField(
-                            "durationMinutes",
-                            event.target.value,
-                          )
-                        }
-                      />
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          inputMode="numeric"
+                          value={
+                            form.durationHours
+                          }
+                          placeholder="1"
+                          disabled={saving}
+                          onChange={(event) => {
+                            const hours =
+                              event.target.value;
 
-                      <small>
-                        min
-                      </small>
+                            setForm(
+                              (
+                                currentForm,
+                              ) => ({
+                                ...currentForm,
+
+                                durationHours:
+                                  hours,
+
+                                durationMinutes:
+                                  String(
+                                    combineDurationMinutes(
+                                      hours,
+                                      currentForm
+                                        .durationRemainingMinutes,
+                                    ),
+                                  ),
+                              }),
+                            );
+                          }}
+                        />
+
+                        <small>
+                          h
+                        </small>
+                      </label>
+
+                      <label className="bike-form__control">
+                        <input
+                          type="number"
+                          min="0"
+                          max="59"
+                          step="1"
+                          inputMode="numeric"
+                          value={
+                            form.durationRemainingMinutes
+                          }
+                          placeholder="44"
+                          disabled={saving}
+                          onChange={(event) => {
+                            const minutes =
+                              Math.min(
+                                59,
+                                Math.max(
+                                  0,
+                                  Number(
+                                    event.target.value,
+                                  ) ||
+                                  0,
+                                ),
+                              );
+
+                            setForm(
+                              (
+                                currentForm,
+                              ) => ({
+                                ...currentForm,
+
+                                durationRemainingMinutes:
+                                  String(
+                                    minutes,
+                                  ),
+
+                                durationMinutes:
+                                  String(
+                                    combineDurationMinutes(
+                                      currentForm
+                                        .durationHours,
+                                      minutes,
+                                    ),
+                                  ),
+                              }),
+                            );
+                          }}
+                        />
+
+                        <small>
+                          min
+                        </small>
+                      </label>
                     </div>
-                  </label>
+
+                    <small className="bike-form__duration-summary">
+                      {Number(
+                        form.durationHours,
+                      ) || 0} h{" "}
+                      {String(
+                        Number(
+                          form.durationRemainingMinutes,
+                        ) || 0,
+                      ).padStart(
+                        2,
+                        "0",
+                      )}
+                    </small>
+                  </div>
 
                   <label className="bike-form__field">
                     <span>
@@ -568,6 +1197,25 @@ function BikeRideFormModal({
                           updateField(
                             "averageSpeed",
                             event.target.value,
+                          )
+                        }
+                        onBlur={() =>
+                          setForm(
+                            (
+                              currentForm,
+                            ) => ({
+                              ...currentForm,
+
+                              averageSpeed:
+                                currentForm.averageSpeed ===
+                                ""
+                                  ? ""
+                                  : String(
+                                      roundToTenth(
+                                        currentForm.averageSpeed,
+                                      ),
+                                    ),
+                            }),
                           )
                         }
                       />

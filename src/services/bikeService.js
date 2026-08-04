@@ -12,6 +12,18 @@ const BIKE_RIDE_SELECT = `
   average_speed,
   location,
   route_data,
+  source,
+  gpx_hash,
+  gpx_file_name,
+  gpx_point_count,
+  moving_time_seconds,
+  started_at,
+  ended_at,
+  start_latitude,
+  start_longitude,
+  end_latitude,
+  end_longitude,
+  bounding_box,
   status,
   created_at,
   updated_at,
@@ -93,6 +105,36 @@ export function mapBikeRide(ride) {
         : Number(ride.average_speed),
     location: ride.location ?? "",
     routeData: ride.route_data ?? null,
+    source: ride.source ?? "manual",
+    gpxHash: ride.gpx_hash ?? null,
+    gpxFileName: ride.gpx_file_name ?? null,
+    gpxPointCount:
+      ride.gpx_point_count === null
+        ? null
+        : Number(ride.gpx_point_count),
+    movingTimeSeconds:
+      ride.moving_time_seconds === null
+        ? null
+        : Number(ride.moving_time_seconds),
+    startedAt: ride.started_at ?? null,
+    endedAt: ride.ended_at ?? null,
+    startPoint:
+      ride.start_latitude === null ||
+      ride.start_longitude === null
+        ? null
+        : {
+            latitude: Number(ride.start_latitude),
+            longitude: Number(ride.start_longitude),
+          },
+    endPoint:
+      ride.end_latitude === null ||
+      ride.end_longitude === null
+        ? null
+        : {
+            latitude: Number(ride.end_latitude),
+            longitude: Number(ride.end_longitude),
+          },
+    boundingBox: ride.bounding_box ?? null,
     status: ride.status ?? "completed",
     creator: mapProfile(ride.creator),
     participants,
@@ -111,6 +153,9 @@ export async function getBikeRides() {
   const { data, error } = await supabase
     .from("bike_rides")
     .select(BIKE_RIDE_SELECT)
+    .order("created_at", {
+      ascending: false,
+    })
     .order("ride_date", {
       ascending: false,
     });
@@ -163,6 +208,27 @@ function createRidePayload(values) {
         : Number(values.averageSpeed),
     location: values.location?.trim() || null,
     route_data: values.routeData ?? null,
+    source: values.source ?? "manual",
+    gpx_hash: values.gpxHash ?? null,
+    gpx_file_name: values.gpxFileName ?? null,
+    gpx_point_count:
+      values.gpxPointCount ?? null,
+    moving_time_seconds:
+      values.movingTimeSeconds ?? null,
+    started_at:
+      values.startedAt ?? null,
+    ended_at:
+      values.endedAt ?? null,
+    start_latitude:
+      values.startPoint?.latitude ?? null,
+    start_longitude:
+      values.startPoint?.longitude ?? null,
+    end_latitude:
+      values.endPoint?.latitude ?? null,
+    end_longitude:
+      values.endPoint?.longitude ?? null,
+    bounding_box:
+      values.boundingBox ?? null,
     status: values.status ?? "completed",
   };
 }
