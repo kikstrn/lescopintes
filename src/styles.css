@@ -36351,3 +36351,81 @@ input {
       );
   }
 }
+
+/* =========================================================
+   SIDEBAR — BADGES DES NOUVEAUX CONTENUS
+   À ajouter à la fin de src/styles.css
+   ========================================================= */
+
+.sidebar__nav-badge,
+.mobile-drawer__badge,
+.mobile-bottom-nav__badge {
+  min-width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 2px solid
+    rgba(5, 20, 13, 0.92);
+  border-radius: 999px;
+  color: #06130d;
+  background:
+    linear-gradient(
+      135deg,
+      #8bf4bd,
+      #5ee49b
+    );
+  box-shadow:
+    0 5px 16px
+      rgba(94, 228, 155, 0.22);
+  font-size: 0.48rem;
+  font-weight: 950;
+  line-height: 1;
+  animation:
+    module-badge-arrival
+    260ms
+    ease-out;
+}
+
+.sidebar__nav-badge {
+  position: relative;
+  z-index: 2;
+  margin-left: auto;
+}
+
+.mobile-bottom-nav__badge {
+  position: absolute;
+  z-index: 4;
+  top: -8px;
+  right: -10px;
+}
+
+.mobile-drawer__badge {
+  margin-left: auto;
+}
+
+@keyframes module-badge-arrival {
+  from {
+    opacity: 0;
+    transform:
+      scale(0.55);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      scale(1);
+  }
+}
+
+@media (
+  prefers-reduced-motion:
+    reduce
+) {
+  .sidebar__nav-badge,
+  .mobile-drawer__badge,
+  .mobile-bottom-nav__badge {
+    animation: none;
+  }
+}

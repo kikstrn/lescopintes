@@ -4,6 +4,7 @@ import {
 } from "framer-motion";
 
 import {
+  Bell,
   ChevronRight,
   Menu,
 } from "lucide-react";
@@ -11,14 +12,12 @@ import {
 import {
   useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 
 import Sidebar from "../../components/Sidebar";
 import MobileNavigation from "../../components/MobileNavigation";
-import PwaInstallBanner from "../../components/pwa/PwaInstallBanner";
-import PwaOfflineBanner from "../../components/pwa/PwaOfflineBanner";
-import UnifiedNotificationCenter from "../../components/notifications/UnifiedNotificationCenter";
-import PwaUpdatePrompt from "../../components/pwa/PwaUpdatePrompt";
 
 import { useAuth } from "../../context/AuthContext";
 import { useAppData } from "../context/AppDataContext";
@@ -31,6 +30,8 @@ import {
   getNavigationItem,
   navigation,
 } from "../shared/constants/navigation";
+
+import useModuleUnreadCounts from "../shared/hooks/useModuleUnreadCounts";
 
 function AppLayout({
   children,
@@ -51,22 +52,65 @@ function AppLayout({
   } = useNavigation();
 
   const {
+    notifications = [],
+    unreadNotificationsCount = 0,
+    notificationsLoading = false,
+    notificationsError = null,
+
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    deleteNotification,
+    clearReadNotifications,
+
     chatUnreadCount = 0,
+
+    events = [],
+    tennisMatches = [],
+    bikeRides = [],
+    galleryPhotos = [],
   } = useAppData();
 
   const currentNavigationItem =
     getNavigationItem(activePage);
 
+  const {
+    unreadCounts:
+      moduleUnreadCounts,
+
+    markModuleAsRead,
+  } = useModuleUnreadCounts({
+    profileId:
+      user?.id,
+
+    activePage,
+    events,
+    tennisMatches,
+    bikeRides,
+    galleryPhotos,
+  });
+
   const navigationItems = useMemo(
     () =>
-      navigation.map((item) => ({
-        ...item,
-        badge:
-          item.id === "chat"
-            ? chatUnreadCount
-            : item.badge,
-      })),
-    [chatUnreadCount],
+      navigation.map(
+        (
+          item,
+        ) => ({
+          ...item,
+
+          badge:
+            item.id ===
+            "chat"
+              ? chatUnreadCount
+              : moduleUnreadCounts[
+                  item.id
+                ] ??
+                item.badge,
+        }),
+      ),
+    [
+      chatUnreadCount,
+      moduleUnreadCounts,
+    ],
   );
 
   const pageTitle =
@@ -98,76 +142,59 @@ function AppLayout({
       return;
     }
 
-    navigateTo(pageId);
+    markModuleAsRead(
+      pageId,
+    );
+
+    navigateTo(
+      pageId,
+    );
   };
 
+  const [notificationsOpen, setNotificationsOpen] =
+    useState(false);
+
+  const notificationsRef = useRef(null);
+
   useEffect(() => {
-    const navigateFromPush = (
-      pageId,
-    ) => {
-      if (!pageId) {
-        return;
+    const handleOutsideClick = (event) => {
+      if (
+        notificationsRef.current &&
+        !notificationsRef.current.contains(
+          event.target,
+        )
+      ) {
+        setNotificationsOpen(false);
       }
-
-      navigateTo(pageId);
-
-      const url =
-        new URL(
-          window.location.href,
-        );
-
-      url.searchParams.delete(
-        "page",
-      );
-
-      window.history.replaceState(
-        {},
-        "",
-        `${url.pathname}${url.search}${url.hash}`,
-      );
     };
 
-    const initialPage =
-      new URLSearchParams(
-        window.location.search,
-      ).get("page");
-
-    if (initialPage) {
-      navigateFromPush(
-        initialPage,
-      );
-    }
-
-    const handleServiceWorkerMessage =
-      (event) => {
-        if (
-          event.data?.type !==
-          "PUSH_NOTIFICATION_CLICKED"
-        ) {
-          return;
-        }
-
-        navigateFromPush(
-          event.data.pageId,
-        );
-      };
-
-    navigator.serviceWorker
-      ?.addEventListener(
-        "message",
-        handleServiceWorkerMessage,
-      );
+    document.addEventListener(
+      "pointerdown",
+      handleOutsideClick,
+    );
 
     return () => {
-      navigator.serviceWorker
-        ?.removeEventListener(
-          "message",
-          handleServiceWorkerMessage,
-        );
+      document.removeEventListener(
+        "pointerdown",
+        handleOutsideClick,
+      );
     };
-  }, [
-    navigateTo,
-  ]);
+  }, []);
+
+  const handleNotificationClick =
+    async (notification) => {
+      if (!notification.read_at) {
+        await markNotificationAsRead?.(
+          notification.id,
+        );
+      }
+
+      if (notification.page_id) {
+        navigateTo(notification.page_id);
+      }
+
+      setNotificationsOpen(false);
+    };
 
   return (
     <div className="app-shell">
@@ -209,12 +236,169 @@ function AppLayout({
           </div>
 
           <div className="topbar__actions">
-            <UnifiedNotificationCenter
-              profileId={
-                profile?.id ??
-                user?.id
-              }
-            />
+            <div
+              className="notification-center"
+              ref={notificationsRef}
+            >
+              <button
+                type="button"
+                className="icon-button notification-button"
+                aria-label="Notifications"
+                aria-expanded={notificationsOpen}
+                onClick={() =>
+                  setNotificationsOpen(
+                    (current) => !current,
+                  )
+                }
+              >
+                <Bell size={20} />
+
+                {unreadNotificationsCount > 0 && (
+                  <span className="notification-badge">
+                    {unreadNotificationsCount > 99
+                      ? "99+"
+                      : unreadNotificationsCount}
+                  </span>
+                )}
+              </button>
+
+              {notificationsOpen && (
+                <section className="notification-panel">
+                  <header className="notification-panel__header">
+                    <div>
+                      <span className="section-heading__eyebrow">
+                        Activité récente
+                      </span>
+
+                      <h2>Notifications</h2>
+                    </div>
+
+                    <button
+                      type="button"
+                      className="notification-panel__close"
+                      onClick={() =>
+                        setNotificationsOpen(false)
+                      }
+                    >
+                      ×
+                    </button>
+                  </header>
+
+                  <div className="notification-panel__actions">
+                    <button
+                      type="button"
+                      disabled={
+                        unreadNotificationsCount === 0
+                      }
+                      onClick={
+                        markAllNotificationsAsRead
+                      }
+                    >
+                      Tout marquer comme lu
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={
+                        clearReadNotifications
+                      }
+                    >
+                      Effacer les lues
+                    </button>
+                  </div>
+
+                  <div className="notification-panel__content">
+                    {notificationsLoading && (
+                      <div className="notification-panel__state">
+                        Chargement…
+                      </div>
+                    )}
+
+                    {!notificationsLoading &&
+                      notificationsError && (
+                        <div className="notification-panel__state notification-panel__state--error">
+                          {notificationsError}
+                        </div>
+                      )}
+
+                    {!notificationsLoading &&
+                      !notificationsError &&
+                      notifications.length === 0 && (
+                        <div className="notification-panel__state">
+                          Aucune notification.
+                        </div>
+                      )}
+
+                    {!notificationsLoading &&
+                      !notificationsError &&
+                      notifications.map(
+                        (notification) => (
+                          <article
+                            key={notification.id}
+                            className={`notification-item ${notification.read_at
+                                ? "notification-item--read"
+                                : "notification-item--unread"
+                              }`}
+                          >
+                            <button
+                              type="button"
+                              className="notification-item__main"
+                              onClick={() =>
+                                handleNotificationClick(
+                                  notification,
+                                )
+                              }
+                            >
+                              <span className="notification-item__dot" />
+
+                              <span className="notification-item__body">
+                                <strong>
+                                  {notification.title}
+                                </strong>
+
+                                {notification.message && (
+                                  <span>
+                                    {
+                                      notification.message
+                                    }
+                                  </span>
+                                )}
+
+                                <small>
+                                  {new Intl.DateTimeFormat(
+                                    "fr-FR",
+                                    {
+                                      dateStyle: "short",
+                                      timeStyle: "short",
+                                    },
+                                  ).format(
+                                    new Date(
+                                      notification.created_at,
+                                    ),
+                                  )}
+                                </small>
+                              </span>
+                            </button>
+
+                            <button
+                              type="button"
+                              className="notification-item__delete"
+                              aria-label="Supprimer"
+                              onClick={() =>
+                                deleteNotification?.(
+                                  notification.id,
+                                )
+                              }
+                            >
+                              ×
+                            </button>
+                          </article>
+                        ),
+                      )}
+                  </div>
+                </section>
+              )}
+            </div>
 
             <button
               type="button"
@@ -284,10 +468,6 @@ function AppLayout({
         menuOpen={mobileMenuOpen}
         onClose={closeMobileMenu}
       />
-
-      <PwaInstallBanner />
-      <PwaOfflineBanner />
-      <PwaUpdatePrompt />
     </div>
   );
 }
