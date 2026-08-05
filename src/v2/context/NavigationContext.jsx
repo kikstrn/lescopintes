@@ -9,31 +9,64 @@ import {
 const NavigationContext =
   createContext(null);
 
+const STORAGE_KEY =
+  "kiks_last_page";
+
 export function NavigationProvider({
   children,
 }) {
   const [activePage, setActivePage] =
-    useState("home");
+    useState(() => {
+      return (
+        localStorage.getItem(
+          STORAGE_KEY,
+        ) || "home"
+      );
+    });
 
   const [mobileMenuOpen, setMobileMenuOpen] =
     useState(false);
 
   const navigateTo = useCallback(
-    (pageId) => {
+    (
+      pageId,
+      options = {},
+    ) => {
       if (!pageId) {
         return;
       }
 
       setActivePage(pageId);
+
+      localStorage.setItem(
+        STORAGE_KEY,
+        pageId,
+      );
+
       setMobileMenuOpen(false);
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
+      if (
+        options.scroll !== false
+      ) {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }
     },
     [],
   );
+
+  const resetNavigation =
+    useCallback(() => {
+      localStorage.removeItem(
+        STORAGE_KEY,
+      );
+
+      setActivePage(
+        "home",
+      );
+    }, []);
 
   const value = useMemo(
     () => ({
@@ -42,16 +75,23 @@ export function NavigationProvider({
 
       navigateTo,
 
+      resetNavigation,
+
       openMobileMenu: () =>
-        setMobileMenuOpen(true),
+        setMobileMenuOpen(
+          true,
+        ),
 
       closeMobileMenu: () =>
-        setMobileMenuOpen(false),
+        setMobileMenuOpen(
+          false,
+        ),
     }),
     [
       activePage,
       mobileMenuOpen,
       navigateTo,
+      resetNavigation,
     ],
   );
 
@@ -66,7 +106,9 @@ export function NavigationProvider({
 
 export function useNavigation() {
   const context =
-    useContext(NavigationContext);
+    useContext(
+      NavigationContext,
+    );
 
   if (!context) {
     throw new Error(

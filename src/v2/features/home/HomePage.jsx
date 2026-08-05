@@ -162,6 +162,7 @@ function HomePage() {
           detail={`${memberWins} victoire${memberWins > 1 ? "s" : ""
             } pour toi`}
           accent="green"
+          onClick={() => navigateTo("tennis")}
         />
 
         <StatCard
@@ -180,6 +181,7 @@ function HomePage() {
               : ""
             }`}
           accent="blue"
+          onClick={() => navigateTo("bike")}
         />
 
         <StatCard
@@ -188,6 +190,7 @@ function HomePage() {
           value={events.length}
           detail={`${upcomingEvents.length} à venir`}
           accent="amber"
+          onClick={() => navigateTo("events")}
         />
 
         <StatCard
@@ -203,6 +206,7 @@ function HomePage() {
               : "Non classé"
           }
           accent="purple"
+          onClick={() => navigateTo("profile")}
         />
       </section>
 
