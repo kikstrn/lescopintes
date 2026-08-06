@@ -7,8 +7,6 @@ import {
   motion,
 } from "framer-motion";
 
-import "./workout.css";
-
 import {
   BarChart3,
   CalendarDays,
