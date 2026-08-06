@@ -38577,3 +38577,292 @@ input {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* =========================================================
+   MODALE MUSCULATION — CORRECTIF RESPONSIVE FINAL
+   ========================================================= */
+
+/*
+ * Ordinateur et tablette :
+ * centrage par inset + margin:auto.
+ * Aucun translate n'est utilisé, afin d'éviter tout conflit
+ * avec les transformations créées par Framer Motion.
+ */
+.workout-modal__overlay {
+  position: fixed !important;
+  z-index: 20000 !important;
+  inset: 0 !important;
+
+  width: 100vw !important;
+  height: 100dvh !important;
+
+  margin: 0 !important;
+  border: 0 !important;
+
+  background: rgba(2, 8, 5, 0.8) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+}
+
+.workout-modal {
+  position: fixed !important;
+  z-index: 20010 !important;
+
+  top: 24px !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  left: 24px !important;
+
+  width: min(780px, calc(100vw - 48px)) !important;
+  max-width: 780px !important;
+  height: auto !important;
+  max-height: calc(100dvh - 48px) !important;
+  min-height: 0 !important;
+
+  margin: auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+
+  border: 1px solid var(--border-light) !important;
+  border-radius: 28px !important;
+
+  background:
+    radial-gradient(
+      circle at 10% 0%,
+      rgba(94, 228, 155, 0.1),
+      transparent 32%
+    ),
+    rgba(9, 23, 17, 0.99) !important;
+
+  box-shadow:
+    0 40px 110px rgba(0, 0, 0, 0.58),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+
+  /*
+   * Framer Motion peut continuer à utiliser transform
+   * pour l'animation sans modifier le centrage.
+   */
+  translate: none !important;
+}
+
+.workout-modal__header,
+.workout-modal__footer {
+  position: relative !important;
+  z-index: 10 !important;
+  flex: 0 0 auto !important;
+
+  background: rgba(9, 23, 17, 0.97) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+}
+
+.workout-modal__header {
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.workout-modal__body {
+  position: relative !important;
+  z-index: 1 !important;
+
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch;
+
+  padding: 22px !important;
+  scrollbar-gutter: stable;
+}
+
+.workout-modal__footer {
+  justify-content: flex-end !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+body:has(.workout-modal) {
+  overflow: hidden !important;
+}
+
+/* Tablette */
+@media (max-width: 900px) and (min-width: 769px) {
+  .workout-modal {
+    top: 16px !important;
+    right: 16px !important;
+    bottom: 16px !important;
+    left: 16px !important;
+
+    width: min(760px, calc(100vw - 32px)) !important;
+    max-width: 760px !important;
+    max-height: calc(100dvh - 32px) !important;
+  }
+
+  .workout-form-grid {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr) !important;
+  }
+
+  .workout-form-grid label:last-child {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Mobile : panneau plein écran en bas, devant le header et le menu */
+@media (max-width: 768px) {
+  .workout-modal {
+    top: 10px !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: calc(100dvh - 10px) !important;
+
+    margin: 0 !important;
+
+    border-right: 0 !important;
+    border-bottom: 0 !important;
+    border-left: 0 !important;
+    border-radius: 25px 25px 0 0 !important;
+
+    translate: none !important;
+  }
+
+  .workout-modal__header {
+    padding:
+      max(18px, env(safe-area-inset-top))
+      18px
+      16px !important;
+  }
+
+  .workout-modal__body {
+    padding: 18px 16px 28px !important;
+  }
+
+  .workout-modal__footer {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+
+    padding:
+      14px
+      16px
+      max(18px, env(safe-area-inset-bottom)) !important;
+  }
+
+  .workout-modal__footer button {
+    width: 100% !important;
+    min-height: 48px !important;
+  }
+
+  body:has(.workout-modal) .app-topbar,
+  body:has(.workout-modal) .topbar,
+  body:has(.workout-modal) .mobile-header {
+    z-index: 20 !important;
+    pointer-events: none !important;
+  }
+
+  body:has(.workout-modal) .mobile-bottom-nav,
+  body:has(.workout-modal) .mobile-drawer,
+  body:has(.workout-modal) .mobile-drawer__overlay {
+    z-index: 10 !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .workout-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .workout-form-grid label:last-child {
+    grid-column: auto !important;
+  }
+
+  .workout-editor-card,
+  .workout-editor-card__header,
+  .workout-set-table {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .workout-set-table {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Champ libre pour le nom d’un exercice */
+.workout-editor-card__header > input {
+  width: 100%;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 13px;
+
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.035);
+  font: inherit;
+}
+
+.workout-editor-card__header > input::placeholder {
+  color: var(--text-muted);
+}
+
+.workout-editor-card__header > input:focus {
+  border-color: rgba(94, 228, 155, 0.45);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(94, 228, 155, 0.08);
+}
+
+.workout-duration-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.workout-duration-field > span {
+  color: var(--text-muted);
+  font-size: 0.57rem;
+  font-weight: 800;
+}
+
+.workout-duration-inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.workout-duration-inputs label {
+  position: relative;
+  min-width: 0;
+}
+
+.workout-duration-inputs input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 36px 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.workout-duration-inputs label span {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+  color: var(--text-muted);
+  font-size: 0.53rem;
+  transform: translateY(-50%);
+}

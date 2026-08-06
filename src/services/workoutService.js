@@ -188,6 +188,8 @@ export async function getWorkoutExercises() {
         muscle_group,
         equipment,
         is_active,
+        is_custom,
+        created_by,
         created_at
       `,
     )
@@ -205,6 +207,8 @@ export async function getWorkoutExercises() {
     muscleGroup: exercise.muscle_group,
     equipment: exercise.equipment ?? null,
     isActive: Boolean(exercise.is_active),
+    isCustom: Boolean(exercise.is_custom),
+    createdBy: exercise.created_by ?? null,
     createdAt: exercise.created_at,
   }));
 }
@@ -225,6 +229,150 @@ export async function getWorkoutSessions({
   }
 
   return (data ?? []).map(mapWorkoutSession);
+}
+
+
+function normalizeExerciseName(value) {
+  return value
+    ?.trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("fr");
+}
+
+async function findOrCreateWorkoutExercise({
+  exerciseId,
+  exerciseName,
+  profileId,
+}) {
+  const cleanName =
+    exerciseName?.trim().replace(/\s+/g, " ");
+
+  if (!cleanName) {
+    throw new Error(
+      "Le nom de l’exercice est obligatoire.",
+    );
+  }
+
+  if (exerciseId) {
+    const { data: exercise, error } =
+      await supabase
+        .from("workout_exercises")
+        .select(
+          `
+            id,
+            name,
+            muscle_group,
+            equipment
+          `,
+        )
+        .eq("id", exerciseId)
+        .maybeSingle();
+
+    if (error) {
+      throw error;
+    }
+
+    if (exercise) {
+      return exercise;
+    }
+  }
+
+  const { data: existingExercises, error } =
+    await supabase
+      .from("workout_exercises")
+      .select(
+        `
+          id,
+          name,
+          muscle_group,
+          equipment
+        `,
+      )
+      .eq("is_active", true);
+
+  if (error) {
+    throw error;
+  }
+
+  const normalizedName =
+    normalizeExerciseName(cleanName);
+
+  const existingExercise =
+    (existingExercises ?? []).find(
+      (exercise) =>
+        normalizeExerciseName(
+          exercise.name,
+        ) === normalizedName,
+    );
+
+  if (existingExercise) {
+    return existingExercise;
+  }
+
+  const { data: createdExercise, error: insertError } =
+    await supabase
+      .from("workout_exercises")
+      .insert({
+        name: cleanName,
+        muscle_group: "Autre",
+        equipment: null,
+        is_active: true,
+        is_custom: true,
+        created_by: profileId,
+      })
+      .select(
+        `
+          id,
+          name,
+          muscle_group,
+          equipment
+        `,
+      )
+      .single();
+
+  if (!insertError) {
+    return createdExercise;
+  }
+
+  /*
+   * Deux membres peuvent créer le même exercice presque
+   * simultanément. L’index unique rejette le second insert :
+   * on recharge alors l’exercice qui vient d’être créé.
+   */
+  if (insertError.code === "23505") {
+    const {
+      data: exercisesAfterConflict,
+      error: conflictReadError,
+    } = await supabase
+      .from("workout_exercises")
+      .select(
+        `
+          id,
+          name,
+          muscle_group,
+          equipment
+        `,
+      )
+      .eq("is_active", true);
+
+    if (conflictReadError) {
+      throw conflictReadError;
+    }
+
+    const matchingExercise =
+      (exercisesAfterConflict ?? []).find(
+        (exercise) =>
+          normalizeExerciseName(
+            exercise.name,
+          ) === normalizedName,
+      );
+
+    if (matchingExercise) {
+      return matchingExercise;
+    }
+  }
+
+  throw insertError;
 }
 
 export async function createWorkoutSession({
@@ -272,6 +420,13 @@ export async function createWorkoutSession({
   ) {
     const item = exercises[position];
 
+    const workoutExercise =
+      await findOrCreateWorkoutExercise({
+        exerciseId: item.exerciseId,
+        exerciseName: item.exerciseName,
+        profileId,
+      });
+
     const {
       data: sessionExercise,
       error: exerciseError,
@@ -279,7 +434,7 @@ export async function createWorkoutSession({
       .from("workout_session_exercises")
       .insert({
         session_id: session.id,
-        exercise_id: item.exerciseId,
+        exercise_id: workoutExercise.id,
         position,
         notes: item.notes?.trim() || null,
       })

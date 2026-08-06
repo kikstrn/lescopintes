@@ -40,7 +40,7 @@ function WorkoutSessionModal({
       const date = new Date();
       date.setMinutes(
         date.getMinutes() -
-          date.getTimezoneOffset(),
+        date.getTimezoneOffset(),
       );
 
       return date
@@ -48,8 +48,11 @@ function WorkoutSessionModal({
         .slice(0, 16);
     });
 
+  const [durationHours, setDurationHours] =
+    useState(1);
+
   const [durationMinutes, setDurationMinutes] =
-    useState(60);
+    useState(0);
 
   const [notes, setNotes] =
     useState("");
@@ -57,36 +60,40 @@ function WorkoutSessionModal({
   const [items, setItems] =
     useState([]);
 
-  const groupedExercises = useMemo(() => {
-    return exercises.reduce(
-      (groups, exercise) => {
-        const group =
-          exercise.muscleGroup ??
-          "Autre";
+  const exerciseSuggestions = useMemo(
+    () =>
+      [...exercises].sort((first, second) =>
+        first.name.localeCompare(
+          second.name,
+          "fr",
+          {
+            sensitivity: "base",
+          },
+        ),
+      ),
+    [exercises],
+  );
 
-        groups[group] ??= [];
-        groups[group].push(exercise);
+  const findExerciseByName = (name) => {
+    const normalizedName =
+      name.trim().toLocaleLowerCase("fr");
 
-        return groups;
-      },
-      {},
+    return exercises.find(
+      (exercise) =>
+        exercise.name
+          .trim()
+          .toLocaleLowerCase("fr") ===
+        normalizedName,
     );
-  }, [exercises]);
+  };
 
   const addExercise = () => {
-    const firstExercise =
-      exercises[0];
-
-    if (!firstExercise) {
-      return;
-    }
-
     setItems((current) => [
       ...current,
       {
         id: crypto.randomUUID(),
-        exerciseId:
-          firstExercise.id,
+        exerciseId: null,
+        exerciseName: "",
         notes: "",
         sets: [
           emptySet(),
@@ -97,6 +104,20 @@ function WorkoutSessionModal({
     ]);
   };
 
+  const updateExerciseName = (
+    itemId,
+    exerciseName,
+  ) => {
+    const existingExercise =
+      findExerciseByName(exerciseName);
+
+    updateItem(itemId, {
+      exerciseName,
+      exerciseId:
+        existingExercise?.id ?? null,
+    });
+  };
+
   const updateItem = (
     itemId,
     changes,
@@ -105,9 +126,9 @@ function WorkoutSessionModal({
       current.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              ...changes,
-            }
+            ...item,
+            ...changes,
+          }
           : item,
       ),
     );
@@ -139,9 +160,9 @@ function WorkoutSessionModal({
             (set, index) =>
               index === setIndex
                 ? {
-                    ...set,
-                    ...changes,
-                  }
+                  ...set,
+                  ...changes,
+                }
                 : set,
           ),
         };
@@ -154,12 +175,12 @@ function WorkoutSessionModal({
       current.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              sets: [
-                ...item.sets,
-                emptySet(),
-              ],
-            }
+            ...item,
+            sets: [
+              ...item.sets,
+              emptySet(),
+            ],
+          }
           : item,
       ),
     );
@@ -173,15 +194,15 @@ function WorkoutSessionModal({
       current.map((item) =>
         item.id === itemId
           ? {
-              ...item,
-              sets:
-                item.sets.length > 1
-                  ? item.sets.filter(
-                      (_, index) =>
-                        index !== setIndex,
-                    )
-                  : item.sets,
-            }
+            ...item,
+            sets:
+              item.sets.length > 1
+                ? item.sets.filter(
+                  (_, index) =>
+                    index !== setIndex,
+                )
+                : item.sets,
+          }
           : item,
       ),
     );
@@ -190,14 +211,36 @@ function WorkoutSessionModal({
   const submit = async (event) => {
     event.preventDefault();
 
+    const cleanedItems = items.map(
+      (item) => ({
+        ...item,
+        exerciseName:
+          item.exerciseName?.trim() ?? "",
+      }),
+    );
+
+    if (
+      cleanedItems.some(
+        (item) => !item.exerciseName,
+      )
+    ) {
+      window.alert(
+        "Renseigne le nom de chaque exercice.",
+      );
+      return;
+    }
+
     const startDate = new Date(
       startedAt,
     );
 
+    const totalDurationMinutes =
+      Number(durationHours) * 60 +
+      Number(durationMinutes);
+
     const endDate = new Date(
       startDate.getTime() +
-        Number(durationMinutes) *
-          60000,
+      totalDurationMinutes * 60000,
     );
 
     await onSave({
@@ -207,7 +250,7 @@ function WorkoutSessionModal({
       endedAt:
         endDate.toISOString(),
       notes,
-      exercises: items,
+      exercises: cleanedItems,
     });
 
     setTitle(
@@ -301,19 +344,50 @@ function WorkoutSessionModal({
                   />
                 </label>
 
-                <label>
+                <div className="workout-duration-field">
                   <span>Durée estimée</span>
-                  <input
-                    type="number"
-                    min="1"
-                    value={durationMinutes}
-                    onChange={(event) =>
-                      setDurationMinutes(
-                        event.target.value,
-                      )
-                    }
-                  />
-                </label>
+
+                  <div className="workout-duration-inputs">
+                    <label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="23"
+                        value={durationHours}
+                        onChange={(event) =>
+                          setDurationHours(
+                            Math.max(
+                              0,
+                              Number(event.target.value),
+                            ),
+                          )
+                        }
+                      />
+                      <span>h</span>
+                    </label>
+
+                    <label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="59"
+                        value={durationMinutes}
+                        onChange={(event) =>
+                          setDurationMinutes(
+                            Math.min(
+                              59,
+                              Math.max(
+                                0,
+                                Number(event.target.value),
+                              ),
+                            ),
+                          )
+                        }
+                      />
+                      <span>min</span>
+                    </label>
+                  </div>
+                </div>
               </div>
 
               <label className="workout-form-notes">
@@ -362,57 +436,24 @@ function WorkoutSessionModal({
                           {itemIndex + 1}
                         </span>
 
-                        <select
+                        <input
+                          type="text"
+                          list="workout-exercise-suggestions"
                           value={
-                            item.exerciseId
+                            item.exerciseName
                           }
                           onChange={(
                             event,
                           ) =>
-                            updateItem(
+                            updateExerciseName(
                               item.id,
-                              {
-                                exerciseId:
-                                  event
-                                    .target
-                                    .value,
-                              },
+                              event.target.value,
                             )
                           }
-                        >
-                          {Object.entries(
-                            groupedExercises,
-                          ).map(
-                            ([
-                              group,
-                              groupExercises,
-                            ]) => (
-                              <optgroup
-                                key={group}
-                                label={group}
-                              >
-                                {groupExercises.map(
-                                  (
-                                    exercise,
-                                  ) => (
-                                    <option
-                                      key={
-                                        exercise.id
-                                      }
-                                      value={
-                                        exercise.id
-                                      }
-                                    >
-                                      {
-                                        exercise.name
-                                      }
-                                    </option>
-                                  ),
-                                )}
-                              </optgroup>
-                            ),
-                          )}
-                        </select>
+                          placeholder="Nom de l’exercice"
+                          autoComplete="off"
+                          required
+                        />
 
                         <button
                           type="button"
@@ -553,6 +594,17 @@ function WorkoutSessionModal({
                 )}
               </div>
             </div>
+
+            <datalist id="workout-exercise-suggestions">
+              {exerciseSuggestions.map(
+                (exercise) => (
+                  <option
+                    key={exercise.id}
+                    value={exercise.name}
+                  />
+                ),
+              )}
+            </datalist>
 
             <footer className="workout-modal__footer">
               <button
