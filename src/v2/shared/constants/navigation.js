@@ -3,6 +3,7 @@ import {
   CalendarDays,
   ChartNoAxesCombined,
   CircleUserRound,
+  CalendarRange,
   Dices,
   Dumbbell,
   Flame,
@@ -36,6 +37,11 @@ export const navigation = [
     id: "bike",
     label: "Cyclisme",
     icon: Bike,
+  },
+  {
+    id: "calendar",
+    label: "Calendrier",
+    icon: CalendarRange,
   },
   {
     id: "workout",

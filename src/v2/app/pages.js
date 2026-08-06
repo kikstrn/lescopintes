@@ -13,10 +13,11 @@ import TribunalPage from "../features/tribunal/TribunalPage";
 import ProfilePage from "../features/profile/ProfilePage";
 import ChallengesPage from "../features/challenges/ChallengesPage";
 import ChatPage from "../pages/ChatPage";
+import CalendarPage from "../features/calendar/CalendarPage";
 
 export const v2Pages = {
   home: HomePage,
-
+  calendar: CalendarPage,
   events: EventsPage,
   tennis: TennisPage,
   bike: CyclingPage,
