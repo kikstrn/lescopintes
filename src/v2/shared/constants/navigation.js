@@ -1,6 +1,7 @@
 import {
   Bike,
   CalendarDays,
+  CalendarRange,
   ChartNoAxesCombined,
   CircleUserRound,
   Dices,
@@ -25,6 +26,11 @@ export const navigation = [
     id: "events",
     label: "Événements",
     icon: CalendarDays,
+  },
+  {
+    id: "calendar",
+    label: "Calendrier",
+    icon: CalendarRange,
   },
   {
     id: "tennis",

@@ -1,5 +1,6 @@
 import HomePage from "../features/home/HomePage";
 import EventsPage from "../features/events/EventsPage";
+import CalendarPage from "../features/calendar/CalendarPage";
 import TennisPage from "../features/tennis/TennisPage";
 import CyclingPage from "../features/cycling/CyclingPage";
 import WalkingPage from "../features/walking/WalkingPage";
@@ -17,6 +18,7 @@ export const v2Pages = {
   home: HomePage,
 
   events: EventsPage,
+  calendar: CalendarPage,
   tennis: TennisPage,
   bike: CyclingPage,
   walking: WalkingPage,
