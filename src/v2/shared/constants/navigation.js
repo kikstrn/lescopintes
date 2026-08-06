@@ -1,10 +1,10 @@
 import {
   Bike,
   CalendarDays,
-  CalendarRange,
   ChartNoAxesCombined,
   CircleUserRound,
   Dices,
+  Dumbbell,
   Flame,
   House,
   Images,
@@ -28,11 +28,6 @@ export const navigation = [
     icon: CalendarDays,
   },
   {
-    id: "calendar",
-    label: "Calendrier",
-    icon: CalendarRange,
-  },
-  {
     id: "tennis",
     label: "Tennis",
     icon: Trophy,
@@ -41,6 +36,11 @@ export const navigation = [
     id: "bike",
     label: "Cyclisme",
     icon: Bike,
+  },
+  {
+    id: "workout",
+    label: "Musculation",
+    icon: Dumbbell,
   },
   {
     id: "walking",

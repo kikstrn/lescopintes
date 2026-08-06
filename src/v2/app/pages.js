@@ -1,8 +1,8 @@
 import HomePage from "../features/home/HomePage";
 import EventsPage from "../features/events/EventsPage";
-import CalendarPage from "../features/calendar/CalendarPage";
 import TennisPage from "../features/tennis/TennisPage";
 import CyclingPage from "../features/cycling/CyclingPage";
+import WorkoutPage from "../features/workout/WorkoutPage";
 import WalkingPage from "../features/walking/WalkingPage";
 import GalleryPage from "../features/gallery/GalleryPage";
 import MembersPage from "../features/members/MembersPage";
@@ -18,9 +18,9 @@ export const v2Pages = {
   home: HomePage,
 
   events: EventsPage,
-  calendar: CalendarPage,
   tennis: TennisPage,
   bike: CyclingPage,
+  workout: WorkoutPage,
   walking: WalkingPage,
   ranking: RankingPage,
   statistics: StatisticsPage,
