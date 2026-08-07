@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Les Co'Pintes",
   "short_name": "Co'Pintes",
-  "description": "L'application privée de la bande Les Co'Pintes : chat, tennis, vélo, événements et défis.",
+  "description": "L'application privée des Co'Pintes : événements, tennis, cyclisme, musculation, défis et vie du groupe.",
   "lang": "fr-FR",
   "dir": "ltr",
   "start_url": "/?source=pwa",
@@ -13,8 +13,8 @@
     "standalone",
     "minimal-ui"
   ],
-  "background_color": "#0f1d17",
-  "theme_color": "#183c2b",
+  "background_color": "#05251A",
+  "theme_color": "#082A1E",
   "orientation": "portrait-primary",
   "categories": [
     "social",
@@ -33,6 +33,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/maskable-icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/maskable-icon-512x512.png",

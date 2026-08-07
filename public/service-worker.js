@@ -1,7 +1,7 @@
 /* Les Co'Pintes — Service Worker PWA Foundation 1.3 */
 
 const CACHE_VERSION =
-  "copintes-pwa-v5";
+  "copintes-pwa-v6";
 
 const STATIC_CACHE =
   `${CACHE_VERSION}-static`;
@@ -17,6 +17,7 @@ const APP_SHELL = [
   "/apple-touch-icon.png",
   "/android-chrome-192x192.png",
   "/android-chrome-512x512.png",
+  "/maskable-icon-192x192.png",
   "/maskable-icon-512x512.png",
   "/offline.html",
 ];
