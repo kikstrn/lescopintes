@@ -15,6 +15,9 @@ import {
 import Sidebar from "../../components/Sidebar";
 import MobileNavigation from "../../components/MobileNavigation";
 import UnifiedNotificationCenter from "../../components/notifications/UnifiedNotificationCenter";
+import ReleaseNotesModal from "../../components/notifications/ReleaseNotesModal";
+import useAppRelease from "../../hooks/useAppRelease";
+import "../../styles/appRelease.css";
 
 import { useAuth } from "../../context/AuthContext";
 import { useAppData } from "../context/AppDataContext";
@@ -39,6 +42,13 @@ function AppLayout({
     isAdmin,
     logout,
   } = useAuth();
+
+  const {
+    release,
+    showRelease,
+    acknowledge,
+    closeRelease,
+  } = useAppRelease(user?.id);
 
   const {
     activePage,
@@ -241,6 +251,13 @@ function AppLayout({
           </AnimatePresence>
         </main>
       </div>
+
+      <ReleaseNotesModal
+        release={release}
+        open={showRelease}
+        onClose={closeRelease}
+        onAcknowledge={acknowledge}
+      />
 
       <MobileNavigation
         items={navigationItems}

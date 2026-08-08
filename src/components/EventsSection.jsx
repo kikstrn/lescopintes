@@ -25,7 +25,10 @@ import {
   Users,
   X,
   XCircle,
+  Maximize2,
 } from "lucide-react";
+
+import EventDetailsModal from "./events/EventDetailsModal";
 
 const FILTERS = [
   {
@@ -104,6 +107,9 @@ function EventsSection({
 
   const [period, setPeriod] = useState("upcoming");
   const [openActionsId, setOpenActionsId] =
+    useState(null);
+
+  const [detailsEvent, setDetailsEvent] =
     useState(null);
 
   const now = Date.now();
@@ -456,9 +462,22 @@ function EventsSection({
                   <h3>{event.title}</h3>
 
                   {event.description && (
-                    <p>
-                      {event.description}
-                    </p>
+                    <div className="events-detailed-card__description-wrap">
+                      <p>
+                        {event.description}
+                      </p>
+
+                      <button
+                        type="button"
+                        className="events-detailed-card__details-button"
+                        onClick={() =>
+                          setDetailsEvent(event)
+                        }
+                      >
+                        <Maximize2 size={14} />
+                        Voir les détails
+                      </button>
+                    </div>
                   )}
 
                   <div className="events-detailed-card__information">
@@ -621,6 +640,14 @@ function EventsSection({
           })}
         </div>
       </AnimatePresence>
+
+      <EventDetailsModal
+        event={detailsEvent}
+        open={Boolean(detailsEvent)}
+        onClose={() =>
+          setDetailsEvent(null)
+        }
+      />
     </section>
   );
 }
