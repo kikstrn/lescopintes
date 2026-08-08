@@ -148,6 +148,16 @@ const NOTIFICATION_PREFERENCE_ITEMS = [
   },
   {
     key:
+      "birthdays_enabled",
+
+    label:
+      "Anniversaires",
+
+    description:
+      "Rappels le jour de l’anniversaire des autres membres.",
+  },
+  {
+    key:
       "system_enabled",
 
     label:

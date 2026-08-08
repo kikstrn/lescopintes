@@ -549,7 +549,7 @@ function UpcomingBirthdays({
             Anniversaires
           </span>
 
-          <h3>Les prochains à fêter</h3>
+          <h3>Prochain anniversaire</h3>
         </div>
 
         <CakeSlice size={20} />

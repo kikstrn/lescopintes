@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import webpush from "npm:web-push@3.6.7";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
-function jsonResponse(
+function response(
   body: unknown,
   status = 200,
 ) {
@@ -23,7 +24,7 @@ function jsonResponse(
   );
 }
 
-function getParisDateParts(
+function parisDate(
   date = new Date(),
 ) {
   const parts =
@@ -52,13 +53,13 @@ function getParisDateParts(
   };
 }
 
-function memberName(
+function displayName(
   profile: Record<string, unknown>,
 ) {
-  return (
+  return String(
     profile.nickname ||
-    profile.first_name ||
-    "un membre"
+      profile.first_name ||
+      "un membre",
   );
 }
 
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
     req.method !== "POST" &&
     req.method !== "GET"
   ) {
-    return jsonResponse(
+    return response(
       { error: "Method not allowed" },
       405,
     );
@@ -88,24 +89,35 @@ Deno.serve(async (req) => {
       "SUPABASE_SERVICE_ROLE_KEY",
     );
 
+  const vapidPublicKey =
+    Deno.env.get(
+      "VAPID_PUBLIC_KEY",
+    );
+
+  const vapidPrivateKey =
+    Deno.env.get(
+      "VAPID_PRIVATE_KEY",
+    );
+
+  const vapidSubject =
+    Deno.env.get(
+      "VAPID_SUBJECT",
+    ) ??
+    "mailto:lescopintes@email.com";
+
   if (
     !supabaseUrl ||
     !serviceRoleKey
   ) {
-    return jsonResponse(
+    return response(
       {
         error:
-          "Supabase server secrets are missing.",
+          "SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY absent.",
       },
       500,
     );
   }
 
-  /*
-   * Facultatif mais recommandé pour les appels Cron externes.
-   * Si BIRTHDAY_CRON_SECRET existe, l'appel doit fournir :
-   * x-cron-secret: <secret>
-   */
   const cronSecret =
     Deno.env.get(
       "BIRTHDAY_CRON_SECRET",
@@ -120,11 +132,25 @@ Deno.serve(async (req) => {
     if (
       receivedSecret !== cronSecret
     ) {
-      return jsonResponse(
+      return response(
         { error: "Unauthorized" },
         401,
       );
     }
+  }
+
+  const pushConfigured =
+    Boolean(
+      vapidPublicKey &&
+      vapidPrivateKey,
+    );
+
+  if (pushConfigured) {
+    webpush.setVapidDetails(
+      vapidSubject,
+      vapidPublicKey!,
+      vapidPrivateKey!,
+    );
   }
 
   const supabase =
@@ -140,38 +166,42 @@ Deno.serve(async (req) => {
     );
 
   const today =
-    getParisDateParts();
+    parisDate();
 
   const {
     data: profiles,
-    error: profilesError,
+    error: profileError,
   } = await supabase
     .from("profiles")
     .select(
       "id, first_name, nickname, initials, avatar_path, birth_date",
     );
 
-  if (profilesError) {
-    return jsonResponse(
+  if (profileError) {
+    return response(
       {
         error:
-          profilesError.message,
+          profileError.message,
       },
       500,
     );
   }
 
-  const allProfiles =
+  const members =
     profiles ?? [];
 
   const birthdays =
-    allProfiles.filter(
+    members.filter(
       (profile) => {
         if (!profile.birth_date) {
           return false;
         }
 
-        const parts =
+        const [
+          ,
+          month,
+          day,
+        ] =
           String(
             profile.birth_date,
           )
@@ -179,42 +209,31 @@ Deno.serve(async (req) => {
             .map(Number);
 
         return (
-          parts.length === 3 &&
-          parts[1] === today.month &&
-          parts[2] === today.day
+          month === today.month &&
+          day === today.day
         );
       },
     );
 
-  if (!birthdays.length) {
-    return jsonResponse({
-      ok: true,
-      date:
-        `${today.year}-${String(
-          today.month,
-        ).padStart(2, "0")}-${String(
-          today.day,
-        ).padStart(2, "0")}`,
-      birthdays: 0,
-      created: 0,
-      skipped: 0,
-    });
-  }
+  let notificationsCreated = 0;
+  let notificationsSkipped = 0;
+  let pushSent = 0;
+  let pushFailed = 0;
+  let preferenceSkipped = 0;
 
-  let created = 0;
-  let skipped = 0;
-  const errors: Array<{
-    recipientId: string;
-    birthdayProfileId: string;
-    message: string;
-  }> = [];
+  const errors: unknown[] = [];
 
   for (
     const birthdayProfile
     of birthdays
   ) {
+    const name =
+      displayName(
+        birthdayProfile,
+      );
+
     const recipients =
-      allProfiles.filter(
+      members.filter(
         (profile) =>
           String(profile.id) !==
           String(
@@ -226,6 +245,47 @@ Deno.serve(async (req) => {
       const recipient
       of recipients
     ) {
+      /*
+       * Absence de ligne de préférences = valeurs par défaut,
+       * donc anniversaires activés.
+       */
+      const {
+        data: preference,
+        error: preferenceError,
+      } = await supabase
+        .from(
+          "notification_preferences",
+        )
+        .select(
+          "birthdays_enabled",
+        )
+        .eq(
+          "profile_id",
+          recipient.id,
+        )
+        .maybeSingle();
+
+      if (preferenceError) {
+        errors.push({
+          stage:
+            "preferences",
+          recipientId:
+            recipient.id,
+          message:
+            preferenceError.message,
+        });
+        continue;
+      }
+
+      if (
+        preference &&
+        preference.birthdays_enabled ===
+          false
+      ) {
+        preferenceSkipped += 1;
+        continue;
+      }
+
       const dedupeKey = [
         "birthday",
         today.year,
@@ -238,7 +298,9 @@ Deno.serve(async (req) => {
         error: existingError,
       } = await supabase
         .from("notifications")
-        .select("id")
+        .select(
+          "id, push_sent_at, push_error",
+        )
         .eq(
           "recipient_id",
           recipient.id,
@@ -259,121 +321,279 @@ Deno.serve(async (req) => {
 
       if (existingError) {
         errors.push({
+          stage:
+            "dedupe",
           recipientId:
-            String(
-              recipient.id,
-            ),
-          birthdayProfileId:
-            String(
-              birthdayProfile.id,
-            ),
+            recipient.id,
           message:
             existingError.message,
         });
-
         continue;
       }
 
-      if (existing) {
-        skipped += 1;
+      let notificationId =
+        existing?.id ??
+        null;
+
+      if (!notificationId) {
+        const {
+          data: inserted,
+          error: insertError,
+        } = await supabase
+          .from(
+            "notifications",
+          )
+          .insert({
+            recipient_id:
+              recipient.id,
+
+            actor_id:
+              birthdayProfile.id,
+
+            notification_type:
+              "birthday",
+
+            title:
+              `🎉 Anniversaire de ${name}`,
+
+            message:
+              `Aujourd’hui, c’est l’anniversaire de ${name} ! Souhaitez-lui un joyeux anniversaire 🎂`,
+
+            entity_type:
+              "profile",
+
+            entity_id:
+              String(
+                birthdayProfile.id,
+              ),
+
+            page_id:
+              "members",
+
+            metadata: {
+              dedupe_key:
+                dedupeKey,
+
+              birthday_profile_id:
+                birthdayProfile.id,
+
+              birthday_year:
+                today.year,
+
+              birth_date:
+                birthdayProfile.birth_date,
+            },
+          })
+          .select("id")
+          .single();
+
+        if (insertError) {
+          errors.push({
+            stage:
+              "notification",
+            recipientId:
+              recipient.id,
+            message:
+              insertError.message,
+          });
+          continue;
+        }
+
+        notificationId =
+          inserted.id;
+
+        notificationsCreated += 1;
+      } else {
+        notificationsSkipped += 1;
+      }
+
+      /*
+       * Si la notification existe déjà et qu'un Push a déjà été
+       * marqué envoyé, on ne le renvoie pas.
+       */
+      if (
+        existing?.push_sent_at
+      ) {
         continue;
       }
 
-      const name =
-        String(
-          memberName(
-            birthdayProfile,
-          ),
-        );
+      if (!pushConfigured) {
+        continue;
+      }
 
       const {
-        error: insertError,
+        data: subscriptions,
+        error: subscriptionsError,
       } = await supabase
-        .from("notifications")
-        .insert({
-          recipient_id:
+        .from(
+          "push_subscriptions",
+        )
+        .select(
+          "id, endpoint, p256dh, auth",
+        )
+        .eq(
+          "profile_id",
+          recipient.id,
+        )
+        .eq(
+          "is_active",
+          true,
+        );
+
+      if (subscriptionsError) {
+        errors.push({
+          stage:
+            "subscriptions",
+          recipientId:
             recipient.id,
+          message:
+            subscriptionsError.message,
+        });
+        continue;
+      }
 
-          actor_id:
-            birthdayProfile.id,
-
-          notification_type:
-            "birthday",
-
+      const payload =
+        JSON.stringify({
           title:
             `🎉 Anniversaire de ${name}`,
 
-          message:
-            `Aujourd’hui, c’est l’anniversaire de ${name} ! Souhaitez-lui un joyeux anniversaire 🎂`,
+          body:
+            `Aujourd’hui, c’est l’anniversaire de ${name} ! 🎂`,
 
-          entity_type:
-            "profile",
+          url:
+            "/?page=members",
 
-          entity_id:
-            String(
+          icon:
+            "/android-chrome-192x192.png",
+
+          badge:
+            "/notification-badge-96x96.png",
+
+          tag:
+            dedupeKey,
+
+          data: {
+            notificationId,
+            birthdayProfileId:
               birthdayProfile.id,
-            ),
-
-          page_id:
-            "members",
-
-          metadata: {
-            dedupe_key:
-              dedupeKey,
-
-            birthday_profile_id:
-              birthdayProfile.id,
-
-            birthday_year:
-              today.year,
-
-            birth_date:
-              birthdayProfile.birth_date,
-
-            timezone:
-              "Europe/Paris",
           },
         });
 
-      if (insertError) {
-        errors.push({
-          recipientId:
-            String(
-              recipient.id,
-            ),
-          birthdayProfileId:
-            String(
-              birthdayProfile.id,
-            ),
-          message:
-            insertError.message,
-        });
+      const pushErrors:
+        string[] = [];
 
-        continue;
+      let recipientPushSent =
+        false;
+
+      for (
+        const subscription
+        of subscriptions ?? []
+      ) {
+        try {
+          await webpush.sendNotification(
+            {
+              endpoint:
+                subscription.endpoint,
+
+              keys: {
+                p256dh:
+                  subscription.p256dh,
+                auth:
+                  subscription.auth,
+              },
+            },
+            payload,
+          );
+
+          pushSent += 1;
+          recipientPushSent =
+            true;
+        } catch (pushError) {
+          pushFailed += 1;
+
+          const error =
+            pushError as {
+              statusCode?: number;
+              message?: string;
+            };
+
+          pushErrors.push(
+            error.message ??
+              "Erreur Push inconnue.",
+          );
+
+          /*
+           * 404 / 410 = abonnement navigateur expiré.
+           */
+          if (
+            error.statusCode ===
+              404 ||
+            error.statusCode ===
+              410
+          ) {
+            await supabase
+              .from(
+                "push_subscriptions",
+              )
+              .update({
+                is_active:
+                  false,
+              })
+              .eq(
+                "id",
+                subscription.id,
+              );
+          }
+        }
       }
 
-      created += 1;
+      if (notificationId) {
+        await supabase
+          .from("notifications")
+          .update({
+            push_sent_at:
+              recipientPushSent
+                ? new Date()
+                    .toISOString()
+                : null,
+
+            push_error:
+              pushErrors.length
+                ? pushErrors
+                    .slice(0, 3)
+                    .join(" | ")
+                : null,
+          })
+          .eq(
+            "id",
+            notificationId,
+          );
+      }
     }
   }
 
-  return jsonResponse(
-    {
-      ok:
-        errors.length === 0,
-      date:
-        `${today.year}-${String(
-          today.month,
-        ).padStart(2, "0")}-${String(
-          today.day,
-        ).padStart(2, "0")}`,
-      birthdays:
-        birthdays.length,
-      created,
-      skipped,
-      errors,
-    },
-    errors.length
-      ? 207
-      : 200,
-  );
+  return response({
+    ok:
+      errors.length === 0,
+
+    date:
+      `${today.year}-${String(
+        today.month,
+      ).padStart(2, "0")}-${String(
+        today.day,
+      ).padStart(2, "0")}`,
+
+    birthdays:
+      birthdays.length,
+
+    notificationsCreated,
+    notificationsSkipped,
+    preferenceSkipped,
+
+    pushConfigured,
+    pushSent,
+    pushFailed,
+
+    errors,
+  });
 });

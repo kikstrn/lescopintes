@@ -1,4 +1,1 @@
-# Configuration locale de la fonction.
-# La fonction utilise la service role côté serveur.
-# Pour un Cron Supabase interne, tu peux désactiver la vérification JWT.
 verify_jwt = false
