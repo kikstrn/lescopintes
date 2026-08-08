@@ -17,7 +17,6 @@ import MobileNavigation from "../../components/MobileNavigation";
 import UnifiedNotificationCenter from "../../components/notifications/UnifiedNotificationCenter";
 import ReleaseNotesModal from "../../components/notifications/ReleaseNotesModal";
 import useAppRelease from "../../hooks/useAppRelease";
-import "../../styles/appRelease.css";
 
 import { useAuth } from "../../context/AuthContext";
 import { useAppData } from "../context/AppDataContext";
