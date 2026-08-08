@@ -11,6 +11,7 @@ const PROFILE_SELECT = `
   bio,
   avatar_url,
   avatar_path,
+  birth_date,
   created_at,
   updated_at
 `;
@@ -52,6 +53,9 @@ function mapProfile(profile) {
 
     avatarPath:
       profile.avatar_path ?? null,
+
+    birthDate:
+      profile.birth_date ?? "",
 
     createdAt:
       profile.created_at ?? null,
@@ -137,6 +141,7 @@ export async function updateProfile(
     nickname,
     initials,
     bio,
+    birthDate,
   },
 ) {
   if (!profileId) {
@@ -159,6 +164,40 @@ export async function updateProfile(
 
   const cleanedBio =
     bio?.trim() ?? "";
+
+  const cleanedBirthDate =
+    birthDate?.trim() ?? "";
+
+  if (
+    cleanedBirthDate &&
+    !/^\d{4}-\d{2}-\d{2}$/.test(
+      cleanedBirthDate,
+    )
+  ) {
+    throw new Error(
+      "La date de naissance est invalide.",
+    );
+  }
+
+  if (cleanedBirthDate) {
+    const birthDateValue =
+      new Date(
+        `${cleanedBirthDate}T00:00:00`,
+      );
+
+    const today = new Date();
+
+    if (
+      Number.isNaN(
+        birthDateValue.getTime(),
+      ) ||
+      birthDateValue > today
+    ) {
+      throw new Error(
+        "La date de naissance ne peut pas être dans le futur.",
+      );
+    }
+  }
 
   if (!cleanedFirstName) {
     throw new Error(
@@ -198,6 +237,9 @@ export async function updateProfile(
 
       bio:
         cleanedBio || null,
+
+      birth_date:
+        cleanedBirthDate || null,
     })
     .eq("id", profileId)
     .select(PROFILE_SELECT)

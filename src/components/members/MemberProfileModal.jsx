@@ -5,6 +5,7 @@ import {
 
 import {
     Bike,
+    CakeSlice,
     CalendarDays,
     Camera,
     Crown,
@@ -16,6 +17,10 @@ import {
     Trophy,
     X,
 } from "lucide-react";
+
+import {
+    formatBirthdayWithAge,
+} from "../../utils/birthdayUtils";
 
 function formatMemberSince(value) {
     if (!value) {
@@ -202,6 +207,17 @@ function MemberProfileModal({
                                     member.createdAt,
                                 )}
                             </div>
+
+                            {member.birthDate && (
+                                <div className="member-profile-modal__member-since">
+                                    <CakeSlice size={16} />
+
+                                    Anniversaire :{" "}
+                                    {formatBirthdayWithAge(
+                                        member.birthDate,
+                                    )}
+                                </div>
+                            )}
 
                             <p className="member-profile-modal__bio">
                                 {member.bio ||

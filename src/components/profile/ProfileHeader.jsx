@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import {
+  CakeSlice,
   Camera,
   CheckCircle2,
   Edit3,
@@ -11,6 +12,10 @@ import {
   ShieldCheck,
   Trash2,
 } from "lucide-react";
+
+import {
+  formatBirthdayWithAge,
+} from "../../utils/birthdayUtils";
 
 function formatMemberSince(value) {
   if (!value) {
@@ -216,6 +221,18 @@ function ProfileHeader({
                 profile.createdAt,
               )}
             </span>
+
+            {profile.birthDate && (
+              <span className="profile-premium-member-since">
+                <CakeSlice
+                  size={14}
+                />
+
+                {formatBirthdayWithAge(
+                  profile.birthDate,
+                )}
+              </span>
+            )}
           </div>
 
           <div className="profile-premium-header__name-row">

@@ -10,6 +10,7 @@ import {
 
 import {
   AlertCircle,
+  CakeSlice,
   Check,
   Edit3,
   LoaderCircle,
@@ -31,6 +32,9 @@ function createInitialValues(profile) {
 
     bio:
       profile?.bio ?? "",
+
+    birthDate:
+      profile?.birthDate ?? "",
   };
 }
 
@@ -120,6 +124,28 @@ function EditProfileModal({
     const bio =
       form.bio.trim();
 
+    const birthDate =
+      form.birthDate.trim();
+
+    if (birthDate) {
+      const parsedBirthDate =
+        new Date(
+          `${birthDate}T00:00:00`,
+        );
+
+      if (
+        Number.isNaN(
+          parsedBirthDate.getTime(),
+        ) ||
+        parsedBirthDate > new Date()
+      ) {
+        setErrorMessage(
+          "La date de naissance est invalide.",
+        );
+        return;
+      }
+    }
+
     if (!firstName) {
       setErrorMessage(
         "Le prénom est obligatoire.",
@@ -163,6 +189,7 @@ function EditProfileModal({
         nickname,
         initials,
         bio,
+        birthDate,
       });
     } catch (error) {
       setErrorMessage(
@@ -183,7 +210,9 @@ function EditProfileModal({
       (profile?.initials ??
         "") ||
     form.bio !==
-      (profile?.bio ?? "");
+      (profile?.bio ?? "") ||
+    form.birthDate !==
+      (profile?.birthDate ?? "");
 
   return (
     <AnimatePresence>
@@ -391,6 +420,46 @@ function EditProfileModal({
                       /3
                     </small>
                   </div>
+                </label>
+
+
+                <label className="profile-edit-form__field profile-edit-form__field--wide">
+                  <span>
+                    Date de naissance
+                  </span>
+
+                  <div className="profile-edit-form__control">
+                    <CakeSlice
+                      size={18}
+                    />
+
+                    <input
+                      type="date"
+                      value={
+                        form.birthDate
+                      }
+                      max={
+                        new Date()
+                          .toISOString()
+                          .slice(0, 10)
+                      }
+                      disabled={saving}
+                      autoComplete="bday"
+                      onChange={(
+                        event,
+                      ) =>
+                        updateField(
+                          "birthDate",
+                          event.target
+                            .value,
+                        )
+                      }
+                    />
+                  </div>
+
+                  <small className="profile-edit-form__helper">
+                    Cette date servira à afficher ton anniversaire dans le calendrier.
+                  </small>
                 </label>
 
                 <label className="profile-edit-form__field profile-edit-form__field--wide">

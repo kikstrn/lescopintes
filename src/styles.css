@@ -38866,3 +38866,211 @@ body:has(.workout-modal) {
   font-size: 0.53rem;
   transform: translateY(-50%);
 }
+
+/* =========================================================
+   ANNIVERSAIRES / PROFILS
+========================================================= */
+
+.profile-edit-form__helper {
+  display: block;
+  margin-top: 7px;
+  color: var(--text-muted);
+  font-size: 0.52rem;
+  line-height: 1.55;
+}
+
+.profile-edit-form__control input[type="date"] {
+  min-width: 0;
+  color-scheme: dark;
+}
+
+.profile-premium-header__badges {
+  flex-wrap: wrap;
+}
+
+.member-profile-modal__member-since + .member-profile-modal__member-since {
+  margin-top: 7px;
+}
+
+
+/* =========================================================
+   CALENDRIER — ANNIVERSAIRES
+========================================================= */
+
+.cop-calendar__legend-item--birthday svg {
+  color: #d5a84d;
+}
+
+.cop-calendar-chip--birthday {
+  border-color: rgba(213, 168, 77, 0.2);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(213, 168, 77, 0.13),
+      rgba(178, 120, 255, 0.08)
+    );
+}
+
+.cop-calendar-chip--birthday svg {
+  color: #e2b95f;
+}
+
+.cop-calendar-day__dot--birthday {
+  background: #e2b95f;
+  box-shadow: 0 0 8px rgba(226, 185, 95, 0.4);
+}
+
+.cop-calendar-detail--birthday
+  .cop-calendar-detail__icon {
+  color: #e2b95f;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(226, 185, 95, 0.16),
+      rgba(178, 120, 255, 0.11)
+    );
+}
+
+.cop-calendar-detail__birthday-age {
+  margin-top: 15px;
+  padding: 12px;
+  border: 1px solid rgba(226, 185, 95, 0.18);
+  border-radius: 12px;
+  background: rgba(226, 185, 95, 0.07);
+}
+
+.cop-calendar-detail__birthday-age small,
+.cop-calendar-detail__birthday-age strong {
+  display: block;
+}
+
+.cop-calendar-detail__birthday-age small {
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+.cop-calendar-detail__birthday-age strong {
+  margin-top: 4px;
+  color: #f2d48a;
+  font-size: 0.72rem;
+}
+
+.cop-calendar-birthdays {
+  padding: 16px;
+  border-radius: var(--radius-large);
+}
+
+.cop-calendar-birthdays__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cop-calendar-birthdays__heading h3 {
+  margin-top: 2px;
+  font-size: 0.86rem;
+}
+
+.cop-calendar-birthdays__heading > svg {
+  color: #e2b95f;
+}
+
+.cop-calendar-birthdays__list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.cop-calendar-birthday-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid rgba(226, 185, 95, 0.13);
+  border-radius: 13px;
+  color: var(--text);
+  text-align: left;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(226, 185, 95, 0.075),
+      rgba(178, 120, 255, 0.04)
+    );
+  transition:
+    transform var(--transition),
+    border-color var(--transition),
+    background var(--transition);
+}
+
+.cop-calendar-birthday-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(226, 185, 95, 0.3);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(226, 185, 95, 0.12),
+      rgba(178, 120, 255, 0.07)
+    );
+}
+
+.cop-calendar-birthday-card__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  background: rgba(226, 185, 95, 0.1);
+  font-size: 1rem;
+}
+
+.cop-calendar-birthday-card__content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cop-calendar-birthday-card__content strong {
+  overflow: hidden;
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cop-calendar-birthday-card__content small {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 0.49rem;
+}
+
+@media (max-width: 1100px) {
+  .cop-calendar-birthdays__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .cop-calendar-birthdays {
+    padding: 13px;
+  }
+
+  .cop-calendar-birthdays__list {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+
+  .cop-calendar-birthdays__list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cop-calendar-birthday-card {
+    min-width: 165px;
+  }
+}
+

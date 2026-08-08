@@ -2,12 +2,14 @@ export const CALENDAR_ITEM_TYPES = {
   EVENT: "event",
   BIKE: "bike",
   TENNIS: "tennis",
+  BIRTHDAY: "birthday",
 };
 
 export const CALENDAR_TYPE_LABELS = {
   [CALENDAR_ITEM_TYPES.EVENT]: "Événement",
   [CALENDAR_ITEM_TYPES.BIKE]: "Sortie vélo",
   [CALENDAR_ITEM_TYPES.TENNIS]: "Match de tennis",
+  [CALENDAR_ITEM_TYPES.BIRTHDAY]: "Anniversaire",
 };
 
 export const CALENDAR_WEEKDAYS = [
@@ -322,6 +324,183 @@ function participantNames(source) {
     .filter(Boolean);
 }
 
+function getBirthDateParts(value) {
+  if (!value || typeof value !== "string") {
+    return null;
+  }
+
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})$/,
+  );
+
+  if (!match) {
+    return null;
+  }
+
+  const [, year, month, day] = match;
+
+  return {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+  };
+}
+
+function isLeapYear(year) {
+  return (
+    year % 400 === 0 ||
+    (year % 4 === 0 && year % 100 !== 0)
+  );
+}
+
+function getBirthdayDateForYear(
+  birthDate,
+  year,
+) {
+  const parts = getBirthDateParts(
+    birthDate,
+  );
+
+  if (!parts) {
+    return null;
+  }
+
+  /*
+   * Pour les personnes nées le 29 février, on affiche
+   * l'anniversaire le 28 février les années non bissextiles.
+   */
+  const effectiveDay =
+    parts.month === 2 &&
+    parts.day === 29 &&
+    !isLeapYear(year)
+      ? 28
+      : parts.day;
+
+  return new Date(
+    year,
+    parts.month - 1,
+    effectiveDay,
+    12,
+    0,
+    0,
+    0,
+  );
+}
+
+function normaliseBirthday(
+  member,
+  year,
+) {
+  const date =
+    getBirthdayDateForYear(
+      member.birthDate ??
+        member.birth_date,
+      year,
+    );
+
+  if (!date) {
+    return null;
+  }
+
+  const parts = getBirthDateParts(
+    member.birthDate ??
+      member.birth_date,
+  );
+
+  const age = parts
+    ? year - parts.year
+    : null;
+
+  const name =
+    displayName(member) ??
+    "un membre";
+
+  return {
+    id: `birthday:${member.id}:${year}`,
+    sourceId: member.id,
+    type: CALENDAR_ITEM_TYPES.BIRTHDAY,
+    title: `🎂 Anniversaire de ${name}`,
+    date,
+    dateKey: toDateKey(date),
+    timeLabel: "",
+    location: "",
+    description:
+      age !== null
+        ? `${name} fête ses ${age} ans.`
+        : `C’est l’anniversaire de ${name}.`,
+    participants: [],
+    age,
+    member,
+    status: "birthday",
+    source: member,
+  };
+}
+
+export function buildBirthdayItems(
+  members = [],
+  {
+    fromYear = new Date().getFullYear() - 2,
+    toYear = new Date().getFullYear() + 3,
+  } = {},
+) {
+  const items = [];
+
+  members.forEach((member) => {
+    const birthDate =
+      member?.birthDate ??
+      member?.birth_date;
+
+    if (!birthDate) {
+      return;
+    }
+
+    for (
+      let year = fromYear;
+      year <= toYear;
+      year += 1
+    ) {
+      const item = normaliseBirthday(
+        member,
+        year,
+      );
+
+      if (item) {
+        items.push(item);
+      }
+    }
+  });
+
+  return items;
+}
+
+export function getUpcomingBirthdays(
+  items = [],
+  {
+    from = new Date(),
+    limit = 5,
+  } = {},
+) {
+  const fromDate = new Date(
+    from.getFullYear(),
+    from.getMonth(),
+    from.getDate(),
+  );
+
+  return items
+    .filter(
+      (item) =>
+        item.type ===
+          CALENDAR_ITEM_TYPES.BIRTHDAY &&
+        item.date >= fromDate,
+    )
+    .sort(
+      (first, second) =>
+        first.date.getTime() -
+        second.date.getTime(),
+    )
+    .slice(0, limit);
+}
+
 function normaliseEvent(event) {
   const date = resolveDate(event);
 
@@ -490,11 +669,13 @@ export function buildCalendarItems({
   events = [],
   bikeRides = [],
   tennisMatches = [],
+  members = [],
 } = {}) {
   return [
     ...events.map(normaliseEvent),
     ...bikeRides.map(normaliseBikeRide),
     ...tennisMatches.map(normaliseTennisMatch),
+    ...buildBirthdayItems(members),
   ]
     .filter(Boolean)
     .sort(
@@ -558,6 +739,7 @@ export function countItemsByType(
       event: 0,
       bike: 0,
       tennis: 0,
+      birthday: 0,
     },
   );
 }
