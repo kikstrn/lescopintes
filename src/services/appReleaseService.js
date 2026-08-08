@@ -13,11 +13,16 @@ export async function getLatestActiveRelease() {
       is_active
     `)
     .eq("is_active", true)
-    .order("released_at", { ascending: false })
+    .order("released_at", {
+      ascending: false,
+    })
     .limit(1)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
+
   return data ?? null;
 }
 
@@ -25,7 +30,9 @@ export async function hasViewedRelease(
   releaseId,
   profileId,
 ) {
-  if (!releaseId || !profileId) return true;
+  if (!releaseId || !profileId) {
+    return true;
+  }
 
   const { data, error } = await supabase
     .from("app_release_views")
@@ -34,7 +41,10 @@ export async function hasViewedRelease(
     .eq("profile_id", profileId)
     .maybeSingle();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
+
   return Boolean(data);
 }
 
@@ -42,7 +52,9 @@ export async function markReleaseAsViewed(
   releaseId,
   profileId,
 ) {
-  if (!releaseId || !profileId) return;
+  if (!releaseId || !profileId) {
+    return;
+  }
 
   const { error } = await supabase
     .from("app_release_views")
@@ -50,91 +62,48 @@ export async function markReleaseAsViewed(
       {
         release_id: releaseId,
         profile_id: profileId,
-        viewed_at: new Date().toISOString(),
+        viewed_at:
+          new Date().toISOString(),
       },
       {
-        onConflict: "release_id,profile_id",
+        onConflict:
+          "release_id,profile_id",
       },
     );
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
-export async function createReleaseNotification(
-  release,
-  profileId,
-) {
-  if (!release?.id || !profileId) return null;
-
-  const dedupeKey =
-    `app-release:${release.id}:${profileId}`;
-
-  const { data: existing, error: lookupError } =
-    await supabase
-      .from("notifications")
-      .select("id")
-      .eq("recipient_id", profileId)
-      .eq("notification_type", "app_update")
-      .contains("metadata", {
-        dedupe_key: dedupeKey,
-      })
-      .limit(1)
-      .maybeSingle();
-
-  if (lookupError) throw lookupError;
-  if (existing) return existing;
-
-  const { data, error } = await supabase
-    .from("notifications")
-    .insert({
-      recipient_id: profileId,
-      actor_id: null,
-      notification_type: "app_update",
-      title:
-        release.title ||
-        `✨ Nouvelle version ${release.version}`,
-      message:
-        release.message ||
-        "Une nouvelle mise à jour des Co'Pintes est disponible.",
-      entity_type: "app_release",
-      entity_id: String(release.id),
-      page_id: "updates",
-      metadata: {
-        dedupe_key: dedupeKey,
-        release_id: release.id,
-        version: release.version,
-        changes: release.changes ?? [],
-      },
-    })
-    .select()
-    .single();
-
-  if (error) throw error;
-  return data;
-}
-
+/*
+ * IMPORTANT :
+ * Les notifications app_update sont désormais créées côté Supabase
+ * par un trigger sur app_releases.
+ *
+ * Le navigateur ne tente plus d'insérer directement dans
+ * public.notifications. Cela évite les problèmes de RLS et garantit
+ * que la notification existe même si l'utilisateur n'a pas l'app ouverte.
+ */
 export async function checkForAppUpdate(
   profileId,
 ) {
-  if (!profileId) return null;
+  if (!profileId) {
+    return null;
+  }
 
   const release =
     await getLatestActiveRelease();
 
-  if (!release) return null;
+  if (!release) {
+    return null;
+  }
 
   const viewed =
     await hasViewedRelease(
       release.id,
       profileId,
     );
-
-  if (!viewed) {
-    await createReleaseNotification(
-      release,
-      profileId,
-    );
-  }
 
   return {
     release,

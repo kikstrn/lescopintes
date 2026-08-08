@@ -47,7 +47,7 @@ function AppLayout({
     showRelease,
     acknowledge,
     closeRelease,
-  } = useAppRelease(user?.id);
+  } = useAppRelease(profile?.id);
 
   const {
     activePage,

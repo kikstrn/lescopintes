@@ -1,0 +1,119 @@
+name: Publish Les Co'Pintes release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  publish-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read release metadata
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ ! -f package.json ]; then
+            echo "package.json introuvable à la racine du dépôt."
+            exit 1
+          fi
+
+          BASE_VERSION="$(node -p "require('./package.json').version || '0.0.0'")"
+          SHORT_SHA="${GITHUB_SHA::7}"
+          VERSION="${BASE_VERSION}+${SHORT_SHA}"
+
+          if [ -f RELEASE_NOTES.md ]; then
+            TITLE="$(sed -n '1p' RELEASE_NOTES.md | sed 's/^#\{1,6\}[[:space:]]*//' | xargs)"
+            BODY="$(tail -n +2 RELEASE_NOTES.md)"
+          else
+            TITLE="✨ Nouvelle mise à jour disponible"
+            BODY="- Améliorations et corrections générales"
+          fi
+
+          if [ -z "$TITLE" ]; then
+            TITLE="✨ Nouvelle mise à jour disponible"
+          fi
+
+          # Convertit les lignes de liste Markdown en tableau JSON.
+          CHANGES_JSON="$(printf '%s\n' "$BODY" \
+            | sed -n 's/^[[:space:]]*[-*][[:space:]]*//p' \
+            | jq -R -s 'split("\n") | map(select(length > 0))')"
+
+          if [ "$CHANGES_JSON" = "[]" ]; then
+            CHANGES_JSON='["Améliorations et corrections générales"]'
+          fi
+
+          MESSAGE="$(printf '%s\n' "$BODY" \
+            | sed '/^[[:space:]]*[-*][[:space:]]*/d' \
+            | sed '/^[[:space:]]*$/d' \
+            | head -n 3 \
+            | paste -sd ' ' -)"
+
+          if [ -z "$MESSAGE" ]; then
+            MESSAGE="Une nouvelle version des Co'Pintes est disponible."
+          fi
+
+          {
+            echo "version=$VERSION"
+            echo "title=$TITLE"
+            echo "message<<EOF"
+            echo "$MESSAGE"
+            echo "EOF"
+            echo "changes<<EOF"
+            echo "$CHANGES_JSON"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish release and push notifications
+        env:
+          SUPABASE_FUNCTION_URL: ${{ secrets.SUPABASE_PUBLISH_RELEASE_URL }}
+          RELEASE_WEBHOOK_SECRET: ${{ secrets.RELEASE_WEBHOOK_SECRET }}
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_TITLE: ${{ steps.release.outputs.title }}
+          RELEASE_MESSAGE: ${{ steps.release.outputs.message }}
+          RELEASE_CHANGES: ${{ steps.release.outputs.changes }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SUPABASE_FUNCTION_URL:-}" ]; then
+            echo "Secret SUPABASE_PUBLISH_RELEASE_URL manquant."
+            exit 1
+          fi
+
+          if [ -z "${RELEASE_WEBHOOK_SECRET:-}" ]; then
+            echo "Secret RELEASE_WEBHOOK_SECRET manquant."
+            exit 1
+          fi
+
+          PAYLOAD="$(jq -n \
+            --arg version "$RELEASE_VERSION" \
+            --arg title "$RELEASE_TITLE" \
+            --arg message "$RELEASE_MESSAGE" \
+            --argjson changes "$RELEASE_CHANGES" \
+            '{
+              version: $version,
+              title: $title,
+              message: $message,
+              changes: $changes
+            }')"
+
+          RESPONSE="$(curl --fail-with-body \
+            --silent \
+            --show-error \
+            --request POST \
+            "$SUPABASE_FUNCTION_URL" \
+            --header "Content-Type: application/json" \
+            --header "x-release-secret: $RELEASE_WEBHOOK_SECRET" \
+            --data "$PAYLOAD")"
+
+          echo "$RESPONSE" | jq .
