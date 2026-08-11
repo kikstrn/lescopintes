@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import {
   CalendarDays,
   ChevronDown,
+  ExternalLink,
   History,
   Medal,
   Plus,
@@ -226,14 +227,33 @@ function TennisSection({
             <strong>{totalSets}</strong>
           </div>
 
-          <button
-            type="button"
-            className="primary-button"
-            onClick={onAddMatch}
-          >
-            <Plus size={18} />
-            Ajouter un match
-          </button>
+          <div className="tennis-section__action-buttons">
+            <a
+              href="https://asdro.tournon-kilian.workers.dev/connexion"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="tennis-booking-button"
+              aria-label="Réserver un terrain de tennis"
+            >
+              <CalendarDays size={18} />
+
+              <span>
+                <small>Planning des terrains</small>
+                <strong>Réserver un créneau</strong>
+              </span>
+
+              <ExternalLink size={16} />
+            </a>
+
+            <button
+              type="button"
+              className="primary-button"
+              onClick={onAddMatch}
+            >
+              <Plus size={18} />
+              Ajouter un match
+            </button>
+          </div>
         </div>
       </motion.header>
 
