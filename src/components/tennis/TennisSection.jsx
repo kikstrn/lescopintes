@@ -96,14 +96,14 @@ function TennisSection({
 
         const matchesPlayed = Number(
           row.matchesPlayed ??
-            row.matches_played ??
-            0,
+          row.matches_played ??
+          0,
         );
 
         const matchesWon = Number(
           row.matchesWon ??
-            row.matches_won ??
-            0,
+          row.matches_won ??
+          0,
         );
 
         return {
@@ -115,18 +115,18 @@ function TennisSection({
             ) ?? null,
           tennisPoints: Number(
             row.tennisPoints ??
-              row.tennis_points ??
-              0,
+            row.tennis_points ??
+            0,
           ),
           matchesPlayed,
           matchesWon,
           winRate:
             matchesPlayed > 0
               ? Math.round(
-                  (matchesWon /
-                    matchesPlayed) *
-                    100,
-                )
+                (matchesWon /
+                  matchesPlayed) *
+                100,
+              )
               : 0,
         };
       })
@@ -229,7 +229,8 @@ function TennisSection({
 
           <div className="tennis-section__action-buttons">
             <a
-              href="https://asdro.tournon-kilian.workers.dev/connexion"
+              href="https://asdro.kstudio.workers.dev
+/connexion"
               target="_blank"
               rel="noopener noreferrer"
               className="tennis-booking-button"
@@ -450,8 +451,8 @@ function TennisSection({
               const rate =
                 total > 0
                   ? Math.round(
-                      (wins / total) * 100,
-                    )
+                    (wins / total) * 100,
+                  )
                   : 0;
 
               const avatarUrl =
