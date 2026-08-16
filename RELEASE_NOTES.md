@@ -2,4 +2,4 @@
 
 Les Co'Pintes évolue avec une nouvelle version.
 
-- Ajout bouton de redirection vers l'application de réservation de terrain
+- Ajout de la synchronisation avec l'application ASDRO lors d'une réservation de terrain
