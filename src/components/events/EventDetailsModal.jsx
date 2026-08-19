@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Bike,
   CalendarDays,
+  CalendarPlus,
   Clock3,
   MapPin,
   PartyPopper,
@@ -11,6 +12,11 @@ import {
   Users,
   X,
 } from "lucide-react";
+
+import {
+  addEventToCalendar,
+  canAddEventToCalendar,
+} from "../../utils/calendarExport";
 
 const TYPE_ICONS = {
   tennis: Trophy,
@@ -278,6 +284,19 @@ function EventDetailsModal({
             </div>
 
             <footer className="event-details-modal__footer">
+              {canAddEventToCalendar(event) && (
+                <button
+                  type="button"
+                  className="event-details-modal__calendar-button"
+                  onClick={() =>
+                    addEventToCalendar(event)
+                  }
+                >
+                  <CalendarPlus size={18} />
+                  Ajouter à mon calendrier
+                </button>
+              )}
+
               <button
                 type="button"
                 className="primary-button"

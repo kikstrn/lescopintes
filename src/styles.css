@@ -39687,3 +39687,146 @@ body:has(.workout-modal) {
     width: 100%;
   }
 }
+
+
+/* =========================================================
+   EVENEMENTS — AJOUT AU CALENDRIER
+   ========================================================= */
+
+.events-detailed-card__calendar-action {
+  padding: 0 15px 12px;
+}
+
+.events-detailed-card__calendar-button,
+.event-details-modal__calendar-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(94, 228, 155, 0.26);
+  border-radius: 12px;
+  color: var(--green);
+  background: rgba(94, 228, 155, 0.07);
+  font: inherit;
+  font-size: 0.56rem;
+  font-weight: 850;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.events-detailed-card__calendar-button {
+  width: 100%;
+  padding: 0 12px;
+}
+
+.events-detailed-card__calendar-button:hover,
+.event-details-modal__calendar-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(94, 228, 155, 0.46);
+  background: rgba(94, 228, 155, 0.12);
+}
+
+.events-detailed-card__calendar-button svg,
+.event-details-modal__calendar-button svg {
+  flex: 0 0 auto;
+}
+
+.event-details-modal__calendar-button {
+  padding: 0 15px;
+}
+
+@media (max-width: 600px) {
+  .events-detailed-card__calendar-action {
+    padding: 0 12px 11px;
+  }
+
+  .events-detailed-card__calendar-button {
+    min-height: 44px;
+    font-size: 0.59rem;
+  }
+
+  .event-details-modal__footer {
+    gap: 9px;
+  }
+
+  .event-details-modal__calendar-button,
+  .event-details-modal__footer .primary-button {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .event-details-modal__footer {
+    flex-direction: column;
+  }
+
+  .event-details-modal__calendar-button,
+  .event-details-modal__footer .primary-button {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+}
+
+.events-detailed-card__calendar-action {
+  margin-top: 14px;
+  padding: 14px 15px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+
+  display: flex;
+  justify-content: center;
+}
+
+.events-detailed-card__calendar-button {
+  width: auto;
+  min-width: 190px;
+  min-height: 38px;
+
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid rgba(94, 228, 155, 0.22);
+  border-radius: 11px;
+
+  background: rgba(94, 228, 155, 0.055);
+  color: var(--green);
+
+  font: inherit;
+  font-size: 0.55rem;
+  font-weight: 800;
+
+  cursor: pointer;
+
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.events-detailed-card__calendar-button:hover {
+  background: rgba(94, 228, 155, 0.11);
+  border-color: rgba(94, 228, 155, 0.4);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .events-detailed-card__calendar-action {
+    margin-top: 12px;
+    padding: 13px 12px 11px;
+  }
+
+  .events-detailed-card__calendar-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+  }
+}

@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Bike,
   CalendarDays,
+  CalendarPlus,
   Check,
   CheckCircle2,
   Clock3,
@@ -29,6 +30,11 @@ import {
 } from "lucide-react";
 
 import EventDetailsModal from "./events/EventDetailsModal";
+
+import {
+  addEventToCalendar,
+  canAddEventToCalendar,
+} from "../utils/calendarExport";
 
 const FILTERS = [
   {
@@ -626,6 +632,21 @@ function EventsSection({
                     />
                   </div>
                 </footer>
+
+                {canAddEventToCalendar(event) && (
+                  <div className="events-detailed-card__calendar-action">
+                    <button
+                      type="button"
+                      className="events-detailed-card__calendar-button"
+                      onClick={() =>
+                        addEventToCalendar(event)
+                      }
+                    >
+                      <CalendarPlus size={16} />
+                      Ajouter à mon calendrier
+                    </button>
+                  </div>
+                )}
 
                 <div className="events-detailed-card__creator">
                   <UserRound size={14} />
